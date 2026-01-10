@@ -732,6 +732,28 @@
         .rpg-tag.magic { background: rgba(157, 78, 221, 0.2); color: #9d4edd; border-color: rgba(157, 78, 221, 0.5); }
         .rpg-tag.skill { background: rgba(107, 207, 127, 0.2); color: #6bcf7f; border-color: rgba(107, 207, 127, 0.5); }
         .rpg-tag.dialog { background: rgba(255, 217, 61, 0.2); color: #ffd93d; border-color: rgba(255, 217, 61, 0.5); }
+        
+        /* CLASSES E SUBCLASSES */
+        .class-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .class-group, .subclass-group {
+            flex: 1;
+        }
+        
+        .class-group label, .subclass-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .class-group select, .subclass-group select {
+            width: 100%;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -754,9 +776,33 @@
                             <input type="text" id="userName" placeholder="Ex: Azahorg, Aragorn, Gandalf, Legolas..." maxlength="100">
                         </div>
                         
-                        <div class="input-group">
-                            <label for="characterClass">Classe do Personagem (opcional):</label>
-                            <input type="text" id="characterClass" placeholder="Ex: Guerreiro, Mago, Ladino..." maxlength="50">
+                        <div class="class-row">
+                            <div class="class-group">
+                                <label for="characterClass"><i class="fas fa-shield-alt"></i> Classe:</label>
+                                <select id="characterClass">
+                                    <option value="">Selecione uma classe...</option>
+                                    <option value="Bárbaro">🪓 Bárbaro</option>
+                                    <option value="Bardo">🎶 Bardo</option>
+                                    <option value="Clérigo">✝️ Clérigo</option>
+                                    <option value="Druida">🌿 Druida</option>
+                                    <option value="Guerreiro">⚔️ Guerreiro</option>
+                                    <option value="Monge">🥋 Monge</option>
+                                    <option value="Paladino">🛡 Paladino</option>
+                                    <option value="Patrulheiro">🐺 Patrulheiro</option>
+                                    <option value="Ladino">🗡 Ladino</option>
+                                    <option value="Feiticeiro">🔥 Feiticeiro</option>
+                                    <option value="Bruxo">📜 Bruxo</option>
+                                    <option value="Mago">📚 Mago</option>
+                                    <option value="Artífice">🛠 Artífice</option>
+                                </select>
+                            </div>
+                            
+                            <div class="subclass-group">
+                                <label for="characterSubclass"><i class="fas fa-star"></i> Subclasse:</label>
+                                <select id="characterSubclass">
+                                    <option value="">Selecione uma classe primeiro</option>
+                                </select>
+                            </div>
                         </div>
                         
                         <div class="input-group">
@@ -946,7 +992,7 @@
                 <div class="instructions">
                     <h3><i class="fas fa-info-circle"></i> Como Jogar:</h3>
                     <ul>
-                        <li><strong>1.</strong> Defina seu personagem e classe</li>
+                        <li><strong>1.</strong> Defina seu personagem, classe e subclasse</li>
                         <li><strong>2.</strong> Selecione o tipo de dado que precisa</li>
                         <li><strong>3.</strong> Configure quantidade e modificadores</li>
                         <li><strong>4.</strong> Descreva sua ação e role os dados</li>
@@ -960,7 +1006,7 @@
         <footer>
             <p>Plataforma de RPG D&D Online | Sistema completo de dados e registro compartilhado</p>
             <p>Todos os jogadores compartilham o mesmo mundo - A aventura espera por vocês!</p>
-<p>Desenvolvido por Alexandre Oliveira Azahorg | +55 94 992327693 | Revisado por  Magali Brito de Oliveira </p>
+            <p>Desenvolvido por Alexandre Oliveira Azahorg | +55 94 992327693 | Revisado por Magali Brito de Oliveira</p>
         </footer>
     </div>
 
@@ -974,6 +1020,7 @@
         const textInput = document.getElementById('textInput');
         const userNameInput = document.getElementById('userName');
         const characterClassInput = document.getElementById('characterClass');
+        const characterSubclassInput = document.getElementById('characterSubclass');
         const actionTypeInput = document.getElementById('actionType');
         const addButton = document.getElementById('addButton');
         const clearInputButton = document.getElementById('clearInputButton');
@@ -997,6 +1044,172 @@
         let messages = [];
         let diceResults = [];
         let selectedDice = 20; // D20 padrão
+        
+        // Definição das subclasses por classe
+        const subclasses = {
+            'Bárbaro': [
+                'Caminho do Berserker',
+                'Caminho do Guerreiro Totêmico',
+                'Caminho do Céu Tempestuoso',
+                'Caminho da Fera',
+                'Caminho do Guardião Ancestral',
+                'Caminho da Fúria Selvagem',
+                'Caminho do Zelo'
+            ],
+            'Bardo': [
+                'Colégio do Conhecimento',
+                'Colégio do Valor',
+                'Colégio da Espada',
+                'Colégio dos Sussurros',
+                'Colégio da Eloquência',
+                'Colégio da Criação'
+            ],
+            'Clérigo': [
+                'Domínio da Vida',
+                'Domínio da Luz',
+                'Domínio da Guerra',
+                'Domínio da Tempestade',
+                'Domínio do Conhecimento',
+                'Domínio do Engano',
+                'Domínio da Natureza',
+                'Domínio da Forja',
+                'Domínio da Ordem',
+                'Domínio da Tumba',
+                'Domínio da Morte',
+                'Domínio da Paz',
+                'Domínio da Unidade'
+            ],
+            'Druida': [
+                'Círculo da Terra',
+                'Círculo da Lua',
+                'Círculo dos Sonhos',
+                'Círculo dos Pastores',
+                'Círculo das Esporas',
+                'Círculo das Estrelas',
+                'Círculo das Marés (UA opcional)'
+            ],
+            'Guerreiro': [
+                'Arqueiro Arcano',
+                'Campeão',
+                'Cavaleiro Arcano',
+                'Cavaleiro das Runas',
+                'Bruto (UA)',
+                'Cavaleiro da Cavalaria',
+                'Cavaleiro dos Púlpitos',
+                'Samurai',
+                'Mestre de Batalha',
+                'Psi-Guerreiro',
+                'Éldritch Knight (Cavaleiro Arcano)'
+            ],
+            'Monge': [
+                'Caminho da Mão Aberta',
+                'Caminho da Sombra',
+                'Caminho dos Quatro Elementos',
+                'Caminho da Longa Morte',
+                'Caminho do Sol Nascente',
+                'Caminho do Kensei',
+                'Caminho da Alma Astral',
+                'Caminho da Misericórdia',
+                'Caminho do Dragão Ascendente'
+            ],
+            'Paladino': [
+                'Juramento da Devoção',
+                'Juramento da Vingança',
+                'Juramento dos Antigos',
+                'Juramento da Coroa',
+                'Juramento da Conquista',
+                'Juramento da Redenção',
+                'Juramento dos Observadores',
+                'Juramento da Glória',
+                'Juramento da Praga (UA)'
+            ],
+            'Patrulheiro': [
+                'Caçador',
+                'Mestre das Bestas',
+                'Matador de Monstros',
+                'Andarilho do Horizonte',
+                'Andarilho da Tempestade',
+                'Guerreiro Feral',
+                'Caçador das Sombras',
+                'Explorador Feérico',
+                'Viajante do Gelo (UA)'
+            ],
+            'Ladino': [
+                'Ladrão',
+                'Assassino',
+                'Trapaceiro Arcano',
+                'Inquisitivo',
+                'Cicatriz do Infortúnio',
+                'Fantasma',
+                'Espadachim',
+                'Arqueiro Mental'
+            ],
+            'Feiticeiro': [
+                'Linagem Dracônica',
+                'Feitiçaria Selvagem',
+                'Alma Divina',
+                'Magia das Sombras',
+                'Tempestade',
+                'Psíquico Aberto',
+                'Metamágico Escarlate (UA)'
+            ],
+            'Bruxo': [
+                'O Grande Antigo',
+                'O Arquidemônio',
+                'O Lâmina Amaldiçoada (Hexblade)',
+                'A Fera',
+                'A Luz Celestial',
+                'O Genie (Gênio)',
+                'O Segredo Profundo',
+                'O Iniciador da Mente',
+                'A Duquesa do Caos (UA)'
+            ],
+            'Mago': [
+                'Evocação',
+                'Abjuração',
+                'Advinhação',
+                'Conjuração',
+                'Encantamento',
+                'Ilusão',
+                'Necromancia',
+                'Transmutação',
+                'Ordem das Sagradas Chamas (UA)',
+                'Sublime Geomancia (UA)',
+                'Cronurgia',
+                'Graviturgia',
+                'Bladesinger (Cantor da Lâmina)'
+            ],
+            'Artífice': [
+                'Alquimista',
+                'Artilheiro',
+                'Ferreiro de Batalha'
+            ]
+        };
+        
+        // Função para atualizar as subclasses baseadas na classe selecionada
+        function updateSubclasses() {
+            const selectedClass = characterClassInput.value;
+            const subclassSelect = characterSubclassInput;
+            
+            // Limpar opções atuais
+            subclassSelect.innerHTML = '<option value="">Selecione uma subclasse...</option>';
+            
+            // Se uma classe for selecionada, preencher com suas subclasses
+            if (selectedClass && subclasses[selectedClass]) {
+                subclasses[selectedClass].forEach(subclass => {
+                    const option = document.createElement('option');
+                    option.value = subclass;
+                    option.textContent = subclass;
+                    subclassSelect.appendChild(option);
+                });
+            } else {
+                // Se nenhuma classe selecionada, mostrar mensagem
+                subclassSelect.innerHTML = '<option value="">Selecione uma classe primeiro</option>';
+            }
+        }
+        
+        // Event listener para quando a classe mudar
+        characterClassInput.addEventListener('change', updateSubclasses);
         
         // Selecionar cor do usuário
         colorOptions.forEach(option => {
@@ -1035,7 +1248,8 @@
         // Função para rolar dados com todas as opções
         async function rollDiceWithOptions() {
             const userName = userNameInput.value.trim() || 'Aventureiro';
-            const charClass = characterClassInput.value.trim();
+            const charClass = characterClassInput.value;
+            const charSubclass = characterSubclassInput.value;
             const actionType = actionTypeInput.value;
             const diceCount = parseInt(diceQuantity.value);
             const mod = parseInt(modifier.value);
@@ -1149,6 +1363,7 @@
                 content: textInput.value.trim() || resultText,
                 user_name: userName,
                 character_class: charClass,
+                character_subclass: charSubclass,
                 user_color: userColor,
                 action_type: actionType,
                 created_at: new Date().toISOString(),
@@ -1260,7 +1475,11 @@
                 
                 let nameText = message.user_name || 'Aventureiro';
                 if (message.character_class) {
-                    nameText += ` (${message.character_class})`;
+                    nameText += ` (${message.character_class}`;
+                    if (message.character_subclass) {
+                        nameText += ` - ${message.character_subclass}`;
+                    }
+                    nameText += `)`;
                 }
                 userName.textContent = nameText;
                 
@@ -1460,7 +1679,8 @@
         async function addMessage() {
             const text = textInput.value.trim();
             const userName = userNameInput.value.trim() || 'Aventureiro';
-            const charClass = characterClassInput.value.trim();
+            const charClass = characterClassInput.value;
+            const charSubclass = characterSubclassInput.value;
             const actionType = actionTypeInput.value;
             
             if (text === '') {
@@ -1477,6 +1697,7 @@
                 content: text,
                 user_name: userName,
                 character_class: charClass,
+                character_subclass: charSubclass,
                 user_color: userColor,
                 action_type: actionType,
                 created_at: new Date().toISOString(),
@@ -1575,6 +1796,7 @@
                     content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
                     user_name: 'Mestre do Jogo',
                     character_class: 'Mestre',
+                    character_subclass: 'Mestre das Aventuras',
                     user_color: '#ffd93d',
                     action_type: 'narrative',
                     created_at: new Date().toISOString(),
