@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Texto Compartilhado em Tempo Real</title>
+    <title>Chat Compartilhado com Dado de Jogo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,7 +14,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
@@ -30,19 +30,20 @@
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
-            background-color: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            color: white;
         }
         
         h1 {
-            color: #2c3e50;
+            color: white;
             margin-bottom: 10px;
             font-size: 2.5rem;
         }
         
         .description {
-            color: #7f8c8d;
+            color: #b8c1ec;
             font-size: 1.1rem;
             max-width: 800px;
             margin: 0 auto;
@@ -79,10 +80,10 @@
         }
         
         h2 {
-            color: #3498db;
+            color: #0f3460;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 2px solid #ecf0f1;
+            border-bottom: 2px solid #e94560;
         }
         
         .user-config {
@@ -122,7 +123,7 @@
         .input-group input:focus,
         .input-group textarea:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: #0f3460;
         }
         
         textarea {
@@ -202,6 +203,17 @@
         .btn-danger:hover {
             background-color: #c0392b;
             transform: translateY(-2px);
+        }
+        
+        .btn-game {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+            font-size: 1.1rem;
+        }
+        
+        .btn-game:hover {
+            background: linear-gradient(135deg, #d1344e 0%, #ff5252 100%);
+            transform: translateY(-2px) scale(1.05);
         }
         
         .list-header {
@@ -293,6 +305,23 @@
             line-height: 1.5;
         }
         
+        .dice-result {
+            display: inline-block;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px 0;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
         .list-item-actions {
             display: flex;
             gap: 10px;
@@ -357,10 +386,92 @@
             border-left: 5px solid #f39c12;
         }
         
+        .game-section {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .game-section h3 {
+            color: #e94560;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .dice-display {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #e94560;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .dice-rolling {
+            animation: roll 0.5s infinite;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .dice-history {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .dice-history h4 {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #b8c1ec;
+        }
+        
+        .dice-history-list {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .dice-history-item {
+            background: rgba(233, 69, 96, 0.2);
+            color: #ff6b6b;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
         footer {
             margin-top: 40px;
             text-align: center;
-            color: white;
+            color: #b8c1ec;
             font-size: 0.9rem;
             padding: 20px;
         }
@@ -407,8 +518,8 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-users"></i> Texto Compartilhado em Tempo Real</h1>
-            <p class="description">Todos com o link podem escrever e ver o que os outros escreveram. Atualiza automaticamente!</p>
+            <h1><i class="fas fa-dice-d10"></i> Chat de Jogo com Dado D10</h1>
+            <p class="description">Compartilhe mensagens e role dados de 10 faces para seu game! Todos com o link podem participar.</p>
         </header>
         
         <div class="app-container">
@@ -416,14 +527,14 @@
                 <h2><i class="fas fa-edit"></i> Escrever Mensagem</h2>
                 
                 <div class="user-config">
-                    <h3><i class="fas fa-user"></i> Sua Identidade</h3>
+                    <h3><i class="fas fa-user"></i> Seu Personagem</h3>
                     <div class="input-group">
-                        <label for="userName">Seu Nome (opcional):</label>
-                        <input type="text" id="userName" placeholder="Digite seu nome ou deixe como Anônimo" maxlength="100">
+                        <label for="userName">Nome do Personagem:</label>
+                        <input type="text" id="userName" placeholder="Digite o nome do seu personagem" maxlength="100">
                     </div>
                     
                     <div class="input-group">
-                        <label>Cor do seu nome:</label>
+                        <label>Cor do personagem:</label>
                         <div class="color-picker">
                             <div class="color-option selected" style="background-color: #3498db;" data-color="#3498db"></div>
                             <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71"></div>
@@ -436,8 +547,8 @@
                 </div>
                 
                 <div class="input-group">
-                    <label for="textInput">Sua Mensagem:</label>
-                    <textarea id="textInput" placeholder="Digite sua mensagem aqui... Ela será visível para todos com o link."></textarea>
+                    <label for="textInput">Sua Mensagem de Jogo:</label>
+                    <textarea id="textInput" placeholder="Descreva suas ações no jogo, fale com outros jogadores, ou role um dado..."></textarea>
                 </div>
                 
                 <div class="buttons">
@@ -449,15 +560,27 @@
                     </button>
                 </div>
                 
-                <div class="instructions">
-                    <h3><i class="fas fa-info-circle"></i> Como funciona:</h3>
-                    <ul>
-                        <li>Escolha um nome e uma cor para identificar suas mensagens</li>
-                        <li>Escreva sua mensagem e clique em "Enviar Mensagem"</li>
-                        <li>Todos com o link verão sua mensagem</li>
-                        <li>Para ver mensagens novas, clique em "Atualizar Lista"</li>
-                        <li>Atualiza automaticamente a cada 10 segundos</li>
-                    </ul>
+                <div class="game-section">
+                    <h3><i class="fas fa-dice-d10"></i> Dado de Jogo - D10</h3>
+                    <p>Role um dado de 10 faces para suas ações no jogo:</p>
+                    
+                    <div class="dice-container">
+                        <div class="dice-display" id="diceDisplay">10</div>
+                        <button id="rollDiceButton" class="btn-game">
+                            <i class="fas fa-dice"></i> Rolar Dado D10
+                        </button>
+                        
+                        <div class="dice-history">
+                            <h4>Últimos resultados:</h4>
+                            <div class="dice-history-list" id="diceHistory">
+                                <!-- Histórico de dados aparecerá aqui -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: #b8c1ec;">
+                        <i class="fas fa-info-circle"></i> O resultado será automaticamente enviado como mensagem.
+                    </p>
                 </div>
                 
                 <div id="connectionStatus" class="connection-status connected">
@@ -472,7 +595,7 @@
             
             <section class="list-section">
                 <div class="list-header">
-                    <h2><i class="fas fa-comments"></i> Mensagens Compartilhadas</h2>
+                    <h2><i class="fas fa-scroll"></i> Registro do Jogo</h2>
                     <div class="list-info">
                         <span id="itemCount">Carregando...</span>
                         <button id="refreshButton" class="refresh-btn" title="Atualizar mensagens">
@@ -484,22 +607,25 @@
                 <div class="list-container">
                     <ul id="textList">
                         <li class="loading">
-                            <i class="fas fa-spinner fa-spin"></i> Carregando mensagens...
+                            <i class="fas fa-spinner fa-spin"></i> Carregando registro do jogo...
                         </li>
                     </ul>
                 </div>
                 
                 <div class="buttons">
                     <button id="clearAllButton" class="btn-danger">
-                        <i class="fas fa-trash-alt"></i> Apagar Todas as Mensagens
+                        <i class="fas fa-trash-alt"></i> Limpar Registro
+                    </button>
+                    <button id="rollDiceFromListButton" class="btn-game">
+                        <i class="fas fa-dice-d10"></i> Rolar Dado
                     </button>
                 </div>
             </section>
         </div>
         
         <footer>
-            <p>Aplicação Web de Texto Compartilhado | Todos com o link podem escrever e visualizar</p>
-            <p>Usando JSONBin.io como backend | Dados são públicos e compartilhados</p>
+            <p>Chat de Jogo com Dado D10 | Plataforma compartilhada para RPG e games online</p>
+            <p>Usando JSONBin.io como backend | Todos os jogadores compartilham o mesmo registro</p>
         </footer>
     </div>
 
@@ -519,22 +645,26 @@
         const clearInputButton = document.getElementById('clearInputButton');
         const clearAllButton = document.getElementById('clearAllButton');
         const refreshButton = document.getElementById('refreshButton');
+        const rollDiceButton = document.getElementById('rollDiceButton');
+        const rollDiceFromListButton = document.getElementById('rollDiceFromListButton');
         const textList = document.getElementById('textList');
         const itemCount = document.getElementById('itemCount');
         const connectionStatus = document.getElementById('connectionStatus');
         const configStatus = document.getElementById('configStatus');
+        const diceDisplay = document.getElementById('diceDisplay');
+        const diceHistory = document.getElementById('diceHistory');
         const colorOptions = document.querySelectorAll('.color-option');
         
         // Configurações do usuário
         let userColor = '#3498db';
         let messages = [];
+        let diceResults = [];
         
         // Mostrar que as credenciais estão configuradas
         configStatus.style.display = 'block';
         configStatus.innerHTML = `
             <p><strong><i class="fas fa-check-circle"></i> JSONBin.io configurado!</strong></p>
-            <p>Seu Bin ID: ${JSONBIN_BIN_ID.substring(0, 8)}...</p>
-            <p>O sistema está funcionando com armazenamento online compartilhado.</p>
+            <p>Sistema de jogo online ativo. Compartilhe o link com seus jogadores!</p>
         `;
         configStatus.className = 'connection-status connected';
         
@@ -558,6 +688,11 @@
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
         
+        // Função para rolar um dado de 10 faces (D10)
+        function rollD10() {
+            return Math.floor(Math.random() * 10) + 1; // 1 a 10
+        }
+        
         // Atualizar a exibição da lista
         function updateListDisplay() {
             // Limpar a lista
@@ -565,13 +700,13 @@
             
             // Atualizar contador
             const count = messages.length;
-            itemCount.textContent = `${count} ${count === 1 ? 'mensagem' : 'mensagens'}`;
+            itemCount.textContent = `${count} ${count === 1 ? 'registro' : 'registros'}`;
             
             // Se não houver mensagens, mostrar mensagem
             if (messages.length === 0) {
                 const emptyMessage = document.createElement('li');
                 emptyMessage.className = 'empty-list-message';
-                emptyMessage.innerHTML = '<i class="far fa-comment-dots"></i><br>Nenhuma mensagem ainda. Seja o primeiro a escrever!';
+                emptyMessage.innerHTML = '<i class="fas fa-dragon"></i><br>O jogo ainda não começou! Role o primeiro dado ou escreva uma ação.';
                 textList.appendChild(emptyMessage);
                 return;
             }
@@ -595,12 +730,12 @@
                 const userAvatar = document.createElement('div');
                 userAvatar.className = 'user-avatar';
                 userAvatar.style.backgroundColor = message.user_color || '#3498db';
-                userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'A';
+                userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'J';
                 
                 const userName = document.createElement('div');
                 userName.className = 'user-name';
                 userName.style.color = message.user_color || '#3498db';
-                userName.textContent = message.user_name || 'Anônimo';
+                userName.textContent = message.user_name || 'Jogador';
                 
                 const messageTime = document.createElement('div');
                 messageTime.className = 'message-time';
@@ -615,7 +750,20 @@
                 // Conteúdo da mensagem
                 const itemContent = document.createElement('div');
                 itemContent.className = 'list-item-content';
-                itemContent.textContent = message.content;
+                
+                // Verificar se é uma mensagem de dado
+                if (message.is_dice_roll) {
+                    const diceValue = message.dice_value || 1;
+                    const diceType = message.dice_type || 'D10';
+                    
+                    itemContent.innerHTML = `
+                        <strong>🎲 Rolou ${diceType}:</strong> ${message.content || ''}
+                        <br>
+                        <span class="dice-result">Resultado: <strong>${diceValue}</strong>/${diceType.replace('D', '')}</span>
+                    `;
+                } else {
+                    itemContent.textContent = message.content;
+                }
                 
                 // Botões de ação
                 const itemActions = document.createElement('div');
@@ -644,6 +792,79 @@
             listContainer.scrollTop = 0;
         }
         
+        // Atualizar o histórico de dados
+        function updateDiceHistory() {
+            diceHistory.innerHTML = '';
+            
+            // Mostrar apenas os últimos 10 resultados
+            const recentResults = diceResults.slice(-10);
+            
+            recentResults.forEach(result => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'dice-history-item';
+                historyItem.textContent = result;
+                diceHistory.appendChild(historyItem);
+            });
+            
+            // Rolagem automática para o final
+            diceHistory.scrollLeft = diceHistory.scrollWidth;
+        }
+        
+        // Função para rolar o dado e enviar como mensagem
+        async function rollAndSendDice() {
+            const userName = userNameInput.value.trim() || 'Jogador';
+            
+            // Animação de rolagem
+            diceDisplay.classList.add('dice-rolling');
+            diceDisplay.textContent = '...';
+            
+            // Esperar um pouco para efeito visual
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            // Rolagem real
+            const diceResult = rollD10();
+            
+            // Atualizar display
+            diceDisplay.classList.remove('dice-rolling');
+            diceDisplay.textContent = diceResult;
+            
+            // Adicionar ao histórico
+            diceResults.push(diceResult);
+            updateDiceHistory();
+            
+            // Criar mensagem do dado
+            const diceMessage = {
+                id: generateId(),
+                content: `🎲 Rolou um D10`,
+                user_name: userName,
+                user_color: userColor,
+                created_at: new Date().toISOString(),
+                is_dice_roll: true,
+                dice_value: diceResult,
+                dice_type: 'D10'
+            };
+            
+            // Adicionar à lista local
+            messages.push(diceMessage);
+            
+            // Atualizar a exibição
+            updateListDisplay();
+            
+            // Salvar no servidor
+            await saveMessages();
+            
+            // Efeito visual no dado
+            diceDisplay.style.transform = 'scale(1.2)';
+            diceDisplay.style.boxShadow = '0 0 20px rgba(233, 69, 96, 0.7)';
+            
+            setTimeout(() => {
+                diceDisplay.style.transform = 'scale(1)';
+                diceDisplay.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+            }, 300);
+            
+            return diceResult;
+        }
+        
         // Carregar mensagens do servidor
         async function loadMessages() {
             try {
@@ -661,7 +882,6 @@
                 }
                 
                 const data = await response.json();
-                console.log('Dados recebidos do servidor:', data);
                 
                 // Verificar se a estrutura de dados está correta
                 if (data.record && Array.isArray(data.record.messages)) {
@@ -674,7 +894,16 @@
                     messages = [];
                 }
                 
+                // Extrair resultados de dados do histórico
+                diceResults = [];
+                messages.forEach(msg => {
+                    if (msg.is_dice_roll && msg.dice_value) {
+                        diceResults.push(msg.dice_value);
+                    }
+                });
+                
                 updateListDisplay();
+                updateDiceHistory();
                 connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> <span>Conectado ao servidor</span>';
                 connectionStatus.className = 'connection-status connected';
                 
@@ -713,7 +942,7 @@
         // Salvar mensagens no servidor
         async function saveMessages() {
             try {
-                connectionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Salvando mensagens...</span>';
+                connectionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Salvando no servidor...</span>';
                 
                 const response = await fetch(JSONBIN_URL, {
                     method: 'PUT',
@@ -728,9 +957,6 @@
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
-                
-                const data = await response.json();
-                console.log('Mensagens salvas com sucesso!', data);
                 
                 // Também salvar localmente como backup
                 localStorage.setItem('shared_messages', JSON.stringify(messages));
@@ -756,7 +982,7 @@
         // Adicionar uma nova mensagem
         async function addMessage() {
             const text = textInput.value.trim();
-            const userName = userNameInput.value.trim() || 'Anônimo';
+            const userName = userNameInput.value.trim() || 'Jogador';
             
             if (text === '') {
                 alert('Por favor, digite uma mensagem antes de enviar.');
@@ -779,7 +1005,8 @@
                 content: text,
                 user_name: userName,
                 user_color: userColor,
-                created_at: new Date().toISOString()
+                created_at: new Date().toISOString(),
+                is_dice_roll: false
             };
             
             // Adicionar à lista local
@@ -799,13 +1026,6 @@
                 // Limpar o campo de entrada
                 textInput.value = '';
                 textInput.focus();
-                
-                // Mostrar confirmação
-                const originalColor = addButton.style.backgroundColor;
-                addButton.style.backgroundColor = '#27ae60';
-                setTimeout(() => {
-                    addButton.style.backgroundColor = originalColor;
-                }, 1000);
             } else {
                 alert('Mensagem salva localmente, mas houve um erro ao salvar no servidor.');
             }
@@ -846,9 +1066,11 @@
             
             // Limpar a lista local
             messages = [];
+            diceResults = [];
             
             // Atualizar a exibição
             updateListDisplay();
+            updateDiceHistory();
             
             // Salvar no servidor
             await saveMessages();
@@ -871,6 +1093,8 @@
                 }, 500);
             });
         });
+        rollDiceButton.addEventListener('click', rollAndSendDice);
+        rollDiceFromListButton.addEventListener('click', rollAndSendDice);
         
         // Permitir enviar pressionando Ctrl+Enter
         textInput.addEventListener('keydown', (event) => {
@@ -884,22 +1108,23 @@
             // Carregar mensagens
             await loadMessages();
             
-            // Configurar atualização automática a cada 10 segundos
-            setInterval(loadMessages, 10000);
-            
             // Adicionar mensagem de boas-vindas se estiver vazio
             if (messages.length === 0) {
                 const welcomeMessage = {
                     id: 'welcome',
-                    content: 'Bem-vindo ao chat compartilhado! Esta é a primeira mensagem. Escreva algo abaixo e compartilhe o link com seus amigos!',
-                    user_name: 'Sistema',
+                    content: 'Bem-vindo ao chat de jogo! Use o botão "Rolar Dado D10" para começar suas ações no jogo.',
+                    user_name: 'Mestre do Jogo',
                     user_color: '#9b59b6',
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    is_dice_roll: false
                 };
                 messages.push(welcomeMessage);
                 await saveMessages();
                 updateListDisplay();
             }
+            
+            // Configurar atualização automática a cada 10 segundos
+            setInterval(loadMessages, 10000);
         }
         
         // Inicializar quando a página carregar
