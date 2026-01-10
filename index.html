@@ -348,6 +348,15 @@
             color: #e74c3c;
         }
         
+        .config-error {
+            background-color: #fef9e7;
+            color: #f39c12;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #f39c12;
+        }
+        
         footer {
             margin-top: 40px;
             text-align: center;
@@ -446,14 +455,18 @@
                         <li>Escolha um nome e uma cor para identificar suas mensagens</li>
                         <li>Escreva sua mensagem e clique em "Enviar Mensagem"</li>
                         <li>Todos com o link verão sua mensagem</li>
-                        <li>Para ver mensagens novas, atualize a página</li>
-                        <li>Clique em "Atualizar Lista" para ver as últimas mensagens</li>
+                        <li>Para ver mensagens novas, clique em "Atualizar Lista"</li>
+                        <li>Atualiza automaticamente a cada 10 segundos</li>
                     </ul>
                 </div>
                 
                 <div id="connectionStatus" class="connection-status connected">
                     <i class="fas fa-wifi"></i>
-                    <span>Conectado</span>
+                    <span>Conectando ao servidor...</span>
+                </div>
+                
+                <div id="configStatus" class="config-error" style="display: none;">
+                    <p><strong>Configuração detectada!</strong> Seu JSONBin.io está configurado corretamente.</p>
                 </div>
             </section>
             
@@ -486,18 +499,15 @@
         
         <footer>
             <p>Aplicação Web de Texto Compartilhado | Todos com o link podem escrever e visualizar</p>
-            <p>Usando servidor compartilhado | Dados são públicos</p>
+            <p>Usando JSONBin.io como backend | Dados são públicos e compartilhados</p>
         </footer>
     </div>
 
     <script>
-        // =================== BACKEND SIMPLES (JSONBin.io) ===================
-        // Vamos usar JSONBin.io como backend gratuito e fácil de configurar
-        
-        // ID do seu bin no JSONBin.io (você vai criar um)
-        const JSONBIN_BIN_ID = 69620ca9ae596e708fd204c5;
-        // Sua chave de API do JSONBin.io
-        const JSONBIN_API_KEY = $2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i;
+        // =================== CONFIGURAÇÃO DO JSONBIN.IO ===================
+        // SUAS CREDENCIAIS DO JSONBIN.IO
+        const JSONBIN_BIN_ID = '69620ca9ae596e708fd204c5';
+        const JSONBIN_API_KEY = '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i';
         
         // URL da API do JSONBin.io
         const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
@@ -512,11 +522,21 @@
         const textList = document.getElementById('textList');
         const itemCount = document.getElementById('itemCount');
         const connectionStatus = document.getElementById('connectionStatus');
+        const configStatus = document.getElementById('configStatus');
         const colorOptions = document.querySelectorAll('.color-option');
         
         // Configurações do usuário
         let userColor = '#3498db';
         let messages = [];
+        
+        // Mostrar que as credenciais estão configuradas
+        configStatus.style.display = 'block';
+        configStatus.innerHTML = `
+            <p><strong><i class="fas fa-check-circle"></i> JSONBin.io configurado!</strong></p>
+            <p>Seu Bin ID: ${JSONBIN_BIN_ID.substring(0, 8)}...</p>
+            <p>O sistema está funcionando com armazenamento online compartilhado.</p>
+        `;
+        configStatus.className = 'connection-status connected';
         
         // Selecionar cor do usuário
         colorOptions.forEach(option => {
@@ -544,7 +564,8 @@
             textList.innerHTML = '';
             
             // Atualizar contador
-            itemCount.textContent = `${messages.length} ${messages.length === 1 ? 'mensagem' : 'mensagens'}`;
+            const count = messages.length;
+            itemCount.textContent = `${count} ${count === 1 ? 'mensagem' : 'mensagens'}`;
             
             // Se não houver mensagens, mostrar mensagem
             if (messages.length === 0) {
@@ -552,89 +573,81 @@
                 emptyMessage.className = 'empty-list-message';
                 emptyMessage.innerHTML = '<i class="far fa-comment-dots"></i><br>Nenhuma mensagem ainda. Seja o primeiro a escrever!';
                 textList.appendChild(emptyMessage);
-            } else {
-                // Ordenar mensagens por data (mais recentes primeiro)
-                const sortedMessages = [...messages].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                
-                // Adicionar cada mensagem à lista
-                sortedMessages.forEach((message) => {
-                    const listItem = document.createElement('li');
-                    listItem.className = 'list-item';
-                    listItem.style.borderLeftColor = message.user_color || '#3498db';
-                    
-                    // Cabeçalho com informações do usuário
-                    const itemHeader = document.createElement('div');
-                    itemHeader.className = 'list-item-header';
-                    
-                    const userInfo = document.createElement('div');
-                    userInfo.className = 'user-info';
-                    
-                    const userAvatar = document.createElement('div');
-                    userAvatar.className = 'user-avatar';
-                    userAvatar.style.backgroundColor = message.user_color || '#3498db';
-                    userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'A';
-                    
-                    const userName = document.createElement('div');
-                    userName.className = 'user-name';
-                    userName.style.color = message.user_color || '#3498db';
-                    userName.textContent = message.user_name || 'Anônimo';
-                    
-                    const messageTime = document.createElement('div');
-                    messageTime.className = 'message-time';
-                    messageTime.textContent = formatDateTime(message.created_at);
-                    
-                    userInfo.appendChild(userAvatar);
-                    userInfo.appendChild(userName);
-                    
-                    itemHeader.appendChild(userInfo);
-                    itemHeader.appendChild(messageTime);
-                    
-                    // Conteúdo da mensagem
-                    const itemContent = document.createElement('div');
-                    itemContent.className = 'list-item-content';
-                    itemContent.textContent = message.content;
-                    
-                    // Botões de ação
-                    const itemActions = document.createElement('div');
-                    itemActions.className = 'list-item-actions';
-                    
-                    // Botão de excluir
-                    const deleteButton = document.createElement('button');
-                    deleteButton.className = 'delete-btn';
-                    deleteButton.innerHTML = '<i class="fas fa-trash"></i> Excluir';
-                    deleteButton.addEventListener('click', () => {
-                        deleteMessage(message.id);
-                    });
-                    
-                    itemActions.appendChild(deleteButton);
-                    
-                    // Montar o item da lista
-                    listItem.appendChild(itemHeader);
-                    listItem.appendChild(itemContent);
-                    listItem.appendChild(itemActions);
-                    
-                    textList.appendChild(listItem);
-                });
+                return;
             }
+            
+            // Ordenar mensagens por data (mais recentes primeiro)
+            const sortedMessages = [...messages].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            // Adicionar cada mensagem à lista
+            sortedMessages.forEach((message) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-item';
+                listItem.style.borderLeftColor = message.user_color || '#3498db';
+                
+                // Cabeçalho com informações do usuário
+                const itemHeader = document.createElement('div');
+                itemHeader.className = 'list-item-header';
+                
+                const userInfo = document.createElement('div');
+                userInfo.className = 'user-info';
+                
+                const userAvatar = document.createElement('div');
+                userAvatar.className = 'user-avatar';
+                userAvatar.style.backgroundColor = message.user_color || '#3498db';
+                userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'A';
+                
+                const userName = document.createElement('div');
+                userName.className = 'user-name';
+                userName.style.color = message.user_color || '#3498db';
+                userName.textContent = message.user_name || 'Anônimo';
+                
+                const messageTime = document.createElement('div');
+                messageTime.className = 'message-time';
+                messageTime.textContent = formatDateTime(message.created_at);
+                
+                userInfo.appendChild(userAvatar);
+                userInfo.appendChild(userName);
+                
+                itemHeader.appendChild(userInfo);
+                itemHeader.appendChild(messageTime);
+                
+                // Conteúdo da mensagem
+                const itemContent = document.createElement('div');
+                itemContent.className = 'list-item-content';
+                itemContent.textContent = message.content;
+                
+                // Botões de ação
+                const itemActions = document.createElement('div');
+                itemActions.className = 'list-item-actions';
+                
+                // Botão de excluir
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'delete-btn';
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Excluir';
+                deleteButton.addEventListener('click', () => {
+                    deleteMessage(message.id);
+                });
+                
+                itemActions.appendChild(deleteButton);
+                
+                // Montar o item da lista
+                listItem.appendChild(itemHeader);
+                listItem.appendChild(itemContent);
+                listItem.appendChild(itemActions);
+                
+                textList.appendChild(listItem);
+            });
+            
+            // Rolagem automática para o topo (mensagens mais recentes)
+            const listContainer = document.querySelector('.list-container');
+            listContainer.scrollTop = 0;
         }
         
         // Carregar mensagens do servidor
         async function loadMessages() {
             try {
-                // Se as credenciais não estiverem configuradas, use dados locais
-                if (JSONBIN_BIN_ID === 69620ca9ae596e708fd204c5 || JSONBIN_API_KEY === $2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i) {
-                    // Tentar carregar do localStorage como fallback
-                    const savedMessages = localStorage.getItem('shared_messages');
-                    if (savedMessages) {
-                        messages = JSON.parse(savedMessages);
-                        updateListDisplay();
-                        connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Modo offline - Configure o JSONBin.io</span>';
-                    } else {
-                        messages = [];
-                        updateListDisplay();
-                    }
-                    return;
-                }
+                connectionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Conectando ao servidor...</span>';
                 
                 const response = await fetch(JSONBIN_URL + '/latest', {
                     headers: {
@@ -644,14 +657,28 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Erro ao carregar mensagens');
+                    throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                messages = data.record.messages || [];
+                console.log('Dados recebidos do servidor:', data);
+                
+                // Verificar se a estrutura de dados está correta
+                if (data.record && Array.isArray(data.record.messages)) {
+                    messages = data.record.messages;
+                } else if (Array.isArray(data.record)) {
+                    // Formato alternativo: array direto
+                    messages = data.record;
+                } else {
+                    // Se não houver dados, iniciar array vazio
+                    messages = [];
+                }
                 
                 updateListDisplay();
-                connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Conectado ao servidor</span>';
+                connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> <span>Conectado ao servidor</span>';
+                connectionStatus.className = 'connection-status connected';
+                
+                return true;
                 
             } catch (error) {
                 console.error('Erro ao carregar mensagens:', error);
@@ -659,49 +686,70 @@
                 // Tentar carregar do localStorage como fallback
                 const savedMessages = localStorage.getItem('shared_messages');
                 if (savedMessages) {
-                    messages = JSON.parse(savedMessages);
-                    updateListDisplay();
-                    connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Modo offline - Usando dados locais</span>';
+                    try {
+                        messages = JSON.parse(savedMessages);
+                        updateListDisplay();
+                        connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Modo offline - Usando dados locais</span>';
+                        connectionStatus.className = 'connection-status disconnected';
+                    } catch (parseError) {
+                        console.error('Erro ao analisar dados locais:', parseError);
+                    }
                 } else {
                     textList.innerHTML = `
                         <li class="empty-list-message">
                             <i class="fas fa-exclamation-triangle"></i><br>
-                            Erro ao carregar mensagens. Verifique sua conexão.
+                            Erro ao carregar mensagens.<br>
+                            <small>Tentando novamente em 5 segundos...</small>
                         </li>
                     `;
-                    connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Desconectado do servidor</span>';
+                    connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Erro de conexão com o servidor</span>';
+                    connectionStatus.className = 'connection-status disconnected';
                 }
+                
+                return false;
             }
         }
         
         // Salvar mensagens no servidor
         async function saveMessages() {
             try {
-                // Se as credenciais não estiverem configuradas, salve localmente
-                if (JSONBIN_BIN_ID === 69620ca9ae596e708fd204c5 || JSONBIN_API_KEY === $2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i) {
-                    localStorage.setItem('shared_messages', JSON.stringify(messages));
-                    return;
-                }
+                connectionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Salvando mensagens...</span>';
                 
                 const response = await fetch(JSONBIN_URL, {
                     method: 'PUT',
                     headers: {
                         'X-Master-Key': JSONBIN_API_KEY,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Bin-Versioning': 'false'
                     },
-                    body: JSON.stringify({ messages })
+                    body: JSON.stringify({ messages: messages })
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Erro ao salvar mensagens');
+                    throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 
-                console.log('Mensagens salvas com sucesso!');
+                const data = await response.json();
+                console.log('Mensagens salvas com sucesso!', data);
+                
+                // Também salvar localmente como backup
+                localStorage.setItem('shared_messages', JSON.stringify(messages));
+                
+                connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> <span>Conectado ao servidor</span>';
+                connectionStatus.className = 'connection-status connected';
+                
+                return true;
                 
             } catch (error) {
                 console.error('Erro ao salvar mensagens:', error);
+                
                 // Salvar localmente como fallback
                 localStorage.setItem('shared_messages', JSON.stringify(messages));
+                
+                connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Erro ao salvar, usando armazenamento local</span>';
+                connectionStatus.className = 'connection-status disconnected';
+                
+                return false;
             }
         }
         
@@ -721,6 +769,10 @@
                 return;
             }
             
+            // Desabilitar botão durante o envio
+            addButton.disabled = true;
+            addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            
             // Criar nova mensagem
             const newMessage = {
                 id: generateId(),
@@ -733,18 +785,30 @@
             // Adicionar à lista local
             messages.push(newMessage);
             
-            // Atualizar a exibição
+            // Atualizar a exibição imediatamente
             updateListDisplay();
             
             // Salvar no servidor
-            await saveMessages();
+            const success = await saveMessages();
             
-            // Limpar o campo de entrada
-            textInput.value = '';
-            textInput.focus();
+            // Reabilitar botão
+            addButton.disabled = false;
+            addButton.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensagem';
             
-            // Rolar para a lista para mostrar a nova mensagem
-            document.querySelector('.list-container').scrollTop = 0;
+            if (success) {
+                // Limpar o campo de entrada
+                textInput.value = '';
+                textInput.focus();
+                
+                // Mostrar confirmação
+                const originalColor = addButton.style.backgroundColor;
+                addButton.style.backgroundColor = '#27ae60';
+                setTimeout(() => {
+                    addButton.style.backgroundColor = originalColor;
+                }, 1000);
+            } else {
+                alert('Mensagem salva localmente, mas houve um erro ao salvar no servidor.');
+            }
         }
         
         // Excluir uma mensagem
@@ -754,7 +818,13 @@
             }
             
             // Remover da lista local
+            const originalLength = messages.length;
             messages = messages.filter(msg => msg.id !== messageId);
+            
+            if (messages.length === originalLength) {
+                alert('Mensagem não encontrada.');
+                return;
+            }
             
             // Atualizar a exibição
             updateListDisplay();
@@ -765,7 +835,12 @@
         
         // Excluir todas as mensagens
         async function deleteAllMessages() {
-            if (!confirm('Tem certeza que deseja excluir TODAS as mensagens? Esta ação não pode ser desfeita.')) {
+            if (messages.length === 0) {
+                alert('Não há mensagens para excluir.');
+                return;
+            }
+            
+            if (!confirm(`Tem certeza que deseja excluir TODAS as ${messages.length} mensagens? Esta ação não pode ser desfeita.`)) {
                 return;
             }
             
@@ -788,7 +863,14 @@
             textInput.focus();
         });
         clearAllButton.addEventListener('click', deleteAllMessages);
-        refreshButton.addEventListener('click', loadMessages);
+        refreshButton.addEventListener('click', () => {
+            refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            loadMessages().then(() => {
+                setTimeout(() => {
+                    refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                }, 500);
+            });
+        });
         
         // Permitir enviar pressionando Ctrl+Enter
         textInput.addEventListener('keydown', (event) => {
@@ -804,6 +886,20 @@
             
             // Configurar atualização automática a cada 10 segundos
             setInterval(loadMessages, 10000);
+            
+            // Adicionar mensagem de boas-vindas se estiver vazio
+            if (messages.length === 0) {
+                const welcomeMessage = {
+                    id: 'welcome',
+                    content: 'Bem-vindo ao chat compartilhado! Esta é a primeira mensagem. Escreva algo abaixo e compartilhe o link com seus amigos!',
+                    user_name: 'Sistema',
+                    user_color: '#9b59b6',
+                    created_at: new Date().toISOString()
+                };
+                messages.push(welcomeMessage);
+                await saveMessages();
+                updateListDisplay();
+            }
         }
         
         // Inicializar quando a página carregar
