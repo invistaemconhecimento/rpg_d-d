@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texto Compartilhado em Tempo Real</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Incluir Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .description {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        @media (min-width: 992px) {
+            .app-container {
+                flex-direction: row;
+            }
+        }
+        
+        .input-section {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        
+        .list-section {
+            flex: 1;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .user-config {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .user-config h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #333;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .list-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        .list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 500px;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        
+        #textList {
+            list-style-type: none;
+        }
+        
+        .list-item {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.5s ease;
+            border-left: 5px solid;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .user-name {
+            font-weight: 600;
+        }
+        
+        .message-time {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .list-item-content {
+            word-break: break-word;
+            line-height: 1.5;
+        }
+        
+        .list-item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+        
+        .delete-btn {
+            background-color: #ffebee;
+            color: #e74c3c;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border: none;
+        }
+        
+        .delete-btn:hover {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .empty-list-message {
+            text-align: center;
+            color: #bdc3c7;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #7f8c8d;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .connected {
+            background-color: #d5f4e6;
+            color: #27ae60;
+        }
+        
+        .disconnected {
+            background-color: #fadbd8;
+            color: #e74c3c;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+        
+        .instructions {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 25px;
+        }
+        
+        .instructions h3 {
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 5px;
+        }
+        
+        /* Scrollbar personalizada */
+        .list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .list-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .list-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        .list-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-users"></i> Texto Compartilhado em Tempo Real</h1>
+            <p class="description">Todos com o link podem escrever e ver o que os outros escreveram. Atualiza automaticamente!</p>
+        </header>
+        
+        <div class="app-container">
+            <section class="input-section">
+                <h2><i class="fas fa-edit"></i> Escrever Mensagem</h2>
+                
+                <div class="user-config">
+                    <h3><i class="fas fa-user"></i> Sua Identidade</h3>
+                    <div class="input-group">
+                        <label for="userName">Seu Nome (opcional):</label>
+                        <input type="text" id="userName" placeholder="Digite seu nome ou deixe como Anônimo" maxlength="100">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Cor do seu nome:</label>
+                        <div class="color-picker">
+                            <div class="color-option selected" style="background-color: #3498db;" data-color="#3498db"></div>
+                            <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71"></div>
+                            <div class="color-option" style="background-color: #9b59b6;" data-color="#9b59b6"></div>
+                            <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c"></div>
+                            <div class="color-option" style="background-color: #f39c12;" data-color="#f39c12"></div>
+                            <div class="color-option" style="background-color: #1abc9c;" data-color="#1abc9c"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="textInput">Sua Mensagem:</label>
+                    <textarea id="textInput" placeholder="Digite sua mensagem aqui... Ela será visível para todos com o link."></textarea>
+                </div>
+                
+                <div class="buttons">
+                    <button id="addButton" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Enviar Mensagem
+                    </button>
+                    <button id="clearInputButton" class="btn-secondary">
+                        <i class="fas fa-eraser"></i> Limpar
+                    </button>
+                </div>
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> Como funciona:</h3>
+                    <ul>
+                        <li>Escolha um nome e uma cor para identificar suas mensagens</li>
+                        <li>Escreva sua mensagem e clique em "Enviar Mensagem"</li>
+                        <li>Todos com o link verão sua mensagem instantaneamente</li>
+                        <li>As mensagens são armazenadas online e não são perdidas</li>
+                        <li>Você pode apagar suas mensagens clicando em "Excluir"</li>
+                    </ul>
+                </div>
+                
+                <div id="connectionStatus" class="connection-status connected">
+                    <i class="fas fa-wifi"></i>
+                    <span>Conectado ao servidor</span>
+                </div>
+            </section>
+            
+            <section class="list-section">
+                <div class="list-header">
+                    <h2><i class="fas fa-comments"></i> Mensagens Compartilhadas</h2>
+                    <div class="list-info">
+                        <span id="itemCount">Carregando...</span>
+                        <button id="refreshButton" class="refresh-btn" title="Atualizar mensagens">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="list-container">
+                    <ul id="textList">
+                        <li class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Carregando mensagens...
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="buttons">
+                    <button id="clearAllButton" class="btn-danger">
+                        <i class="fas fa-trash-alt"></i> Apagar Todas as Mensagens
+                    </button>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>Aplicação Web de Texto Compartilhado em Tempo Real | Todos com o link podem escrever e visualizar</p>
+            <p>Usando Supabase para armazenamento em tempo real | Dados são públicos e compartilhados</p>
+        </footer>
+    </div>
+
+    <script>
+        // =================== CONFIGURAÇÃO DO SUPABASE ===================
+        // SUBSTITUA ESTAS CREDENCIAIS PELAS SUAS DO SUPABASE
+        const SUPABASE_URL = 'https://mixgmwvajlfozywjacsf.supabase.co/';
+        const SUPABASE_ANON_KEY = 'sb_secret_DyCJCqAaPzzYB-sb8e7Hsg_7ve09-mx';
+        // =================================================================
+        
+        // Inicializar o cliente Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Referências aos elementos HTML
+        const textInput = document.getElementById('textInput');
+        const userNameInput = document.getElementById('userName');
+        const addButton = document.getElementById('addButton');
+        const clearInputButton = document.getElementById('clearInputButton');
+        const clearAllButton = document.getElementById('clearAllButton');
+        const refreshButton = document.getElementById('refreshButton');
+        const textList = document.getElementById('textList');
+        const itemCount = document.getElementById('itemCount');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const colorOptions = document.querySelectorAll('.color-option');
+        
+        // Configurações do usuário
+        let userColor = '#3498db';
+        let isOnline = true;
+        
+        // Selecionar cor do usuário
+        colorOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                userColor = option.getAttribute('data-color');
+            });
+        });
+        
+        // Configurar data/hora no formato local
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('pt-BR');
+        }
+        
+        // Atualizar a exibição da lista
+        async function updateListDisplay() {
+            try {
+                // Buscar mensagens do Supabase
+                const { data: messages, error } = await supabase
+                    .from('shared_texts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                // Limpar a lista
+                textList.innerHTML = '';
+                
+                // Atualizar contador
+                itemCount.textContent = `${messages.length} ${messages.length === 1 ? 'mensagem' : 'mensagens'}`;
+                
+                // Se não houver mensagens, mostrar mensagem
+                if (messages.length === 0) {
+                    const emptyMessage = document.createElement('li');
+                    emptyMessage.className = 'empty-list-message';
+                    emptyMessage.innerHTML = '<i class="far fa-comment-dots"></i><br>Nenhuma mensagem ainda. Seja o primeiro a escrever!';
+                    textList.appendChild(emptyMessage);
+                } else {
+                    // Adicionar cada mensagem à lista
+                    messages.forEach((message) => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-item';
+                        listItem.style.borderLeftColor = message.user_color || '#3498db';
+                        
+                        // Cabeçalho com informações do usuário
+                        const itemHeader = document.createElement('div');
+                        itemHeader.className = 'list-item-header';
+                        
+                        const userInfo = document.createElement('div');
+                        userInfo.className = 'user-info';
+                        
+                        const userAvatar = document.createElement('div');
+                        userAvatar.className = 'user-avatar';
+                        userAvatar.style.backgroundColor = message.user_color || '#3498db';
+                        userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'A';
+                        
+                        const userName = document.createElement('div');
+                        userName.className = 'user-name';
+                        userName.style.color = message.user_color || '#3498db';
+                        userName.textContent = message.user_name || 'Anônimo';
+                        
+                        const messageTime = document.createElement('div');
+                        messageTime.className = 'message-time';
+                        messageTime.textContent = formatDateTime(message.created_at);
+                        
+                        userInfo.appendChild(userAvatar);
+                        userInfo.appendChild(userName);
+                        
+                        itemHeader.appendChild(userInfo);
+                        itemHeader.appendChild(messageTime);
+                        
+                        // Conteúdo da mensagem
+                        const itemContent = document.createElement('div');
+                        itemContent.className = 'list-item-content';
+                        itemContent.textContent = message.content;
+                        
+                        // Botões de ação
+                        const itemActions = document.createElement('div');
+                        itemActions.className = 'list-item-actions';
+                        
+                        // Botão de excluir (para qualquer um, já que não temos autenticação)
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'delete-btn';
+                        deleteButton.innerHTML = '<i class="fas fa-trash"></i> Excluir';
+                        deleteButton.addEventListener('click', () => {
+                            deleteMessage(message.id);
+                        });
+                        
+                        itemActions.appendChild(deleteButton);
+                        
+                        // Montar o item da lista
+                        listItem.appendChild(itemHeader);
+                        listItem.appendChild(itemContent);
+                        listItem.appendChild(itemActions);
+                        
+                        textList.appendChild(listItem);
+                    });
+                }
+                
+                // Atualizar status de conexão
+                updateConnectionStatus(true);
+                
+            } catch (error) {
+                console.error('Erro ao carregar mensagens:', error);
+                textList.innerHTML = `
+                    <li class="empty-list-message">
+                        <i class="fas fa-exclamation-triangle"></i><br>
+                        Erro ao carregar mensagens. Verifique sua conexão.
+                    </li>
+                `;
+                updateConnectionStatus(false);
+            }
+        }
+        
+        // Adicionar uma nova mensagem
+        async function addMessage() {
+            const text = textInput.value.trim();
+            const userName = userNameInput.value.trim() || 'Anônimo';
+            
+            if (text === '') {
+                alert('Por favor, digite uma mensagem antes de enviar.');
+                textInput.focus();
+                return;
+            }
+            
+            if (text.length > 1000) {
+                alert('A mensagem é muito longa. Por favor, limite a 1000 caracteres.');
+                return;
+            }
+            
+            try {
+                // Inserir mensagem no Supabase
+                const { data, error } = await supabase
+                    .from('shared_texts')
+                    .insert([
+                        { 
+                            content: text,
+                            user_name: userName,
+                            user_color: userColor
+                        }
+                    ]);
+                
+                if (error) throw error;
+                
+                // Limpar o campo de entrada
+                textInput.value = '';
+                textInput.focus();
+                
+                // Atualizar a lista
+                await updateListDisplay();
+                
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                alert('Erro ao enviar mensagem. Verifique sua conexão.');
+                updateConnectionStatus(false);
+            }
+        }
+        
+        // Excluir uma mensagem
+        async function deleteMessage(messageId) {
+            if (!confirm('Tem certeza que deseja excluir esta mensagem?')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('shared_texts')
+                    .delete()
+                    .eq('id', messageId);
+                
+                if (error) throw error;
+                
+                // Atualizar a lista
+                await updateListDisplay();
+                
+            } catch (error) {
+                console.error('Erro ao excluir mensagem:', error);
+                alert('Erro ao excluir mensagem.');
+            }
+        }
+        
+        // Excluir todas as mensagens
+        async function deleteAllMessages() {
+            if (!confirm('Tem certeza que deseja excluir TODAS as mensagens? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+            
+            try {
+                const { error } = await supabase
+                    .from('shared_texts')
+                    .delete()
+                    .gte('id', 0); // Deleta todas as mensagens
+                
+                if (error) throw error;
+                
+                // Atualizar a lista
+                await updateListDisplay();
+                
+                alert('Todas as mensagens foram excluídas.');
+                
+            } catch (error) {
+                console.error('Erro ao excluir mensagens:', error);
+                alert('Erro ao excluir mensagens.');
+            }
+        }
+        
+        // Atualizar status de conexão
+        function updateConnectionStatus(connected) {
+            isOnline = connected;
+            
+            if (connected) {
+                connectionStatus.className = 'connection-status connected';
+                connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Conectado ao servidor</span>';
+            } else {
+                connectionStatus.className = 'connection-status disconnected';
+                connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Desconectado do servidor</span>';
+            }
+        }
+        
+        // Configurar atualização em tempo real com Supabase
+        function setupRealtimeUpdates() {
+            // Inscrever-se para mudanças na tabela shared_texts
+            supabase
+                .channel('public:shared_texts')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'shared_texts' 
+                }, () => {
+                    // Atualizar a lista quando houver mudanças
+                    updateListDisplay();
+                })
+                .subscribe();
+        }
+        
+        // Adicionar event listeners
+        addButton.addEventListener('click', addMessage);
+        clearInputButton.addEventListener('click', () => {
+            textInput.value = '';
+            textInput.focus();
+        });
+        clearAllButton.addEventListener('click', deleteAllMessages);
+        refreshButton.addEventListener('click', updateListDisplay);
+        
+        // Permitir enviar pressionando Ctrl+Enter
+        textInput.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.key === 'Enter') {
+                addMessage();
+            }
+        });
+        
+        // Configurar verificação de conexão
+        async function checkConnection() {
+            try {
+                // Tentar uma consulta simples para verificar a conexão
+                const { error } = await supabase
+                    .from('shared_texts')
+                    .select('count', { count: 'exact', head: true });
+                
+                updateConnectionStatus(!error);
+            } catch (error) {
+                updateConnectionStatus(false);
+            }
+        }
+        
+        // Verificar conexão periodicamente
+        setInterval(checkConnection, 30000); // A cada 30 segundos
+        
+        // Inicializar a aplicação
+        async function initializeApp() {
+            // Verificar se as credenciais do Supabase foram configuradas
+            if (SUPABASE_URL.includes('SUA_URL_DO_SUPABASE') || SUPABASE_ANON_KEY.includes('SUA_CHAVE_ANON_PUBLICA')) {
+                textList.innerHTML = `
+                    <li class="empty-list-message">
+                        <i class="fas fa-exclamation-triangle"></i><br>
+                        <strong>Configuração necessária:</strong><br>
+                        Por favor, substitua SUPABASE_URL e SUPABASE_ANON_KEY no código com suas credenciais do Supabase.
+                    </li>
+                `;
+                itemCount.textContent = 'Configuração pendente';
+                return;
+            }
+            
+            // Carregar mensagens
+            await updateListDisplay();
+            
+            // Configurar atualizações em tempo real
+            setupRealtimeUpdates();
+            
+            // Verificar conexão inicial
+            await checkConnection();
+        }
+        
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
