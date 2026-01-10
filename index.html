@@ -495,9 +495,9 @@
         // Vamos usar JSONBin.io como backend gratuito e fácil de configurar
         
         // ID do seu bin no JSONBin.io (você vai criar um)
-        const JSONBIN_BIN_ID = '69620ca9ae596e708fd204c5';
+        const JSONBIN_BIN_ID = 69620ca9ae596e708fd204c5;
         // Sua chave de API do JSONBin.io
-        const JSONBIN_API_KEY = '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i';
+        const JSONBIN_API_KEY = $2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i;
         
         // URL da API do JSONBin.io
         const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
@@ -622,7 +622,7 @@
         async function loadMessages() {
             try {
                 // Se as credenciais não estiverem configuradas, use dados locais
-                if (JSONBIN_BIN_ID === '69620ca9ae596e708fd204c5' || JSONBIN_API_KEY === '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i') {
+                if (JSONBIN_BIN_ID === 69620ca9ae596e708fd204c5 || JSONBIN_API_KEY === $2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i) {
                     // Tentar carregar do localStorage como fallback
                     const savedMessages = localStorage.getItem('shared_messages');
                     if (savedMessages) {
@@ -678,7 +678,7 @@
         async function saveMessages() {
             try {
                 // Se as credenciais não estiverem configuradas, salve localmente
-                if (JSONBIN_BIN_ID === '69620ca9ae596e708fd204c5' || JSONBIN_API_KEY === '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i') {
+                if (JSONBIN_BIN_ID === 69620ca9ae596e708fd204c5 || JSONBIN_API_KEY === $2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i) {
                     localStorage.setItem('shared_messages', JSON.stringify(messages));
                     return;
                 }
