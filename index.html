@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de RPG do Resgate do Instantes</title>
+    <title>Plataforma de RPG - Dados D&D</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,15 +14,15 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #333;
+            background: linear-gradient(135deg, #0c0c14 0%, #1a1a2e 100%);
+            color: #e0e0ff;
             line-height: 1.6;
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
@@ -32,14 +32,28 @@
             padding: 20px;
             background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #533483;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #ffd93d, #6bcf7f, #4d96ff, #9d4edd);
         }
         
         h1 {
-            color: white;
+            color: #ffd93d;
             margin-bottom: 10px;
-            font-size: 2.5rem;
+            font-size: 2.8rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Cinzel', serif;
         }
         
         .description {
@@ -55,48 +69,77 @@
             gap: 30px;
         }
         
-        @media (min-width: 992px) {
+        @media (min-width: 1200px) {
             .app-container {
                 flex-direction: row;
             }
         }
         
-        .input-section {
+        .left-panel {
             flex: 1;
-            background-color: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .input-section {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             padding: 25px;
+            border: 2px solid #533483;
+        }
+        
+        .dice-section {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border: 2px solid #533483;
         }
         
         .list-section {
-            flex: 1;
-            background-color: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             padding: 25px;
+            border: 2px solid #533483;
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         h2 {
-            color: #0f3460;
+            color: #ffd93d;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #e94560;
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
         }
         
         .user-config {
-            background-color: #f8f9fa;
+            background: rgba(25, 25, 45, 0.7);
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
+            border: 1px solid #533483;
         }
         
         .user-config h3 {
-            color: #2c3e50;
+            color: #6bcf7f;
             margin-bottom: 15px;
             font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .input-group {
@@ -107,28 +150,33 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: #b8c1ec;
         }
         
         .input-group input,
-        .input-group textarea {
+        .input-group textarea,
+        .input-group select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e1e4e8;
+            background: rgba(20, 20, 35, 0.8);
+            border: 2px solid #533483;
             border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            color: #e0e0ff;
+            transition: all 0.3s;
         }
         
         .input-group input:focus,
-        .input-group textarea:focus {
+        .input-group textarea:focus,
+        .input-group select:focus {
             outline: none;
-            border-color: #0f3460;
+            border-color: #9d4edd;
+            box-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
         }
         
         textarea {
             resize: vertical;
-            min-height: 150px;
+            min-height: 120px;
         }
         
         .color-picker {
@@ -152,7 +200,8 @@
         }
         
         .color-option.selected {
-            border-color: #333;
+            border-color: #ffd93d;
+            box-shadow: 0 0 10px rgba(255, 217, 61, 0.7);
         }
         
         .buttons {
@@ -172,48 +221,53 @@
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
         
         .btn-primary {
-            background-color: #2ecc71;
+            background: linear-gradient(135deg, #6bcf7f 0%, #4CAF50 100%);
             color: white;
         }
         
         .btn-primary:hover {
-            background-color: #27ae60;
+            background: linear-gradient(135deg, #5bbf6f 0%, #3d8b40 100%);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 207, 127, 0.4);
         }
         
         .btn-secondary {
-            background-color: #3498db;
+            background: linear-gradient(135deg, #4d96ff 0%, #3498db 100%);
             color: white;
         }
         
         .btn-secondary:hover {
-            background-color: #2980b9;
+            background: linear-gradient(135deg, #3d86ef 0%, #2980b9 100%);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(77, 150, 255, 0.4);
         }
         
         .btn-danger {
-            background-color: #e74c3c;
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
             color: white;
         }
         
         .btn-danger:hover {
-            background-color: #c0392b;
+            background: linear-gradient(135deg, #ef5b5b 0%, #c0392b 100%);
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
         
-        .btn-game {
-            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+        .btn-dice {
+            background: linear-gradient(135deg, #9d4edd 0%, #6a3093 100%);
             color: white;
-            font-size: 1.1rem;
+            font-weight: bold;
         }
         
-        .btn-game:hover {
-            background: linear-gradient(135deg, #d1344e 0%, #ff5252 100%);
+        .btn-dice:hover {
+            background: linear-gradient(135deg, #8d3ecd 0%, #5a2083 100%);
             transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 20px rgba(157, 78, 221, 0.5);
         }
         
         .list-header {
@@ -230,20 +284,33 @@
         }
         
         .refresh-btn {
-            background: none;
-            border: none;
-            color: #3498db;
+            background: rgba(157, 78, 221, 0.2);
+            border: 1px solid #9d4edd;
+            color: #9d4edd;
             cursor: pointer;
             font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(157, 78, 221, 0.4);
+            transform: rotate(180deg);
+            transition: transform 0.5s;
         }
         
         .list-container {
             flex-grow: 1;
             overflow-y: auto;
-            max-height: 500px;
+            max-height: 600px;
             border-radius: 10px;
             padding: 15px;
-            background-color: #f8f9fa;
+            background: rgba(15, 15, 25, 0.7);
+            border: 1px solid #533483;
         }
         
         #textList {
@@ -251,13 +318,14 @@
         }
         
         .list-item {
-            background-color: white;
+            background: rgba(30, 30, 50, 0.8);
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             animation: fadeIn 0.5s ease;
             border-left: 5px solid;
+            border-top: 1px solid rgba(83, 52, 131, 0.3);
         }
         
         @keyframes fadeIn {
@@ -271,7 +339,7 @@
             align-items: center;
             margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 1px solid #f1f1f1;
+            border-bottom: 1px solid rgba(83, 52, 131, 0.5);
         }
         
         .user-info {
@@ -281,39 +349,58 @@
         }
         
         .user-avatar {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
         
         .user-name {
             font-weight: 600;
+            font-size: 1.1rem;
         }
         
         .message-time {
             font-size: 0.85rem;
-            color: #7f8c8d;
+            color: #8a8ac4;
         }
         
         .list-item-content {
             word-break: break-word;
             line-height: 1.5;
+            padding: 5px 0;
         }
         
         .dice-result {
             display: inline-block;
-            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            background: linear-gradient(135deg, #9d4edd 0%, #6a3093 100%);
             color: white;
-            padding: 5px 12px;
+            padding: 8px 15px;
             border-radius: 20px;
             font-weight: bold;
             margin: 5px 0;
+            font-size: 1.1rem;
+            box-shadow: 0 3px 10px rgba(157, 78, 221, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .critical-hit {
+            background: linear-gradient(135deg, #ffd93d 0%, #ff9a00 100%);
+            color: #000;
             animation: pulse 1s infinite;
+            box-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+        }
+        
+        .critical-fail {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c0392b 100%);
+            animation: pulse 1s infinite;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
         }
         
         @keyframes pulse {
@@ -330,23 +417,22 @@
         }
         
         .delete-btn {
-            background-color: #ffebee;
-            color: #e74c3c;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
             padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 0.9rem;
-            border: none;
+            border: 1px solid rgba(255, 107, 107, 0.5);
         }
         
         .delete-btn:hover {
-            background-color: #e74c3c;
-            color: white;
+            background: rgba(255, 107, 107, 0.4);
         }
         
         .empty-list-message {
             text-align: center;
-            color: #bdc3c7;
+            color: #8a8ac4;
             font-style: italic;
             padding: 40px 20px;
         }
@@ -354,7 +440,7 @@
         .loading {
             text-align: center;
             padding: 30px;
-            color: #7f8c8d;
+            color: #8a8ac4;
         }
         
         .connection-status {
@@ -368,124 +454,234 @@
         }
         
         .connected {
-            background-color: #d5f4e6;
-            color: #27ae60;
+            background: rgba(107, 207, 127, 0.2);
+            color: #6bcf7f;
+            border: 1px solid rgba(107, 207, 127, 0.5);
         }
         
         .disconnected {
-            background-color: #fadbd8;
-            color: #e74c3c;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.5);
         }
         
         .config-error {
-            background-color: #fef9e7;
-            color: #f39c12;
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
             padding: 15px;
             border-radius: 10px;
             margin-top: 20px;
-            border-left: 5px solid #f39c12;
+            border-left: 5px solid #ffd93d;
         }
         
-        .game-section {
-            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
-            color: white;
+        /* SEÇÃO DE DADOS */
+        .dice-collection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .dice-type {
+            background: rgba(25, 25, 45, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dice-type:hover {
+            transform: translateY(-5px);
+            border-color: #9d4edd;
+            box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+        }
+        
+        .dice-type.active {
+            border-color: #ffd93d;
+            background: rgba(255, 217, 61, 0.1);
+            box-shadow: 0 5px 15px rgba(255, 217, 61, 0.3);
+        }
+        
+        .dice-icon {
+            font-size: 2.5rem;
+            color: #9d4edd;
+        }
+        
+        .dice-type.active .dice-icon {
+            color: #ffd93d;
+        }
+        
+        .dice-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .dice-controls {
+            background: rgba(25, 25, 45, 0.7);
             padding: 20px;
-            border-radius: 15px;
-            margin-top: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #533483;
         }
         
-        .game-section h3 {
-            color: #e94560;
+        .dice-controls h4 {
+            color: #6bcf7f;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        .dice-container {
+        .dice-options {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex-wrap: wrap;
             gap: 15px;
-            margin: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .option-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .dice-display-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(15, 15, 25, 0.8);
+            border-radius: 15px;
+            border: 2px solid #9d4edd;
         }
         
         .dice-display {
-            width: 100px;
-            height: 100px;
-            background: white;
-            border-radius: 15px;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: bold;
-            color: #e94560;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s;
+            color: #ffd93d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin: 0 auto 20px;
+            border: 3px solid #9d4edd;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dice-display::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, transparent 30%, rgba(157, 78, 221, 0.1) 50%, transparent 70%);
+            animation: shine 3s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .dice-rolling {
-            animation: roll 0.5s infinite;
+            animation: roll 0.8s infinite;
         }
         
         @keyframes roll {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(90deg); }
-            50% { transform: rotate(180deg); }
-            75% { transform: rotate(270deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        
+        .dice-roll-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            margin-top: 10px;
         }
         
         .dice-history {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
+            background: rgba(15, 15, 25, 0.7);
+            padding: 15px;
             border-radius: 10px;
-            margin-top: 10px;
-            max-height: 100px;
-            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid #533483;
         }
         
         .dice-history h4 {
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: #b8c1ec;
+            color: #4d96ff;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .dice-history-list {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             flex-wrap: wrap;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 5px;
         }
         
         .dice-history-item {
-            background: rgba(233, 69, 96, 0.2);
-            color: #ff6b6b;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
+            background: rgba(157, 78, 221, 0.2);
+            color: #b8c1ec;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
             font-weight: bold;
+            border: 1px solid rgba(157, 78, 221, 0.5);
+        }
+        
+        .dice-history-item.critical {
+            background: rgba(255, 217, 61, 0.3);
+            color: #ffd93d;
+            border-color: rgba(255, 217, 61, 0.7);
+        }
+        
+        .dice-history-item.fail {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.7);
         }
         
         footer {
             margin-top: 40px;
             text-align: center;
-            color: #b8c1ec;
+            color: #8a8ac4;
             font-size: 0.9rem;
             padding: 20px;
+            border-top: 1px solid #533483;
         }
         
         .instructions {
-            background-color: #e8f4fc;
+            background: rgba(25, 25, 45, 0.7);
             padding: 15px;
             border-radius: 10px;
             margin-top: 25px;
+            border: 1px solid #533483;
         }
         
         .instructions h3 {
-            color: #2980b9;
+            color: #4d96ff;
             margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .instructions ul {
@@ -494,179 +690,312 @@
         
         .instructions li {
             margin-bottom: 5px;
+            color: #b8c1ec;
         }
         
         .list-container::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         
         .list-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: rgba(25, 25, 45, 0.5);
             border-radius: 10px;
         }
         
         .list-container::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
+            background: linear-gradient(135deg, #9d4edd 0%, #6a3093 100%);
             border-radius: 10px;
         }
         
         .list-container::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+            background: linear-gradient(135deg, #8d3ecd 0%, #5a2083 100%);
         }
+        
+        /* TAGS DE RPG */
+        .rpg-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        
+        .rpg-tag {
+            background: rgba(77, 150, 255, 0.2);
+            color: #4d96ff;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(77, 150, 255, 0.5);
+        }
+        
+        .rpg-tag.attack { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; border-color: rgba(255, 107, 107, 0.5); }
+        .rpg-tag.magic { background: rgba(157, 78, 221, 0.2); color: #9d4edd; border-color: rgba(157, 78, 221, 0.5); }
+        .rpg-tag.skill { background: rgba(107, 207, 127, 0.2); color: #6bcf7f; border-color: rgba(107, 207, 127, 0.5); }
+        .rpg-tag.dialog { background: rgba(255, 217, 61, 0.2); color: #ffd93d; border-color: rgba(255, 217, 61, 0.5); }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-dice-d10"></i> Jogo de RPG do Resgate dos Instantes</h1>
-            <p class="description">Compartilhe mensagens e role dados de 10 faces para seu game! Todos com o link podem participar.</p>
+            <h1><i class="fas fa-dragon"></i> Mesa de RPG - Dados D&D</h1>
+            <p class="description">Plataforma completa para jogos de RPG online com todos os dados de Dungeons & Dragons</p>
         </header>
         
         <div class="app-container">
-            <section class="input-section">
-                <h2><i class="fas fa-edit"></i> Escrever Mensagem</h2>
-                
-                <div class="user-config">
-                    <h3><i class="fas fa-user"></i> Seu Personagem</h3>
-                    <div class="input-group">
-                        <label for="userName">Nome do Personagem:</label>
-                        <input type="text" id="userName" placeholder="Digite o nome do seu personagem" maxlength="100">
-                    </div>
+            <div class="left-panel">
+                <section class="input-section">
+                    <h2><i class="fas fa-scroll"></i> Diário do Aventureiro</h2>
                     
-                    <div class="input-group">
-                        <label>Cor do personagem:</label>
-                        <div class="color-picker">
-                            <div class="color-option selected" style="background-color: #3498db;" data-color="#3498db"></div>
-                            <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71"></div>
-                            <div class="color-option" style="background-color: #9b59b6;" data-color="#9b59b6"></div>
-                            <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c"></div>
-                            <div class="color-option" style="background-color: #f39c12;" data-color="#f39c12"></div>
-                            <div class="color-option" style="background-color: #1abc9c;" data-color="#1abc9c"></div>
+                    <div class="user-config">
+                        <h3><i class="fas fa-helmet-battle"></i> Seu Personagem</h3>
+                        <div class="input-group">
+                            <label for="userName">Nome do Personagem:</label>
+                            <input type="text" id="userName" placeholder="Ex: Aragorn, Gandalf, Legolas..." maxlength="100">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="characterClass">Classe do Personagem (opcional):</label>
+                            <input type="text" id="characterClass" placeholder="Ex: Guerreiro, Mago, Ladino..." maxlength="50">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Cor do personagem:</label>
+                            <div class="color-picker">
+                                <div class="color-option selected" style="background-color: #9d4edd;" data-color="#9d4edd"></div>
+                                <div class="color-option" style="background-color: #4d96ff;" data-color="#4d96ff"></div>
+                                <div class="color-option" style="background-color: #6bcf7f;" data-color="#6bcf7f"></div>
+                                <div class="color-option" style="background-color: #ffd93d;" data-color="#ffd93d"></div>
+                                <div class="color-option" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
+                                <div class="color-option" style="background-color: #ff9a00;" data-color="#ff9a00"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="input-group">
-                    <label for="textInput">Sua Mensagem de Jogo:</label>
-                    <textarea id="textInput" placeholder="Descreva suas ações no jogo, fale com outros jogadores, ou role um dado..."></textarea>
-                </div>
-                
-                <div class="buttons">
-                    <button id="addButton" class="btn-primary">
-                        <i class="fas fa-paper-plane"></i> Enviar Mensagem
-                    </button>
-                    <button id="clearInputButton" class="btn-secondary">
-                        <i class="fas fa-eraser"></i> Limpar
-                    </button>
-                </div>
-                
-                <div class="game-section">
-                    <h3><i class="fas fa-dice-d10"></i> Dado de Jogo - D10</h3>
-                    <p>Role um dado de 10 faces para suas ações no jogo:</p>
                     
-                    <div class="dice-container">
-                        <div class="dice-display" id="diceDisplay">10</div>
-                        <button id="rollDiceButton" class="btn-game">
-                            <i class="fas fa-dice"></i> Rolar Dado D10
+                    <div class="input-group">
+                        <label for="actionType">Tipo de Ação:</label>
+                        <select id="actionType">
+                            <option value="">Selecione um tipo...</option>
+                            <option value="attack">⚔️ Ataque/Combate</option>
+                            <option value="magic">✨ Magia/Feitiço</option>
+                            <option value="skill">🎯 Habilidade/Teste</option>
+                            <option value="dialog">💬 Diálogo/RP</option>
+                            <option value="narrative">📖 Narrativa</option>
+                            <option value="other">🔧 Outro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="textInput">Descrição da Ação:</label>
+                        <textarea id="textInput" placeholder="Descreva sua ação no jogo, role dados automaticamente usando os botões abaixo..."></textarea>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button id="addButton" class="btn-primary">
+                            <i class="fas fa-feather-alt"></i> Registrar Ação
                         </button>
+                        <button id="clearInputButton" class="btn-secondary">
+                            <i class="fas fa-eraser"></i> Limpar
+                        </button>
+                    </div>
+                </section>
+                
+                <section class="dice-section">
+                    <h2><i class="fas fa-dice-d20"></i> Kit de Dados D&D</h2>
+                    
+                    <div class="dice-collection">
+                        <!-- Dados padrão D&D -->
+                        <div class="dice-type active" data-dice="4">
+                            <div class="dice-icon">d4</div>
+                            <div class="dice-label">D4</div>
+                            <small>Dano leve</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="6">
+                            <div class="dice-icon">d6</div>
+                            <div class="dice-label">D6</div>
+                            <small>Dano básico</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="8">
+                            <div class="dice-icon">d8</div>
+                            <div class="dice-label">D8</div>
+                            <small>Armas versáteis</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="10">
+                            <div class="dice-icon">d10</div>
+                            <div class="dice-label">D10</div>
+                            <small>Armas grandes</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="12">
+                            <div class="dice-icon">d12</div>
+                            <div class="dice-label">D12</div>
+                            <small>Armas enormes</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="20">
+                            <div class="dice-icon">d20</div>
+                            <div class="dice-label">D20</div>
+                            <small>Testes de habilidade</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="100">
+                            <div class="dice-icon">d%</div>
+                            <div class="dice-label">D100</div>
+                            <small>Porcentagem</small>
+                        </div>
+                    </div>
+                    
+                    <div class="dice-controls">
+                        <h4><i class="fas fa-sliders-h"></i> Configurações da Rolagem</h4>
+                        
+                        <div class="dice-options">
+                            <div class="option-group">
+                                <label for="diceQuantity">Quantidade de Dados:</label>
+                                <select id="diceQuantity">
+                                    <option value="1">1 dado</option>
+                                    <option value="2" selected>2 dados</option>
+                                    <option value="3">3 dados</option>
+                                    <option value="4">4 dados</option>
+                                    <option value="5">5 dados</option>
+                                    <option value="6">6 dados</option>
+                                    <option value="7">7 dados</option>
+                                    <option value="8">8 dados</option>
+                                    <option value="9">9 dados</option>
+                                    <option value="10">10 dados</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="modifier">Modificador (+/-):</label>
+                                <select id="modifier">
+                                    <option value="0">Nenhum</option>
+                                    <option value="1">+1</option>
+                                    <option value="2">+2</option>
+                                    <option value="3">+3</option>
+                                    <option value="4">+4</option>
+                                    <option value="5">+5</option>
+                                    <option value="-1">-1</option>
+                                    <option value="-2">-2</option>
+                                    <option value="-3">-3</option>
+                                    <option value="-4">-4</option>
+                                    <option value="-5">-5</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="rollType">Tipo de Rolagem:</label>
+                                <select id="rollType">
+                                    <option value="normal">Normal</option>
+                                    <option value="advantage">Vantagem (2d20 maior)</option>
+                                    <option value="disadvantage">Desvantagem (2d20 menor)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="dice-display-container">
+                            <div class="dice-display" id="diceDisplay">20</div>
+                            <button id="rollDiceButton" class="btn-dice dice-roll-btn">
+                                <i class="fas fa-dice-d20"></i> ROLAR DADOS
+                            </button>
+                            <p id="diceResultText" style="margin-top: 10px; color: #b8c1ec;">Clique para rolar os dados selecionados</p>
+                        </div>
                         
                         <div class="dice-history">
-                            <h4>Últimos resultados:</h4>
+                            <h4><i class="fas fa-history"></i> Histórico de Rolagens</h4>
                             <div class="dice-history-list" id="diceHistory">
                                 <!-- Histórico de dados aparecerá aqui -->
                             </div>
                         </div>
                     </div>
-                    
-                    <p style="margin-top: 10px; font-size: 0.9rem; color: #b8c1ec;">
-                        <i class="fas fa-info-circle"></i> O resultado será automaticamente enviado como mensagem.
-                    </p>
-                </div>
-                
-                <div id="connectionStatus" class="connection-status connected">
-                    <i class="fas fa-wifi"></i>
-                    <span>Conectando ao servidor...</span>
-                </div>
-                
-                <div id="configStatus" class="config-error" style="display: none;">
-                    <p><strong>Configuração detectada!</strong> Seu JSONBin.io está configurado corretamente.</p>
-                </div>
-            </section>
+                </section>
+            </div>
             
-            <section class="list-section">
-                <div class="list-header">
-                    <h2><i class="fas fa-scroll"></i> Registro do Jogo</h2>
-                    <div class="list-info">
-                        <span id="itemCount">Carregando...</span>
-                        <button id="refreshButton" class="refresh-btn" title="Atualizar mensagens">
-                            <i class="fas fa-sync-alt"></i>
+            <div class="right-panel">
+                <section class="list-section">
+                    <div class="list-header">
+                        <h2><i class="fas fa-book-dead"></i> Registro da Campanha</h2>
+                        <div class="list-info">
+                            <span id="itemCount">Carregando...</span>
+                            <button id="refreshButton" class="refresh-btn" title="Atualizar registro">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="list-container">
+                        <ul id="textList">
+                            <li class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando registro da campanha...
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button id="clearAllButton" class="btn-danger">
+                            <i class="fas fa-skull-crossbones"></i> Limpar Campanha
+                        </button>
+                        <button id="quickD20Button" class="btn-dice">
+                            <i class="fas fa-bolt"></i> Rolar D20 Rápido
                         </button>
                     </div>
-                </div>
+                </section>
                 
-                <div class="list-container">
-                    <ul id="textList">
-                        <li class="loading">
-                            <i class="fas fa-spinner fa-spin"></i> Carregando registro do jogo...
-                        </li>
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> Como Jogar:</h3>
+                    <ul>
+                        <li><strong>1.</strong> Defina seu personagem e classe</li>
+                        <li><strong>2.</strong> Selecione o tipo de dado que precisa</li>
+                        <li><strong>3.</strong> Configure quantidade e modificadores</li>
+                        <li><strong>4.</strong> Descreva sua ação e role os dados</li>
+                        <li><strong>5.</strong> Todos os jogadores verão os resultados em tempo real</li>
+                        <li><strong>Dica:</strong> Use D20 para testes de habilidade e D6/D8 para dano</li>
                     </ul>
                 </div>
-                
-                <div class="buttons">
-                    <button id="clearAllButton" class="btn-danger">
-                        <i class="fas fa-trash-alt"></i> Limpar Registro
-                    </button>
-                    <button id="rollDiceFromListButton" class="btn-game">
-                        <i class="fas fa-dice-d10"></i> Rolar Dado
-                    </button>
-                </div>
-            </section>
+            </div>
         </div>
         
         <footer>
-            <p>Chat de Jogo com Dado D10 | Plataforma compartilhada para RPG e games online</p>
-            <p>Usando JSONBin.io como backend | Todos os jogadores compartilham o mesmo registro</p>
+            <p>Plataforma de RPG D&D Online | Sistema completo de dados e registro compartilhado</p>
+            <p>Todos os jogadores compartilham o mesmo mundo - A aventura espera por vocês!</p>
         </footer>
     </div>
 
     <script>
         // =================== CONFIGURAÇÃO DO JSONBIN.IO ===================
-        // SUAS CREDENCIAIS DO JSONBIN.IO
         const JSONBIN_BIN_ID = '69620ca9ae596e708fd204c5';
         const JSONBIN_API_KEY = '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i';
-        
-        // URL da API do JSONBin.io
         const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
         
         // Referências aos elementos HTML
         const textInput = document.getElementById('textInput');
         const userNameInput = document.getElementById('userName');
+        const characterClassInput = document.getElementById('characterClass');
+        const actionTypeInput = document.getElementById('actionType');
         const addButton = document.getElementById('addButton');
         const clearInputButton = document.getElementById('clearInputButton');
         const clearAllButton = document.getElementById('clearAllButton');
         const refreshButton = document.getElementById('refreshButton');
         const rollDiceButton = document.getElementById('rollDiceButton');
-        const rollDiceFromListButton = document.getElementById('rollDiceFromListButton');
+        const quickD20Button = document.getElementById('quickD20Button');
         const textList = document.getElementById('textList');
         const itemCount = document.getElementById('itemCount');
-        const connectionStatus = document.getElementById('connectionStatus');
-        const configStatus = document.getElementById('configStatus');
         const diceDisplay = document.getElementById('diceDisplay');
+        const diceResultText = document.getElementById('diceResultText');
         const diceHistory = document.getElementById('diceHistory');
+        const diceQuantity = document.getElementById('diceQuantity');
+        const modifier = document.getElementById('modifier');
+        const rollType = document.getElementById('rollType');
         const colorOptions = document.querySelectorAll('.color-option');
+        const diceTypes = document.querySelectorAll('.dice-type');
         
         // Configurações do usuário
-        let userColor = '#3498db';
+        let userColor = '#9d4edd';
         let messages = [];
         let diceResults = [];
-        
-        // Mostrar que as credenciais estão configuradas
-        configStatus.style.display = 'block';
-        configStatus.innerHTML = `
-            <p><strong><i class="fas fa-check-circle"></i> JSONBin.io configurado!</strong></p>
-            <p>Sistema de jogo online ativo. Compartilhe o link com seus jogadores!</p>
-        `;
-        configStatus.className = 'connection-status connected';
+        let selectedDice = 20; // D20 padrão
         
         // Selecionar cor do usuário
         colorOptions.forEach(option => {
@@ -674,6 +1003,15 @@
                 colorOptions.forEach(opt => opt.classList.remove('selected'));
                 option.classList.add('selected');
                 userColor = option.getAttribute('data-color');
+            });
+        });
+        
+        // Selecionar tipo de dado
+        diceTypes.forEach(dice => {
+            dice.addEventListener('click', () => {
+                diceTypes.forEach(d => d.classList.remove('active'));
+                dice.classList.add('active');
+                selectedDice = parseInt(dice.getAttribute('data-dice'));
             });
         });
         
@@ -688,39 +1026,222 @@
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
         
-        // Função para rolar um dado de 10 faces (D10)
-        function rollD10() {
-            return Math.floor(Math.random() * 10) + 1; // 1 a 10
+        // Função para rolar um dado específico
+        function rollDice(sides) {
+            return Math.floor(Math.random() * sides) + 1;
+        }
+        
+        // Função para rolar dados com todas as opções
+        async function rollDiceWithOptions() {
+            const userName = userNameInput.value.trim() || 'Aventureiro';
+            const charClass = characterClassInput.value.trim();
+            const actionType = actionTypeInput.value;
+            const diceCount = parseInt(diceQuantity.value);
+            const mod = parseInt(modifier.value);
+            const rType = rollType.value;
+            
+            // Animação de rolagem
+            diceDisplay.classList.add('dice-rolling');
+            diceDisplay.textContent = '...';
+            diceResultText.textContent = 'Rolando dados...';
+            
+            // Esperar para efeito visual
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            let results = [];
+            let total = 0;
+            let isCritical = false;
+            let isCriticalFail = false;
+            
+            // Rolagem normal para dados que não sejam D20
+            if (selectedDice !== 20 || rType === 'normal') {
+                for (let i = 0; i < diceCount; i++) {
+                    const result = rollDice(selectedDice);
+                    results.push(result);
+                    total += result;
+                }
+            } 
+            // Vantagem/Desvantagem para D20
+            else if (selectedDice === 20 && (rType === 'advantage' || rType === 'disadvantage')) {
+                const roll1 = rollDice(20);
+                const roll2 = rollDice(20);
+                
+                if (rType === 'advantage') {
+                    total = Math.max(roll1, roll2);
+                    results = [roll1, roll2];
+                } else {
+                    total = Math.min(roll1, roll2);
+                    results = [roll1, roll2];
+                }
+            }
+            
+            // Aplicar modificador
+            total += mod;
+            
+            // Verificar críticos (apenas para D20)
+            if (selectedDice === 20) {
+                const naturalRoll = results.length > 0 ? results[0] : 0;
+                if (naturalRoll === 20) {
+                    isCritical = true;
+                } else if (naturalRoll === 1) {
+                    isCriticalFail = true;
+                }
+            }
+            
+            // Atualizar display
+            diceDisplay.classList.remove('dice-rolling');
+            diceDisplay.textContent = total;
+            
+            // Aplicar efeitos visuais para críticos
+            if (isCritical) {
+                diceDisplay.className = 'dice-display';
+                void diceDisplay.offsetWidth; // Trigger reflow
+                diceDisplay.classList.add('critical-hit');
+                diceDisplay.textContent = '20!';
+            } else if (isCriticalFail) {
+                diceDisplay.className = 'dice-display';
+                void diceDisplay.offsetWidth;
+                diceDisplay.classList.add('critical-fail');
+                diceDisplay.textContent = '1!';
+            }
+            
+            // Criar texto do resultado
+            let resultText = `Rolou ${diceCount}d${selectedDice}`;
+            if (mod !== 0) {
+                resultText += mod > 0 ? ` +${mod}` : ` ${mod}`;
+            }
+            
+            if (selectedDice === 20 && rType !== 'normal') {
+                resultText += ` (${rType === 'advantage' ? 'Vantagem' : 'Desvantagem'})`;
+            }
+            
+            resultText += `: [${results.join(', ')}]`;
+            if (mod !== 0) {
+                resultText += ` + ${mod} = ${total}`;
+            } else if (results.length > 1) {
+                resultText += ` = ${total}`;
+            }
+            
+            if (isCritical) resultText += ' 🎉 CRÍTICO!';
+            if (isCriticalFail) resultText += ' 💀 FALHA CRÍTICA!';
+            
+            diceResultText.textContent = resultText;
+            
+            // Adicionar ao histórico
+            const historyItem = {
+                total: total,
+                diceType: selectedDice,
+                results: results,
+                modifier: mod,
+                rollType: rType,
+                isCritical: isCritical,
+                isCriticalFail: isCriticalFail,
+                timestamp: new Date().toISOString()
+            };
+            
+            diceResults.push(historyItem);
+            updateDiceHistory();
+            
+            // Criar mensagem para o chat
+            const diceMessage = {
+                id: generateId(),
+                content: textInput.value.trim() || resultText,
+                user_name: userName,
+                character_class: charClass,
+                user_color: userColor,
+                action_type: actionType,
+                created_at: new Date().toISOString(),
+                is_dice_roll: true,
+                dice_type: `d${selectedDice}`,
+                dice_count: diceCount,
+                dice_results: results,
+                dice_total: total,
+                dice_modifier: mod,
+                roll_type: rType,
+                is_critical: isCritical,
+                is_critical_fail: isCriticalFail
+            };
+            
+            // Se não houver texto na descrição, usar o resultado como descrição
+            if (!textInput.value.trim()) {
+                diceMessage.content = resultText;
+            }
+            
+            // Adicionar à lista local
+            messages.push(diceMessage);
+            
+            // Atualizar a exibição
+            updateListDisplay();
+            
+            // Salvar no servidor
+            await saveMessages();
+            
+            // Efeito visual
+            diceDisplay.style.transform = 'scale(1.2)';
+            diceDisplay.style.boxShadow = '0 0 30px rgba(157, 78, 221, 0.8)';
+            
+            setTimeout(() => {
+                diceDisplay.style.transform = 'scale(1)';
+                diceDisplay.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+            }, 500);
+            
+            return { total, results, isCritical, isCriticalFail };
+        }
+        
+        // Atualizar o histórico de dados
+        function updateDiceHistory() {
+            diceHistory.innerHTML = '';
+            
+            // Mostrar apenas os últimos 15 resultados
+            const recentResults = diceResults.slice(-15);
+            
+            recentResults.forEach(result => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'dice-history-item';
+                
+                if (result.isCritical) {
+                    historyItem.classList.add('critical');
+                } else if (result.isCriticalFail) {
+                    historyItem.classList.add('fail');
+                }
+                
+                let text = `${result.diceType === 100 ? 'd%' : 'd' + result.diceType}: ${result.total}`;
+                if (result.isCritical) text = '🎯 ' + text;
+                if (result.isCriticalFail) text = '💀 ' + text;
+                
+                historyItem.textContent = text;
+                historyItem.title = `${result.results.join(', ')} ${result.modifier > 0 ? '+' + result.modifier : result.modifier < 0 ? result.modifier : ''}`;
+                
+                diceHistory.appendChild(historyItem);
+            });
+            
+            // Rolagem automática para o final
+            diceHistory.scrollLeft = diceHistory.scrollWidth;
         }
         
         // Atualizar a exibição da lista
         function updateListDisplay() {
-            // Limpar a lista
             textList.innerHTML = '';
             
-            // Atualizar contador
             const count = messages.length;
             itemCount.textContent = `${count} ${count === 1 ? 'registro' : 'registros'}`;
             
-            // Se não houver mensagens, mostrar mensagem
             if (messages.length === 0) {
                 const emptyMessage = document.createElement('li');
                 emptyMessage.className = 'empty-list-message';
-                emptyMessage.innerHTML = '<i class="fas fa-dragon"></i><br>O jogo ainda não começou! Role o primeiro dado ou escreva uma ação.';
+                emptyMessage.innerHTML = '<i class="fas fa-dragon"></i><br>A aventura ainda não começou! Role o primeiro dado para começar sua jornada.';
                 textList.appendChild(emptyMessage);
                 return;
             }
             
-            // Ordenar mensagens por data (mais recentes primeiro)
             const sortedMessages = [...messages].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             
-            // Adicionar cada mensagem à lista
             sortedMessages.forEach((message) => {
                 const listItem = document.createElement('li');
                 listItem.className = 'list-item';
-                listItem.style.borderLeftColor = message.user_color || '#3498db';
+                listItem.style.borderLeftColor = message.user_color || '#9d4edd';
                 
-                // Cabeçalho com informações do usuário
+                // Cabeçalho
                 const itemHeader = document.createElement('div');
                 itemHeader.className = 'list-item-header';
                 
@@ -729,13 +1250,18 @@
                 
                 const userAvatar = document.createElement('div');
                 userAvatar.className = 'user-avatar';
-                userAvatar.style.backgroundColor = message.user_color || '#3498db';
-                userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'J';
+                userAvatar.style.backgroundColor = message.user_color || '#9d4edd';
+                userAvatar.textContent = message.user_name ? message.user_name.charAt(0).toUpperCase() : 'A';
                 
                 const userName = document.createElement('div');
                 userName.className = 'user-name';
-                userName.style.color = message.user_color || '#3498db';
-                userName.textContent = message.user_name || 'Jogador';
+                userName.style.color = message.user_color || '#9d4edd';
+                
+                let nameText = message.user_name || 'Aventureiro';
+                if (message.character_class) {
+                    nameText += ` (${message.character_class})`;
+                }
+                userName.textContent = nameText;
                 
                 const messageTime = document.createElement('div');
                 messageTime.className = 'message-time';
@@ -747,29 +1273,80 @@
                 itemHeader.appendChild(userInfo);
                 itemHeader.appendChild(messageTime);
                 
+                // Tags de ação
+                let actionTag = '';
+                if (message.action_type) {
+                    const tagMap = {
+                        'attack': '⚔️ Ataque',
+                        'magic': '✨ Magia',
+                        'skill': '🎯 Habilidade',
+                        'dialog': '💬 Diálogo',
+                        'narrative': '📖 Narrativa',
+                        'other': '🔧 Outro'
+                    };
+                    
+                    if (tagMap[message.action_type]) {
+                        actionTag = `<span class="rpg-tag ${message.action_type}">${tagMap[message.action_type]}</span>`;
+                    }
+                }
+                
                 // Conteúdo da mensagem
                 const itemContent = document.createElement('div');
                 itemContent.className = 'list-item-content';
                 
-                // Verificar se é uma mensagem de dado
                 if (message.is_dice_roll) {
-                    const diceValue = message.dice_value || 1;
-                    const diceType = message.dice_type || 'D10';
-                    
-                    itemContent.innerHTML = `
-                        <strong>🎲 Rolou ${diceType}:</strong> ${message.content || ''}
-                        <br>
-                        <span class="dice-result">Resultado: <strong>${diceValue}</strong>/${diceType.replace('D', '')}</span>
+                    let diceHtml = `
+                        <div style="margin-bottom: 10px;">
+                            ${actionTag}
+                            <strong>🎲 Rolou ${message.dice_count || 1}${message.dice_type}:</strong> ${message.content}
+                        </div>
                     `;
+                    
+                    if (message.dice_results) {
+                        const results = message.dice_results;
+                        const total = message.dice_total;
+                        const modifier = message.dice_modifier || 0;
+                        
+                        let resultClass = 'dice-result';
+                        if (message.is_critical) resultClass += ' critical-hit';
+                        if (message.is_critical_fail) resultClass += ' critical-fail';
+                        
+                        let resultText = `Resultado: <strong>${total}</strong>`;
+                        if (results.length > 1 || modifier !== 0) {
+                            resultText = `[${results.join(', ')}]`;
+                            if (modifier > 0) {
+                                resultText += ` + ${modifier} = <strong>${total}</strong>`;
+                            } else if (modifier < 0) {
+                                resultText += ` ${modifier} = <strong>${total}</strong>`;
+                            } else {
+                                resultText += ` = <strong>${total}</strong>`;
+                            }
+                        }
+                        
+                        if (message.roll_type === 'advantage') {
+                            resultText += ' (Vantagem)';
+                        } else if (message.roll_type === 'disadvantage') {
+                            resultText += ' (Desvantagem)';
+                        }
+                        
+                        if (message.is_critical) resultText += ' 🎉 CRÍTICO!';
+                        if (message.is_critical_fail) resultText += ' 💀 FALHA CRÍTICA!';
+                        
+                        diceHtml += `<div class="${resultClass}">${resultText}</div>`;
+                    }
+                    
+                    itemContent.innerHTML = diceHtml;
                 } else {
-                    itemContent.textContent = message.content;
+                    itemContent.innerHTML = `
+                        ${actionTag}
+                        ${message.content}
+                    `;
                 }
                 
                 // Botões de ação
                 const itemActions = document.createElement('div');
                 itemActions.className = 'list-item-actions';
                 
-                // Botão de excluir
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'delete-btn';
                 deleteButton.innerHTML = '<i class="fas fa-trash"></i> Excluir';
@@ -779,7 +1356,7 @@
                 
                 itemActions.appendChild(deleteButton);
                 
-                // Montar o item da lista
+                // Montar item
                 listItem.appendChild(itemHeader);
                 listItem.appendChild(itemContent);
                 listItem.appendChild(itemActions);
@@ -787,89 +1364,13 @@
                 textList.appendChild(listItem);
             });
             
-            // Rolagem automática para o topo (mensagens mais recentes)
             const listContainer = document.querySelector('.list-container');
             listContainer.scrollTop = 0;
-        }
-        
-        // Atualizar o histórico de dados
-        function updateDiceHistory() {
-            diceHistory.innerHTML = '';
-            
-            // Mostrar apenas os últimos 10 resultados
-            const recentResults = diceResults.slice(-10);
-            
-            recentResults.forEach(result => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'dice-history-item';
-                historyItem.textContent = result;
-                diceHistory.appendChild(historyItem);
-            });
-            
-            // Rolagem automática para o final
-            diceHistory.scrollLeft = diceHistory.scrollWidth;
-        }
-        
-        // Função para rolar o dado e enviar como mensagem
-        async function rollAndSendDice() {
-            const userName = userNameInput.value.trim() || 'Jogador';
-            
-            // Animação de rolagem
-            diceDisplay.classList.add('dice-rolling');
-            diceDisplay.textContent = '...';
-            
-            // Esperar um pouco para efeito visual
-            await new Promise(resolve => setTimeout(resolve, 800));
-            
-            // Rolagem real
-            const diceResult = rollD10();
-            
-            // Atualizar display
-            diceDisplay.classList.remove('dice-rolling');
-            diceDisplay.textContent = diceResult;
-            
-            // Adicionar ao histórico
-            diceResults.push(diceResult);
-            updateDiceHistory();
-            
-            // Criar mensagem do dado
-            const diceMessage = {
-                id: generateId(),
-                content: `🎲 Rolou um D10`,
-                user_name: userName,
-                user_color: userColor,
-                created_at: new Date().toISOString(),
-                is_dice_roll: true,
-                dice_value: diceResult,
-                dice_type: 'D10'
-            };
-            
-            // Adicionar à lista local
-            messages.push(diceMessage);
-            
-            // Atualizar a exibição
-            updateListDisplay();
-            
-            // Salvar no servidor
-            await saveMessages();
-            
-            // Efeito visual no dado
-            diceDisplay.style.transform = 'scale(1.2)';
-            diceDisplay.style.boxShadow = '0 0 20px rgba(233, 69, 96, 0.7)';
-            
-            setTimeout(() => {
-                diceDisplay.style.transform = 'scale(1)';
-                diceDisplay.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
-            }, 300);
-            
-            return diceResult;
         }
         
         // Carregar mensagens do servidor
         async function loadMessages() {
             try {
-                connectionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Conectando ao servidor...</span>';
-                
                 const response = await fetch(JSONBIN_URL + '/latest', {
                     headers: {
                         'X-Master-Key': JSONBIN_API_KEY,
@@ -877,62 +1378,51 @@
                     }
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 
                 const data = await response.json();
                 
-                // Verificar se a estrutura de dados está correta
                 if (data.record && Array.isArray(data.record.messages)) {
                     messages = data.record.messages;
                 } else if (Array.isArray(data.record)) {
-                    // Formato alternativo: array direto
                     messages = data.record;
                 } else {
-                    // Se não houver dados, iniciar array vazio
                     messages = [];
                 }
                 
-                // Extrair resultados de dados do histórico
+                // Extrair resultados de dados
                 diceResults = [];
                 messages.forEach(msg => {
-                    if (msg.is_dice_roll && msg.dice_value) {
-                        diceResults.push(msg.dice_value);
+                    if (msg.is_dice_roll && msg.dice_total) {
+                        diceResults.push({
+                            total: msg.dice_total,
+                            diceType: parseInt(msg.dice_type.replace('d', '')),
+                            results: msg.dice_results || [msg.dice_total],
+                            modifier: msg.dice_modifier || 0,
+                            rollType: msg.roll_type || 'normal',
+                            isCritical: msg.is_critical || false,
+                            isCriticalFail: msg.is_critical_fail || false,
+                            timestamp: msg.created_at
+                        });
                     }
                 });
                 
                 updateListDisplay();
                 updateDiceHistory();
-                connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> <span>Conectado ao servidor</span>';
-                connectionStatus.className = 'connection-status connected';
                 
                 return true;
                 
             } catch (error) {
                 console.error('Erro ao carregar mensagens:', error);
                 
-                // Tentar carregar do localStorage como fallback
-                const savedMessages = localStorage.getItem('shared_messages');
+                const savedMessages = localStorage.getItem('rpg_messages');
                 if (savedMessages) {
                     try {
                         messages = JSON.parse(savedMessages);
                         updateListDisplay();
-                        connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Modo offline - Usando dados locais</span>';
-                        connectionStatus.className = 'connection-status disconnected';
                     } catch (parseError) {
                         console.error('Erro ao analisar dados locais:', parseError);
                     }
-                } else {
-                    textList.innerHTML = `
-                        <li class="empty-list-message">
-                            <i class="fas fa-exclamation-triangle"></i><br>
-                            Erro ao carregar mensagens.<br>
-                            <small>Tentando novamente em 5 segundos...</small>
-                        </li>
-                    `;
-                    connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Erro de conexão com o servidor</span>';
-                    connectionStatus.className = 'connection-status disconnected';
                 }
                 
                 return false;
@@ -942,8 +1432,6 @@
         // Salvar mensagens no servidor
         async function saveMessages() {
             try {
-                connectionStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Salvando no servidor...</span>';
-                
                 const response = await fetch(JSONBIN_URL, {
                     method: 'PUT',
                     headers: {
@@ -954,27 +1442,15 @@
                     body: JSON.stringify({ messages: messages })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
                 
-                // Também salvar localmente como backup
-                localStorage.setItem('shared_messages', JSON.stringify(messages));
-                
-                connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> <span>Conectado ao servidor</span>';
-                connectionStatus.className = 'connection-status connected';
+                localStorage.setItem('rpg_messages', JSON.stringify(messages));
                 
                 return true;
                 
             } catch (error) {
                 console.error('Erro ao salvar mensagens:', error);
-                
-                // Salvar localmente como fallback
-                localStorage.setItem('shared_messages', JSON.stringify(messages));
-                
-                connectionStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> <span>Erro ao salvar, usando armazenamento local</span>';
-                connectionStatus.className = 'connection-status disconnected';
-                
+                localStorage.setItem('rpg_messages', JSON.stringify(messages));
                 return false;
             }
         }
@@ -982,100 +1458,86 @@
         // Adicionar uma nova mensagem
         async function addMessage() {
             const text = textInput.value.trim();
-            const userName = userNameInput.value.trim() || 'Jogador';
+            const userName = userNameInput.value.trim() || 'Aventureiro';
+            const charClass = characterClassInput.value.trim();
+            const actionType = actionTypeInput.value;
             
             if (text === '') {
-                alert('Por favor, digite uma mensagem antes de enviar.');
+                alert('Por favor, descreva sua ação antes de enviar.');
                 textInput.focus();
                 return;
             }
             
-            if (text.length > 1000) {
-                alert('A mensagem é muito longa. Por favor, limite a 1000 caracteres.');
-                return;
-            }
-            
-            // Desabilitar botão durante o envio
             addButton.disabled = true;
-            addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
             
-            // Criar nova mensagem
             const newMessage = {
                 id: generateId(),
                 content: text,
                 user_name: userName,
+                character_class: charClass,
                 user_color: userColor,
+                action_type: actionType,
                 created_at: new Date().toISOString(),
                 is_dice_roll: false
             };
             
-            // Adicionar à lista local
             messages.push(newMessage);
-            
-            // Atualizar a exibição imediatamente
             updateListDisplay();
             
-            // Salvar no servidor
             const success = await saveMessages();
             
-            // Reabilitar botão
             addButton.disabled = false;
-            addButton.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensagem';
+            addButton.innerHTML = '<i class="fas fa-feather-alt"></i> Registrar Ação';
             
             if (success) {
-                // Limpar o campo de entrada
                 textInput.value = '';
                 textInput.focus();
-            } else {
-                alert('Mensagem salva localmente, mas houve um erro ao salvar no servidor.');
             }
         }
         
         // Excluir uma mensagem
         async function deleteMessage(messageId) {
-            if (!confirm('Tem certeza que deseja excluir esta mensagem?')) {
-                return;
-            }
+            if (!confirm('Tem certeza que deseja excluir este registro?')) return;
             
-            // Remover da lista local
-            const originalLength = messages.length;
             messages = messages.filter(msg => msg.id !== messageId);
-            
-            if (messages.length === originalLength) {
-                alert('Mensagem não encontrada.');
-                return;
-            }
-            
-            // Atualizar a exibição
             updateListDisplay();
-            
-            // Salvar no servidor
             await saveMessages();
         }
         
         // Excluir todas as mensagens
         async function deleteAllMessages() {
             if (messages.length === 0) {
-                alert('Não há mensagens para excluir.');
+                alert('Não há registros para excluir.');
                 return;
             }
             
-            if (!confirm(`Tem certeza que deseja excluir TODAS as ${messages.length} mensagens? Esta ação não pode ser desfeita.`)) {
-                return;
-            }
+            if (!confirm(`Tem certeza que deseja excluir TODOS os ${messages.length} registros da campanha?`)) return;
             
-            // Limpar a lista local
             messages = [];
             diceResults = [];
             
-            // Atualizar a exibição
             updateListDisplay();
             updateDiceHistory();
-            
-            // Salvar no servidor
             await saveMessages();
             
-            alert('Todas as mensagens foram excluídas.');
+            alert('Campanha reiniciada!');
+        }
+        
+        // Rolar D20 rápido
+        async function rollQuickD20() {
+            // Selecionar D20
+            diceTypes.forEach(d => d.classList.remove('active'));
+            document.querySelector('.dice-type[data-dice="20"]').classList.add('active');
+            selectedDice = 20;
+            
+            // Configurar para rolagem única
+            diceQuantity.value = '1';
+            modifier.value = '0';
+            rollType.value = 'normal';
+            
+            // Rolar
+            await rollDiceWithOptions();
         }
         
         // Adicionar event listeners
@@ -1093,10 +1555,9 @@
                 }, 500);
             });
         });
-        rollDiceButton.addEventListener('click', rollAndSendDice);
-        rollDiceFromListButton.addEventListener('click', rollAndSendDice);
+        rollDiceButton.addEventListener('click', rollDiceWithOptions);
+        quickD20Button.addEventListener('click', rollQuickD20);
         
-        // Permitir enviar pressionando Ctrl+Enter
         textInput.addEventListener('keydown', (event) => {
             if (event.ctrlKey && event.key === 'Enter') {
                 addMessage();
@@ -1105,16 +1566,16 @@
         
         // Inicializar a aplicação
         async function initializeApp() {
-            // Carregar mensagens
             await loadMessages();
             
-            // Adicionar mensagem de boas-vindas se estiver vazio
             if (messages.length === 0) {
                 const welcomeMessage = {
                     id: 'welcome',
-                    content: 'Bem-vindo ao chat de jogo! Use o botão "Rolar Dado D10" para começar suas ações no jogo.',
+                    content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
                     user_name: 'Mestre do Jogo',
-                    user_color: '#9b59b6',
+                    character_class: 'Mestre',
+                    user_color: '#ffd93d',
+                    action_type: 'narrative',
                     created_at: new Date().toISOString(),
                     is_dice_roll: false
                 };
@@ -1123,11 +1584,9 @@
                 updateListDisplay();
             }
             
-            // Configurar atualização automática a cada 10 segundos
             setInterval(loadMessages, 10000);
         }
         
-        // Inicializar quando a página carregar
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
