@@ -105,6 +105,14 @@
             border: 2px solid #533483;
         }
         
+        .initiative-section {
+            background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border: 2px solid #533483;
+        }
+        
         .list-section {
             background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
             border-radius: 15px;
@@ -123,6 +131,15 @@
             border-bottom: 2px solid #e94560;
             font-family: 'Cinzel', serif;
             font-size: 1.8rem;
+        }
+        
+        h3 {
+            color: #6bcf7f;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .user-config {
@@ -268,6 +285,18 @@
             background: linear-gradient(135deg, #8d3ecd 0%, #5a2083 100%);
             transform: translateY(-2px) scale(1.05);
             box-shadow: 0 5px 20px rgba(157, 78, 221, 0.5);
+        }
+        
+        .btn-initiative {
+            background: linear-gradient(135deg, #ff9a00 0%, #ff6b6b 100%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .btn-initiative:hover {
+            background: linear-gradient(135deg, #ef8a00 0%, #ef5b5b 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 154, 0, 0.4);
         }
         
         .list-header {
@@ -441,37 +470,6 @@
             text-align: center;
             padding: 30px;
             color: #8a8ac4;
-        }
-        
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-        
-        .connected {
-            background: rgba(107, 207, 127, 0.2);
-            color: #6bcf7f;
-            border: 1px solid rgba(107, 207, 127, 0.5);
-        }
-        
-        .disconnected {
-            background: rgba(255, 107, 107, 0.2);
-            color: #ff6b6b;
-            border: 1px solid rgba(255, 107, 107, 0.5);
-        }
-        
-        .config-error {
-            background: rgba(255, 217, 61, 0.2);
-            color: #ffd93d;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            border-left: 5px solid #ffd93d;
         }
         
         /* SEÇÃO DE DADOS */
@@ -754,6 +752,182 @@
         .class-group select, .subclass-group select {
             width: 100%;
         }
+        
+        /* SEÇÃO DE INICIATIVA */
+        .initiative-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .initiative-tracker {
+            background: rgba(15, 15, 25, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #533483;
+        }
+        
+        .round-counter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(255, 154, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 154, 0, 0.3);
+        }
+        
+        .round-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .round-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff9a00;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .initiative-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .initiative-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(40, 40, 60, 0.8);
+            border-radius: 8px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+        
+        .initiative-item.active {
+            background: rgba(255, 154, 0, 0.3);
+            border-left: 4px solid #ff9a00;
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(255, 154, 0, 0.5);
+        }
+        
+        .initiative-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .initiative-name {
+            flex-grow: 1;
+            font-weight: 600;
+        }
+        
+        .initiative-roll {
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .initiative-hp {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .hp-input {
+            width: 50px;
+            padding: 5px;
+            background: rgba(20, 20, 35, 0.8);
+            border: 1px solid #533483;
+            border-radius: 5px;
+            color: #e0e0ff;
+            text-align: center;
+        }
+        
+        .conditions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .condition-tag {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            cursor: pointer;
+        }
+        
+        .condition-tag:hover {
+            background: rgba(255, 107, 107, 0.4);
+        }
+        
+        .enemy-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(83, 52, 131, 0.5);
+        }
+        
+        .enemy-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .enemy-input {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .combat-log {
+            background: rgba(15, 15, 25, 0.7);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #533483;
+            font-size: 0.85rem;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(83, 52, 131, 0.3);
+        }
+        
+        .log-time {
+            color: #8a8ac4;
+            font-size: 0.75rem;
+            margin-right: 10px;
+        }
+        
+        .no-initiative {
+            text-align: center;
+            color: #8a8ac4;
+            font-style: italic;
+            padding: 30px 20px;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -761,7 +935,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-dragon"></i> Mesa de RPG - Dados D&D</h1>
-            <p class="description">Plataforma completa para jogos de RPG online com todos os dados de Dungeons & Dragons</p>
+            <p class="description">Plataforma completa para jogos de RPG online com sistema de iniciativa e combate</p>
         </header>
         
         <div class="app-container">
@@ -803,6 +977,21 @@
                                     <option value="">Selecione uma classe primeiro</option>
                                 </select>
                             </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="initiativeMod">Modificador de Iniciativa:</label>
+                            <select id="initiativeMod">
+                                <option value="0">+0 (Padrão)</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                                <option value="3">+3</option>
+                                <option value="4">+4</option>
+                                <option value="5">+5</option>
+                                <option value="-1">-1</option>
+                                <option value="-2">-2</option>
+                                <option value="-3">-3</option>
+                            </select>
                         </div>
                         
                         <div class="input-group">
@@ -850,7 +1039,6 @@
                     <h2><i class="fas fa-dice-d20"></i> Kit de Dados D&D</h2>
                     
                     <div class="dice-collection">
-                        <!-- Dados padrão D&D -->
                         <div class="dice-type active" data-dice="4">
                             <div class="dice-icon">d4</div>
                             <div class="dice-label">D4</div>
@@ -951,15 +1139,101 @@
                         
                         <div class="dice-history">
                             <h4><i class="fas fa-history"></i> Histórico de Rolagens</h4>
-                            <div class="dice-history-list" id="diceHistory">
-                                <!-- Histórico de dados aparecerá aqui -->
-                            </div>
+                            <div class="dice-history-list" id="diceHistory"></div>
                         </div>
                     </div>
                 </section>
             </div>
             
             <div class="right-panel">
+                <section class="initiative-section">
+                    <div class="list-header">
+                        <h2><i class="fas fa-swords"></i> Sistema de Iniciativa</h2>
+                        <div class="list-info">
+                            <span id="combatStatus">Fora de Combate</span>
+                            <button id="refreshInitiativeButton" class="refresh-btn" title="Atualizar iniciativa">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="initiative-controls">
+                        <button id="startCombatButton" class="btn-initiative">
+                            <i class="fas fa-play"></i> Iniciar Combate
+                        </button>
+                        <button id="rollInitiativeButton" class="btn-dice">
+                            <i class="fas fa-dice"></i> Rolar Iniciativa
+                        </button>
+                        <button id="nextTurnButton" class="btn-secondary">
+                            <i class="fas fa-forward"></i> Próximo Turno
+                        </button>
+                        <button id="endCombatButton" class="btn-danger">
+                            <i class="fas fa-stop"></i> Encerrar Combate
+                        </button>
+                    </div>
+                    
+                    <div class="round-counter">
+                        <div class="round-info">
+                            <span>Rodada:</span>
+                            <div class="round-number" id="roundNumber">1</div>
+                            <span>Turno:</span>
+                            <div class="round-number" id="turnNumber">1</div>
+                        </div>
+                        <button id="addRoundButton" class="btn-secondary" style="padding: 5px 10px;">
+                            <i class="fas fa-plus"></i> Rodada
+                        </button>
+                    </div>
+                    
+                    <div class="initiative-tracker">
+                        <h3><i class="fas fa-list-ol"></i> Ordem de Iniciativa</h3>
+                        <div class="initiative-list" id="initiativeList">
+                            <div class="no-initiative">
+                                <i class="fas fa-users"></i><br>
+                                Nenhuma iniciativa rolada ainda.<br>
+                                <small>Clique em "Rolar Iniciativa" para começar</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="enemy-section">
+                        <h3><i class="fas fa-skull"></i> Adicionar Inimigos</h3>
+                        <div class="enemy-form">
+                            <div class="enemy-input">
+                                <input type="text" id="enemyName" placeholder="Nome do inimigo" class="hp-input">
+                            </div>
+                            <div class="enemy-input">
+                                <input type="number" id="enemyHP" placeholder="PV" class="hp-input" min="1" value="10">
+                            </div>
+                            <div class="enemy-input">
+                                <select id="enemyInitiativeMod" class="hp-input">
+                                    <option value="0">Iniciativa +0</option>
+                                    <option value="1">+1</option>
+                                    <option value="2">+2</option>
+                                    <option value="3">+3</option>
+                                    <option value="4">+4</option>
+                                    <option value="5">+5</option>
+                                    <option value="-1">-1</option>
+                                    <option value="-2">-2</option>
+                                    <option value="-3">-3</option>
+                                </select>
+                            </div>
+                            <button id="addEnemyButton" class="btn-secondary" style="padding: 5px 10px;">
+                                <i class="fas fa-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="combat-log">
+                        <h4><i class="fas fa-scroll"></i> Log de Combate</h4>
+                        <div id="combatLog">
+                            <div class="log-entry">
+                                <span class="log-time">[00:00]</span>
+                                Sistema de combate iniciado
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
                 <section class="list-section">
                     <div class="list-header">
                         <h2><i class="fas fa-book-dead"></i> Registro da Campanha</h2>
@@ -988,23 +1262,11 @@
                         </button>
                     </div>
                 </section>
-                
-                <div class="instructions">
-                    <h3><i class="fas fa-info-circle"></i> Como Jogar:</h3>
-                    <ul>
-                        <li><strong>1.</strong> Defina seu personagem, classe e subclasse</li>
-                        <li><strong>2.</strong> Selecione o tipo de dado que precisa</li>
-                        <li><strong>3.</strong> Configure quantidade e modificadores</li>
-                        <li><strong>4.</strong> Descreva sua ação e role os dados</li>
-                        <li><strong>5.</strong> Todos os jogadores verão os resultados em tempo real</li>
-                        <li><strong>Dica:</strong> Use D20 para testes de habilidade e D6/D8 para dano</li>
-                    </ul>
-                </div>
             </div>
         </div>
         
         <footer>
-            <p>Plataforma de RPG D&D Online | Sistema completo de dados e registro compartilhado</p>
+            <p>Plataforma de RPG D&D Online | Sistema completo de dados, iniciativa e combate</p>
             <p>Todos os jogadores compartilham o mesmo mundo - A aventura espera por vocês!</p>
             <p>Desenvolvido por Alexandre Oliveira Azahorg | +55 94 992327693 | Revisado por Magali Brito de Oliveira</p>
         </footer>
@@ -1021,6 +1283,7 @@
         const userNameInput = document.getElementById('userName');
         const characterClassInput = document.getElementById('characterClass');
         const characterSubclassInput = document.getElementById('characterSubclass');
+        const initiativeModInput = document.getElementById('initiativeMod');
         const actionTypeInput = document.getElementById('actionType');
         const addButton = document.getElementById('addButton');
         const clearInputButton = document.getElementById('clearInputButton');
@@ -1039,151 +1302,53 @@
         const colorOptions = document.querySelectorAll('.color-option');
         const diceTypes = document.querySelectorAll('.dice-type');
         
+        // Elementos do sistema de iniciativa
+        const startCombatButton = document.getElementById('startCombatButton');
+        const rollInitiativeButton = document.getElementById('rollInitiativeButton');
+        const nextTurnButton = document.getElementById('nextTurnButton');
+        const endCombatButton = document.getElementById('endCombatButton');
+        const refreshInitiativeButton = document.getElementById('refreshInitiativeButton');
+        const addRoundButton = document.getElementById('addRoundButton');
+        const roundNumber = document.getElementById('roundNumber');
+        const turnNumber = document.getElementById('turnNumber');
+        const initiativeList = document.getElementById('initiativeList');
+        const combatStatus = document.getElementById('combatStatus');
+        const combatLog = document.getElementById('combatLog');
+        
+        // Elementos para inimigos
+        const enemyNameInput = document.getElementById('enemyName');
+        const enemyHPInput = document.getElementById('enemyHP');
+        const enemyInitiativeModInput = document.getElementById('enemyInitiativeMod');
+        const addEnemyButton = document.getElementById('addEnemyButton');
+        
         // Configurações do usuário
         let userColor = '#9d4edd';
         let messages = [];
         let diceResults = [];
-        let selectedDice = 20; // D20 padrão
+        let selectedDice = 20;
+        
+        // Sistema de iniciativa
+        let initiativeOrder = [];
+        let isCombatActive = false;
+        let currentRound = 1;
+        let currentTurn = 0;
+        let combatParticipants = [];
         
         // Definição das subclasses por classe
         const subclasses = {
-            'Bárbaro': [
-                'Caminho do Berserker',
-                'Caminho do Guerreiro Totêmico',
-                'Caminho do Céu Tempestuoso',
-                'Caminho da Fera',
-                'Caminho do Guardião Ancestral',
-                'Caminho da Fúria Selvagem',
-                'Caminho do Zelo'
-            ],
-            'Bardo': [
-                'Colégio do Conhecimento',
-                'Colégio do Valor',
-                'Colégio da Espada',
-                'Colégio dos Sussurros',
-                'Colégio da Eloquência',
-                'Colégio da Criação'
-            ],
-            'Clérigo': [
-                'Domínio da Vida',
-                'Domínio da Luz',
-                'Domínio da Guerra',
-                'Domínio da Tempestade',
-                'Domínio do Conhecimento',
-                'Domínio do Engano',
-                'Domínio da Natureza',
-                'Domínio da Forja',
-                'Domínio da Ordem',
-                'Domínio da Tumba',
-                'Domínio da Morte',
-                'Domínio da Paz',
-                'Domínio da Unidade'
-            ],
-            'Druida': [
-                'Círculo da Terra',
-                'Círculo da Lua',
-                'Círculo dos Sonhos',
-                'Círculo dos Pastores',
-                'Círculo das Esporas',
-                'Círculo das Estrelas',
-                'Círculo das Marés (UA opcional)'
-            ],
-            'Guerreiro': [
-                'Arqueiro Arcano',
-                'Campeão',
-                'Cavaleiro Arcano',
-                'Cavaleiro das Runas',
-                'Bruto (UA)',
-                'Cavaleiro da Cavalaria',
-                'Cavaleiro dos Púlpitos',
-                'Samurai',
-                'Mestre de Batalha',
-                'Psi-Guerreiro',
-                'Éldritch Knight (Cavaleiro Arcano)'
-            ],
-            'Monge': [
-                'Caminho da Mão Aberta',
-                'Caminho da Sombra',
-                'Caminho dos Quatro Elementos',
-                'Caminho da Longa Morte',
-                'Caminho do Sol Nascente',
-                'Caminho do Kensei',
-                'Caminho da Alma Astral',
-                'Caminho da Misericórdia',
-                'Caminho do Dragão Ascendente'
-            ],
-            'Paladino': [
-                'Juramento da Devoção',
-                'Juramento da Vingança',
-                'Juramento dos Antigos',
-                'Juramento da Coroa',
-                'Juramento da Conquista',
-                'Juramento da Redenção',
-                'Juramento dos Observadores',
-                'Juramento da Glória',
-                'Juramento da Praga (UA)'
-            ],
-            'Patrulheiro': [
-                'Caçador',
-                'Mestre das Bestas',
-                'Matador de Monstros',
-                'Andarilho do Horizonte',
-                'Andarilho da Tempestade',
-                'Guerreiro Feral',
-                'Caçador das Sombras',
-                'Explorador Feérico',
-                'Viajante do Gelo (UA)'
-            ],
-            'Ladino': [
-                'Ladrão',
-                'Assassino',
-                'Trapaceiro Arcano',
-                'Inquisitivo',
-                'Cicatriz do Infortúnio',
-                'Fantasma',
-                'Espadachim',
-                'Arqueiro Mental'
-            ],
-            'Feiticeiro': [
-                'Linagem Dracônica',
-                'Feitiçaria Selvagem',
-                'Alma Divina',
-                'Magia das Sombras',
-                'Tempestade',
-                'Psíquico Aberto',
-                'Metamágico Escarlate (UA)'
-            ],
-            'Bruxo': [
-                'O Grande Antigo',
-                'O Arquidemônio',
-                'O Lâmina Amaldiçoada (Hexblade)',
-                'A Fera',
-                'A Luz Celestial',
-                'O Genie (Gênio)',
-                'O Segredo Profundo',
-                'O Iniciador da Mente',
-                'A Duquesa do Caos (UA)'
-            ],
-            'Mago': [
-                'Evocação',
-                'Abjuração',
-                'Advinhação',
-                'Conjuração',
-                'Encantamento',
-                'Ilusão',
-                'Necromancia',
-                'Transmutação',
-                'Ordem das Sagradas Chamas (UA)',
-                'Sublime Geomancia (UA)',
-                'Cronurgia',
-                'Graviturgia',
-                'Bladesinger (Cantor da Lâmina)'
-            ],
-            'Artífice': [
-                'Alquimista',
-                'Artilheiro',
-                'Ferreiro de Batalha'
-            ]
+            'Bárbaro': ['Caminho do Berserker', 'Caminho do Guerreiro Totêmico', 'Caminho do Céu Tempestuoso', 'Caminho da Fera', 'Caminho do Guardião Ancestral', 'Caminho da Fúria Selvagem', 'Caminho do Zelo'],
+            'Bardo': ['Colégio do Conhecimento', 'Colégio do Valor', 'Colégio da Espada', 'Colégio dos Sussurros', 'Colégio da Eloquência', 'Colégio da Criação'],
+            'Clérigo': ['Domínio da Vida', 'Domínio da Luz', 'Domínio da Guerra', 'Domínio da Tempestade', 'Domínio do Conhecimento', 'Domínio do Engano', 'Domínio da Natureza', 'Domínio da Forja', 'Domínio da Ordem', 'Domínio da Tumba', 'Domínio da Morte', 'Domínio da Paz', 'Domínio da Unidade'],
+            'Druida': ['Círculo da Terra', 'Círculo da Lua', 'Círculo dos Sonhos', 'Círculo dos Pastores', 'Círculo das Esporas', 'Círculo das Estrelas', 'Círculo das Marés (UA opcional)'],
+            'Guerreiro': ['Arqueiro Arcano', 'Campeão', 'Cavaleiro Arcano', 'Cavaleiro das Runas', 'Bruto (UA)', 'Cavaleiro da Cavalaria', 'Cavaleiro dos Púlpitos', 'Samurai', 'Mestre de Batalha', 'Psi-Guerreiro', 'Éldritch Knight (Cavaleiro Arcano)'],
+            'Monge': ['Caminho da Mão Aberta', 'Caminho da Sombra', 'Caminho dos Quatro Elementos', 'Caminho da Longa Morte', 'Caminho do Sol Nascente', 'Caminho do Kensei', 'Caminho da Alma Astral', 'Caminho da Misericórdia', 'Caminho do Dragão Ascendente'],
+            'Paladino': ['Juramento da Devoção', 'Juramento da Vingança', 'Juramento dos Antigos', 'Juramento da Coroa', 'Juramento da Conquista', 'Juramento da Redenção', 'Juramento dos Observadores', 'Juramento da Glória', 'Juramento da Praga (UA)'],
+            'Patrulheiro': ['Caçador', 'Mestre das Bestas', 'Matador de Monstros', 'Andarilho do Horizonte', 'Andarilho da Tempestade', 'Guerreiro Feral', 'Caçador das Sombras', 'Explorador Feérico', 'Viajante do Gelo (UA)'],
+            'Ladino': ['Ladrão', 'Assassino', 'Trapaceiro Arcano', 'Inquisitivo', 'Cicatriz do Infortúnio', 'Fantasma', 'Espadachim', 'Arqueiro Mental'],
+            'Feiticeiro': ['Linagem Dracônica', 'Feitiçaria Selvagem', 'Alma Divina', 'Magia das Sombras', 'Tempestade', 'Psíquico Aberto', 'Metamágico Escarlate (UA)'],
+            'Bruxo': ['O Grande Antigo', 'O Arquidemônio', 'O Lâmina Amaldiçoada (Hexblade)', 'A Fera', 'A Luz Celestial', 'O Genie (Gênio)', 'O Segredo Profundo', 'O Iniciador da Mente', 'A Duquesa do Caos (UA)'],
+            'Mago': ['Evocação', 'Abjuração', 'Advinhação', 'Conjuração', 'Encantamento', 'Ilusão', 'Necromancia', 'Transmutação', 'Ordem das Sagradas Chamas (UA)', 'Sublime Geomancia (UA)', 'Cronurgia', 'Graviturgia', 'Bladesinger (Cantor da Lâmina)'],
+            'Artífice': ['Alquimista', 'Artilheiro', 'Ferreiro de Batalha']
         };
         
         // Função para atualizar as subclasses baseadas na classe selecionada
@@ -1191,10 +1356,8 @@
             const selectedClass = characterClassInput.value;
             const subclassSelect = characterSubclassInput;
             
-            // Limpar opções atuais
             subclassSelect.innerHTML = '<option value="">Selecione uma subclasse...</option>';
             
-            // Se uma classe for selecionada, preencher com suas subclasses
             if (selectedClass && subclasses[selectedClass]) {
                 subclasses[selectedClass].forEach(subclass => {
                     const option = document.createElement('option');
@@ -1203,13 +1366,9 @@
                     subclassSelect.appendChild(option);
                 });
             } else {
-                // Se nenhuma classe selecionada, mostrar mensagem
                 subclassSelect.innerHTML = '<option value="">Selecione uma classe primeiro</option>';
             }
         }
-        
-        // Event listener para quando a classe mudar
-        characterClassInput.addEventListener('change', updateSubclasses);
         
         // Selecionar cor do usuário
         colorOptions.forEach(option => {
@@ -1229,197 +1388,466 @@
             });
         });
         
-        // Configurar data/hora no formato local
+        // =================== SISTEMA DE INICIATIVA ===================
+        
+        // Função para iniciar combate
+        function startCombat() {
+            if (isCombatActive) {
+                alert('O combate já está ativo!');
+                return;
+            }
+            
+            isCombatActive = true;
+            currentRound = 1;
+            currentTurn = 0;
+            combatParticipants = [];
+            
+            // Coletar jogadores das mensagens
+            const uniquePlayers = {};
+            messages.forEach(msg => {
+                if (msg.user_name && !uniquePlayers[msg.user_name]) {
+                    uniquePlayers[msg.user_name] = {
+                        name: msg.user_name,
+                        color: msg.user_color || '#9d4edd',
+                        class: msg.character_class || 'Aventureiro',
+                        subclass: msg.character_subclass || '',
+                        initiativeMod: 0, // Será configurado individualmente
+                        hp: 100, // HP padrão
+                        conditions: []
+                    };
+                }
+            });
+            
+            combatParticipants = Object.values(uniquePlayers);
+            updateCombatStatus();
+            addCombatLog('Combate iniciado!', 'system');
+            
+            // Mostrar mensagem para configurar iniciativa
+            alert('Combate iniciado! Agora adicione inimigos e role iniciativa.');
+        }
+        
+        // Função para rolar iniciativa
+        async function rollInitiative() {
+            if (!isCombatActive) {
+                alert('Inicie o combate primeiro!');
+                return;
+            }
+            
+            initiativeOrder = [];
+            
+            // Adicionar jogadores
+            combatParticipants.forEach(participant => {
+                const initiativeRoll = rollDice(20) + parseInt(initiativeModInput.value);
+                initiativeOrder.push({
+                    ...participant,
+                    initiative: initiativeRoll,
+                    type: 'player',
+                    currentHP: participant.hp || 100,
+                    maxHP: participant.hp || 100
+                });
+            });
+            
+            // Adicionar inimigos já criados
+            const enemies = getCurrentEnemies();
+            enemies.forEach(enemy => {
+                const initiativeRoll = rollDice(20) + parseInt(enemy.initiativeMod || 0);
+                initiativeOrder.push({
+                    name: enemy.name,
+                    color: '#ff6b6b',
+                    class: 'Inimigo',
+                    initiative: initiativeRoll,
+                    type: 'enemy',
+                    currentHP: enemy.hp,
+                    maxHP: enemy.hp,
+                    conditions: []
+                });
+            });
+            
+            // Ordenar por iniciativa (maior para menor)
+            initiativeOrder.sort((a, b) => b.initiative - a.initiative);
+            
+            // Adicionar desempate por modificador
+            initiativeOrder.sort((a, b) => {
+                if (b.initiative === a.initiative) {
+                    return (b.initiativeMod || 0) - (a.initiativeMod || 0);
+                }
+                return b.initiative - a.initiative;
+            });
+            
+            updateInitiativeDisplay();
+            currentTurn = 0;
+            updateTurnDisplay();
+            
+            // Adicionar log
+            addCombatLog('Iniciativa rolada! Ordem definida.', 'system');
+            
+            // Salvar no servidor
+            await saveCombatState();
+        }
+        
+        // Função para obter inimigos atuais
+        function getCurrentEnemies() {
+            const enemies = [];
+            const enemyElements = document.querySelectorAll('.initiative-item.enemy');
+            
+            enemyElements.forEach(element => {
+                const name = element.querySelector('.initiative-name').textContent;
+                const hpInput = element.querySelector('.hp-input');
+                const hp = hpInput ? parseInt(hpInput.value) : 10;
+                
+                enemies.push({
+                    name: name,
+                    hp: hp,
+                    initiativeMod: 0 // Poderia ser armazenado em data-attribute
+                });
+            });
+            
+            return enemies;
+        }
+        
+        // Função para atualizar a exibição da iniciativa
+        function updateInitiativeDisplay() {
+            initiativeList.innerHTML = '';
+            
+            if (initiativeOrder.length === 0) {
+                initiativeList.innerHTML = `
+                    <div class="no-initiative">
+                        <i class="fas fa-users"></i><br>
+                        Nenhuma iniciativa rolada ainda.<br>
+                        <small>Clique em "Rolar Iniciativa" para começar</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            initiativeOrder.forEach((participant, index) => {
+                const isActive = index === currentTurn;
+                const initiativeItem = document.createElement('div');
+                initiativeItem.className = `initiative-item ${participant.type} ${isActive ? 'active' : ''}`;
+                initiativeItem.style.borderLeftColor = participant.color;
+                
+                // Avatar
+                const avatar = document.createElement('div');
+                avatar.className = 'initiative-avatar';
+                avatar.style.backgroundColor = participant.color;
+                avatar.textContent = participant.name.charAt(0).toUpperCase();
+                
+                // Nome e informações
+                const nameSpan = document.createElement('div');
+                nameSpan.className = 'initiative-name';
+                nameSpan.textContent = participant.name;
+                nameSpan.title = `${participant.class}${participant.subclass ? ` - ${participant.subclass}` : ''}`;
+                
+                // Iniciativa
+                const initiativeSpan = document.createElement('div');
+                initiativeSpan.className = 'initiative-roll';
+                initiativeSpan.textContent = participant.initiative;
+                
+                // Controle de HP
+                const hpDiv = document.createElement('div');
+                hpDiv.className = 'initiative-hp';
+                
+                const hpInput = document.createElement('input');
+                hpInput.type = 'number';
+                hpInput.className = 'hp-input';
+                hpInput.value = participant.currentHP;
+                hpInput.min = 0;
+                hpInput.max = participant.maxHP;
+                
+                hpInput.addEventListener('change', (e) => {
+                    participant.currentHP = parseInt(e.target.value);
+                    updateHPColor(hpInput, participant.currentHP, participant.maxHP);
+                    saveCombatState();
+                });
+                
+                const hpSpan = document.createElement('span');
+                hpSpan.textContent = `/${participant.maxHP}`;
+                hpSpan.style.color = '#8a8ac4';
+                hpSpan.style.fontSize = '0.9rem';
+                
+                hpDiv.appendChild(hpInput);
+                hpDiv.appendChild(hpSpan);
+                
+                updateHPColor(hpInput, participant.currentHP, participant.maxHP);
+                
+                // Condições
+                const conditionsDiv = document.createElement('div');
+                conditionsDiv.className = 'conditions';
+                
+                const conditionsList = ['🤕', '🔥', '❄️', '⚡', '☠️', '😴', '🌀'];
+                conditionsList.forEach(condition => {
+                    const conditionTag = document.createElement('span');
+                    conditionTag.className = 'condition-tag';
+                    conditionTag.textContent = condition;
+                    conditionTag.title = 'Clique para adicionar/remover condição';
+                    
+                    conditionTag.addEventListener('click', () => {
+                        const hasCondition = participant.conditions.includes(condition);
+                        if (hasCondition) {
+                            participant.conditions = participant.conditions.filter(c => c !== condition);
+                            conditionTag.style.opacity = '0.5';
+                        } else {
+                            participant.conditions.push(condition);
+                            conditionTag.style.opacity = '1';
+                        }
+                        saveCombatState();
+                    });
+                    
+                    if (participant.conditions.includes(condition)) {
+                        conditionTag.style.opacity = '1';
+                    } else {
+                        conditionTag.style.opacity = '0.5';
+                    }
+                    
+                    conditionsDiv.appendChild(conditionTag);
+                });
+                
+                initiativeItem.appendChild(avatar);
+                initiativeItem.appendChild(nameSpan);
+                initiativeItem.appendChild(initiativeSpan);
+                initiativeItem.appendChild(hpDiv);
+                initiativeItem.appendChild(conditionsDiv);
+                
+                initiativeList.appendChild(initiativeItem);
+            });
+        }
+        
+        // Função para atualizar cor do HP baseado no valor
+        function updateHPColor(inputElement, currentHP, maxHP) {
+            const percentage = (currentHP / maxHP) * 100;
+            
+            if (percentage <= 25) {
+                inputElement.style.backgroundColor = 'rgba(255, 107, 107, 0.8)';
+                inputElement.style.color = 'white';
+                inputElement.style.borderColor = '#ff6b6b';
+            } else if (percentage <= 50) {
+                inputElement.style.backgroundColor = 'rgba(255, 217, 61, 0.8)';
+                inputElement.style.color = '#000';
+                inputElement.style.borderColor = '#ffd93d';
+            } else {
+                inputElement.style.backgroundColor = 'rgba(20, 20, 35, 0.8)';
+                inputElement.style.color = '#e0e0ff';
+                inputElement.style.borderColor = '#533483';
+            }
+        }
+        
+        // Função para próximo turno
+        function nextTurn() {
+            if (!isCombatActive || initiativeOrder.length === 0) {
+                alert('Inicie o combate e role iniciativa primeiro!');
+                return;
+            }
+            
+            currentTurn = (currentTurn + 1) % initiativeOrder.length;
+            
+            // Se voltou ao primeiro, incrementa rodada
+            if (currentTurn === 0) {
+                currentRound++;
+                roundNumber.textContent = currentRound;
+                addCombatLog(`Rodada ${currentRound} iniciada!`, 'system');
+            }
+            
+            updateTurnDisplay();
+            updateInitiativeDisplay();
+            
+            const currentParticipant = initiativeOrder[currentTurn];
+            addCombatLog(`Turno de ${currentParticipant.name} (Iniciativa: ${currentParticipant.initiative})`, 'turn');
+            
+            saveCombatState();
+        }
+        
+        // Função para atualizar display do turno
+        function updateTurnDisplay() {
+            turnNumber.textContent = currentTurn + 1;
+        }
+        
+        // Função para atualizar status do combate
+        function updateCombatStatus() {
+            if (isCombatActive) {
+                combatStatus.textContent = `Combate - Rodada ${currentRound}`;
+                combatStatus.style.color = '#ff9a00';
+            } else {
+                combatStatus.textContent = 'Fora de Combate';
+                combatStatus.style.color = '#8a8ac4';
+            }
+        }
+        
+        // Função para adicionar log de combate
+        function addCombatLog(message, type = 'info') {
+            const now = new Date();
+            const timeString = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}]`;
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            let icon = 'ℹ️';
+            if (type === 'system') icon = '⚙️';
+            if (type === 'turn') icon = '🔄';
+            if (type === 'damage') icon = '💥';
+            if (type === 'heal') icon = '💚';
+            
+            logEntry.innerHTML = `
+                <span class="log-time">${timeString}</span>
+                ${icon} ${message}
+            `;
+            
+            combatLog.insertBefore(logEntry, combatLog.firstChild);
+            
+            // Limitar a 50 entradas
+            while (combatLog.children.length > 50) {
+                combatLog.removeChild(combatLog.lastChild);
+            }
+            
+            // Auto-scroll para o topo
+            combatLog.scrollTop = 0;
+        }
+        
+        // Função para encerrar combate
+        function endCombat() {
+            if (!isCombatActive) {
+                alert('Não há combate ativo!');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja encerrar o combate?')) {
+                isCombatActive = false;
+                initiativeOrder = [];
+                currentRound = 1;
+                currentTurn = 0;
+                
+                updateInitiativeDisplay();
+                updateCombatStatus();
+                addCombatLog('Combate encerrado!', 'system');
+                
+                saveCombatState();
+            }
+        }
+        
+        // Função para adicionar inimigo
+        function addEnemy() {
+            if (!isCombatActive) {
+                alert('Inicie o combate primeiro!');
+                return;
+            }
+            
+            const name = enemyNameInput.value.trim() || `Inimigo ${initiativeOrder.filter(p => p.type === 'enemy').length + 1}`;
+            const hp = parseInt(enemyHPInput.value) || 10;
+            const initiativeMod = parseInt(enemyInitiativeModInput.value) || 0;
+            
+            const enemy = {
+                name: name,
+                color: '#ff6b6b',
+                class: 'Inimigo',
+                initiative: 0, // Será rolado na iniciativa
+                type: 'enemy',
+                currentHP: hp,
+                maxHP: hp,
+                conditions: [],
+                initiativeMod: initiativeMod
+            };
+            
+            // Adicionar à lista de participantes
+            combatParticipants.push(enemy);
+            
+            // Limpar campos
+            enemyNameInput.value = '';
+            enemyHPInput.value = '10';
+            
+            addCombatLog(`Inimigo "${name}" adicionado (${hp} PV)`, 'system');
+        }
+        
+        // Função para salvar estado do combate
+        async function saveCombatState() {
+            try {
+                const combatState = {
+                    isCombatActive,
+                    currentRound,
+                    currentTurn,
+                    initiativeOrder,
+                    combatParticipants
+                };
+                
+                // Salvar no localStorage
+                localStorage.setItem('rpg_combat_state', JSON.stringify(combatState));
+                
+                // Também salvar no servidor se necessário
+                const response = await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'X-Master-Key': JSONBIN_API_KEY,
+                        'Content-Type': 'application/json',
+                        'X-Bin-Versioning': 'false'
+                    },
+                    body: JSON.stringify({ 
+                        messages: messages,
+                        combatState: combatState
+                    })
+                });
+                
+                return response.ok;
+                
+            } catch (error) {
+                console.error('Erro ao salvar estado do combate:', error);
+                return false;
+            }
+        }
+        
+        // Função para carregar estado do combate
+        function loadCombatState() {
+            try {
+                const savedState = localStorage.getItem('rpg_combat_state');
+                if (savedState) {
+                    const combatState = JSON.parse(savedState);
+                    
+                    isCombatActive = combatState.isCombatActive || false;
+                    currentRound = combatState.currentRound || 1;
+                    currentTurn = combatState.currentTurn || 0;
+                    initiativeOrder = combatState.initiativeOrder || [];
+                    combatParticipants = combatState.combatParticipants || [];
+                    
+                    updateInitiativeDisplay();
+                    updateCombatStatus();
+                    updateTurnDisplay();
+                    roundNumber.textContent = currentRound;
+                    turnNumber.textContent = currentTurn + 1;
+                    
+                    if (isCombatActive) {
+                        addCombatLog('Estado do combate carregado', 'system');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estado do combate:', error);
+            }
+        }
+        
+        // =================== FUNÇÕES EXISTENTES ===================
+        
+        // Funções auxiliares
         function formatDateTime(dateString) {
             const date = new Date(dateString);
             return date.toLocaleString('pt-BR');
         }
         
-        // Função para obter um ID único
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
         
-        // Função para rolar um dado específico
         function rollDice(sides) {
             return Math.floor(Math.random() * sides) + 1;
-        }
-        
-        // Função para rolar dados com todas as opções
-        async function rollDiceWithOptions() {
-            const userName = userNameInput.value.trim() || 'Aventureiro';
-            const charClass = characterClassInput.value;
-            const charSubclass = characterSubclassInput.value;
-            const actionType = actionTypeInput.value;
-            const diceCount = parseInt(diceQuantity.value);
-            const mod = parseInt(modifier.value);
-            const rType = rollType.value;
-            
-            // Animação de rolagem
-            diceDisplay.classList.add('dice-rolling');
-            diceDisplay.textContent = '...';
-            diceResultText.textContent = 'Rolando dados...';
-            
-            // Esperar para efeito visual
-            await new Promise(resolve => setTimeout(resolve, 800));
-            
-            let results = [];
-            let total = 0;
-            let isCritical = false;
-            let isCriticalFail = false;
-            
-            // Rolagem normal para dados que não sejam D20
-            if (selectedDice !== 20 || rType === 'normal') {
-                for (let i = 0; i < diceCount; i++) {
-                    const result = rollDice(selectedDice);
-                    results.push(result);
-                    total += result;
-                }
-            } 
-            // Vantagem/Desvantagem para D20
-            else if (selectedDice === 20 && (rType === 'advantage' || rType === 'disadvantage')) {
-                const roll1 = rollDice(20);
-                const roll2 = rollDice(20);
-                
-                if (rType === 'advantage') {
-                    total = Math.max(roll1, roll2);
-                    results = [roll1, roll2];
-                } else {
-                    total = Math.min(roll1, roll2);
-                    results = [roll1, roll2];
-                }
-            }
-            
-            // Aplicar modificador
-            total += mod;
-            
-            // Verificar críticos (apenas para D20)
-            if (selectedDice === 20) {
-                const naturalRoll = results.length > 0 ? results[0] : 0;
-                if (naturalRoll === 20) {
-                    isCritical = true;
-                } else if (naturalRoll === 1) {
-                    isCriticalFail = true;
-                }
-            }
-            
-            // Atualizar display
-            diceDisplay.classList.remove('dice-rolling');
-            diceDisplay.textContent = total;
-            
-            // Aplicar efeitos visuais para críticos
-            if (isCritical) {
-                diceDisplay.className = 'dice-display';
-                void diceDisplay.offsetWidth; // Trigger reflow
-                diceDisplay.classList.add('critical-hit');
-                diceDisplay.textContent = '20!';
-            } else if (isCriticalFail) {
-                diceDisplay.className = 'dice-display';
-                void diceDisplay.offsetWidth;
-                diceDisplay.classList.add('critical-fail');
-                diceDisplay.textContent = '1!';
-            }
-            
-            // Criar texto do resultado
-            let resultText = `Rolou ${diceCount}d${selectedDice}`;
-            if (mod !== 0) {
-                resultText += mod > 0 ? ` +${mod}` : ` ${mod}`;
-            }
-            
-            if (selectedDice === 20 && rType !== 'normal') {
-                resultText += ` (${rType === 'advantage' ? 'Vantagem' : 'Desvantagem'})`;
-            }
-            
-            resultText += `: [${results.join(', ')}]`;
-            if (mod !== 0) {
-                resultText += ` + ${mod} = ${total}`;
-            } else if (results.length > 1) {
-                resultText += ` = ${total}`;
-            }
-            
-            if (isCritical) resultText += ' 🎉 CRÍTICO!';
-            if (isCriticalFail) resultText += ' 💀 FALHA CRÍTICA!';
-            
-            diceResultText.textContent = resultText;
-            
-            // Adicionar ao histórico
-            const historyItem = {
-                total: total,
-                diceType: selectedDice,
-                results: results,
-                modifier: mod,
-                rollType: rType,
-                isCritical: isCritical,
-                isCriticalFail: isCriticalFail,
-                timestamp: new Date().toISOString()
-            };
-            
-            diceResults.push(historyItem);
-            updateDiceHistory();
-            
-            // Criar mensagem para o chat
-            const diceMessage = {
-                id: generateId(),
-                content: textInput.value.trim() || resultText,
-                user_name: userName,
-                character_class: charClass,
-                character_subclass: charSubclass,
-                user_color: userColor,
-                action_type: actionType,
-                created_at: new Date().toISOString(),
-                is_dice_roll: true,
-                dice_type: `d${selectedDice}`,
-                dice_count: diceCount,
-                dice_results: results,
-                dice_total: total,
-                dice_modifier: mod,
-                roll_type: rType,
-                is_critical: isCritical,
-                is_critical_fail: isCriticalFail
-            };
-            
-            // Se não houver texto na descrição, usar o resultado como descrição
-            if (!textInput.value.trim()) {
-                diceMessage.content = resultText;
-            }
-            
-            // Adicionar à lista local
-            messages.push(diceMessage);
-            
-            // Atualizar a exibição
-            updateListDisplay();
-            
-            // Salvar no servidor
-            await saveMessages();
-            
-            // Efeito visual
-            diceDisplay.style.transform = 'scale(1.2)';
-            diceDisplay.style.boxShadow = '0 0 30px rgba(157, 78, 221, 0.8)';
-            
-            setTimeout(() => {
-                diceDisplay.style.transform = 'scale(1)';
-                diceDisplay.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
-            }, 500);
-            
-            return { total, results, isCritical, isCriticalFail };
         }
         
         // Atualizar o histórico de dados
         function updateDiceHistory() {
             diceHistory.innerHTML = '';
             
-            // Mostrar apenas os últimos 15 resultados
             const recentResults = diceResults.slice(-15);
             
             recentResults.forEach(result => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'dice-history-item';
                 
-                if (result.isCritical) {
-                    historyItem.classList.add('critical');
-                } else if (result.isCriticalFail) {
-                    historyItem.classList.add('fail');
-                }
+                if (result.isCritical) historyItem.classList.add('critical');
+                if (result.isCriticalFail) historyItem.classList.add('fail');
                 
                 let text = `${result.diceType === 100 ? 'd%' : 'd' + result.diceType}: ${result.total}`;
                 if (result.isCritical) text = '🎯 ' + text;
@@ -1431,7 +1859,6 @@
                 diceHistory.appendChild(historyItem);
             });
             
-            // Rolagem automática para o final
             diceHistory.scrollLeft = diceHistory.scrollWidth;
         }
         
@@ -1659,7 +2086,16 @@
                         'Content-Type': 'application/json',
                         'X-Bin-Versioning': 'false'
                     },
-                    body: JSON.stringify({ messages: messages })
+                    body: JSON.stringify({ 
+                        messages: messages,
+                        combatState: {
+                            isCombatActive,
+                            currentRound,
+                            currentTurn,
+                            initiativeOrder,
+                            combatParticipants
+                        }
+                    })
                 });
                 
                 if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
@@ -1718,6 +2154,137 @@
             }
         }
         
+        // Função para rolar dados com todas as opções
+        async function rollDiceWithOptions() {
+            const userName = userNameInput.value.trim() || 'Aventureiro';
+            const charClass = characterClassInput.value;
+            const charSubclass = characterSubclassInput.value;
+            const actionType = actionTypeInput.value;
+            const diceCount = parseInt(diceQuantity.value);
+            const mod = parseInt(modifier.value);
+            const rType = rollType.value;
+            
+            // Animação de rolagem
+            diceDisplay.classList.add('dice-rolling');
+            diceDisplay.textContent = '...';
+            diceResultText.textContent = 'Rolando dados...';
+            
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            let results = [];
+            let total = 0;
+            let isCritical = false;
+            let isCriticalFail = false;
+            
+            if (selectedDice !== 20 || rType === 'normal') {
+                for (let i = 0; i < diceCount; i++) {
+                    const result = rollDice(selectedDice);
+                    results.push(result);
+                    total += result;
+                }
+            } else if (selectedDice === 20 && (rType === 'advantage' || rType === 'disadvantage')) {
+                const roll1 = rollDice(20);
+                const roll2 = rollDice(20);
+                
+                if (rType === 'advantage') {
+                    total = Math.max(roll1, roll2);
+                    results = [roll1, roll2];
+                } else {
+                    total = Math.min(roll1, roll2);
+                    results = [roll1, roll2];
+                }
+            }
+            
+            total += mod;
+            
+            if (selectedDice === 20) {
+                const naturalRoll = results.length > 0 ? results[0] : 0;
+                if (naturalRoll === 20) isCritical = true;
+                if (naturalRoll === 1) isCriticalFail = true;
+            }
+            
+            diceDisplay.classList.remove('dice-rolling');
+            diceDisplay.textContent = total;
+            
+            if (isCritical) {
+                diceDisplay.className = 'dice-display';
+                void diceDisplay.offsetWidth;
+                diceDisplay.classList.add('critical-hit');
+                diceDisplay.textContent = '20!';
+            } else if (isCriticalFail) {
+                diceDisplay.className = 'dice-display';
+                void diceDisplay.offsetWidth;
+                diceDisplay.classList.add('critical-fail');
+                diceDisplay.textContent = '1!';
+            }
+            
+            let resultText = `Rolou ${diceCount}d${selectedDice}`;
+            if (mod !== 0) resultText += mod > 0 ? ` +${mod}` : ` ${mod}`;
+            
+            if (selectedDice === 20 && rType !== 'normal') {
+                resultText += ` (${rType === 'advantage' ? 'Vantagem' : 'Desvantagem'})`;
+            }
+            
+            resultText += `: [${results.join(', ')}]`;
+            if (mod !== 0) resultText += ` + ${mod} = ${total}`;
+            else if (results.length > 1) resultText += ` = ${total}`;
+            
+            if (isCritical) resultText += ' 🎉 CRÍTICO!';
+            if (isCriticalFail) resultText += ' 💀 FALHA CRÍTICA!';
+            
+            diceResultText.textContent = resultText;
+            
+            const historyItem = {
+                total: total,
+                diceType: selectedDice,
+                results: results,
+                modifier: mod,
+                rollType: rType,
+                isCritical: isCritical,
+                isCriticalFail: isCriticalFail,
+                timestamp: new Date().toISOString()
+            };
+            
+            diceResults.push(historyItem);
+            updateDiceHistory();
+            
+            const diceMessage = {
+                id: generateId(),
+                content: textInput.value.trim() || resultText,
+                user_name: userName,
+                character_class: charClass,
+                character_subclass: charSubclass,
+                user_color: userColor,
+                action_type: actionType,
+                created_at: new Date().toISOString(),
+                is_dice_roll: true,
+                dice_type: `d${selectedDice}`,
+                dice_count: diceCount,
+                dice_results: results,
+                dice_total: total,
+                dice_modifier: mod,
+                roll_type: rType,
+                is_critical: isCritical,
+                is_critical_fail: isCriticalFail
+            };
+            
+            if (!textInput.value.trim()) diceMessage.content = resultText;
+            
+            messages.push(diceMessage);
+            updateListDisplay();
+            await saveMessages();
+            
+            diceDisplay.style.transform = 'scale(1.2)';
+            diceDisplay.style.boxShadow = '0 0 30px rgba(157, 78, 221, 0.8)';
+            
+            setTimeout(() => {
+                diceDisplay.style.transform = 'scale(1)';
+                diceDisplay.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.5)';
+            }, 500);
+            
+            return { total, results, isCritical, isCriticalFail };
+        }
+        
         // Excluir uma mensagem
         async function deleteMessage(messageId) {
             if (!confirm('Tem certeza que deseja excluir este registro?')) return;
@@ -1748,21 +2315,21 @@
         
         // Rolar D20 rápido
         async function rollQuickD20() {
-            // Selecionar D20
             diceTypes.forEach(d => d.classList.remove('active'));
             document.querySelector('.dice-type[data-dice="20"]').classList.add('active');
             selectedDice = 20;
             
-            // Configurar para rolagem única
             diceQuantity.value = '1';
             modifier.value = '0';
             rollType.value = 'normal';
             
-            // Rolar
             await rollDiceWithOptions();
         }
         
-        // Adicionar event listeners
+        // =================== EVENT LISTENERS ===================
+        
+        // Listeners existentes
+        characterClassInput.addEventListener('change', updateSubclasses);
         addButton.addEventListener('click', addMessage);
         clearInputButton.addEventListener('click', () => {
             textInput.value = '';
@@ -1786,9 +2353,31 @@
             }
         });
         
-        // Inicializar a aplicação
+        // Listeners do sistema de iniciativa
+        startCombatButton.addEventListener('click', startCombat);
+        rollInitiativeButton.addEventListener('click', rollInitiative);
+        nextTurnButton.addEventListener('click', nextTurn);
+        endCombatButton.addEventListener('click', endCombat);
+        refreshInitiativeButton.addEventListener('click', () => {
+            refreshInitiativeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            loadCombatState();
+            setTimeout(() => {
+                refreshInitiativeButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            }, 500);
+        });
+        addRoundButton.addEventListener('click', () => {
+            currentRound++;
+            roundNumber.textContent = currentRound;
+            addCombatLog(`Rodada ${currentRound} iniciada manualmente`, 'system');
+            saveCombatState();
+        });
+        addEnemyButton.addEventListener('click', addEnemy);
+        
+        // =================== INICIALIZAÇÃO ===================
+        
         async function initializeApp() {
             await loadMessages();
+            loadCombatState();
             
             if (messages.length === 0) {
                 const welcomeMessage = {
