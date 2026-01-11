@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de RPG - Dados D&D</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-dragon"></i> Mesa de RPG - Dados D&D</h1>
+            <p class="description">Plataforma completa para jogos de RPG online com sistema de iniciativa e combate</p>
+        </header>
+        
+        <div class="app-container">
+            <div class="left-panel">
+                <section class="input-section">
+                    <h2><i class="fas fa-scroll"></i> Diário do Aventureiro</h2>
+                    
+                    <div class="user-config">
+                        <h3><i class="fas fa-helmet-battle"></i> Seu Personagem</h3>
+                        <div class="input-group">
+                            <label for="userName">Nome do Personagem:</label>
+                            <input type="text" id="userName" placeholder="Ex: Azahorg, Aragorn, Gandalf, Legolas..." maxlength="100">
+                        </div>
+                        
+                        <div class="class-row">
+                            <div class="class-group">
+                                <label for="characterClass"><i class="fas fa-shield-alt"></i> Classe:</label>
+                                <select id="characterClass">
+                                    <option value="">Selecione uma classe...</option>
+                                    <option value="Bárbaro">🪓 Bárbaro</option>
+                                    <option value="Bardo">🎶 Bardo</option>
+                                    <option value="Clérigo">✝️ Clérigo</option>
+                                    <option value="Druida">🌿 Druida</option>
+                                    <option value="Guerreiro">⚔️ Guerreiro</option>
+                                    <option value="Monge">🥋 Monge</option>
+                                    <option value="Paladino">🛡 Paladino</option>
+                                    <option value="Patrulheiro">🐺 Patrulheiro</option>
+                                    <option value="Ladino">🗡 Ladino</option>
+                                    <option value="Feiticeiro">🔥 Feiticeiro</option>
+                                    <option value="Bruxo">📜 Bruxo</option>
+                                    <option value="Mago">📚 Mago</option>
+                                    <option value="Artífice">🛠 Artífice</option>
+                                </select>
+                            </div>
+                            
+                            <div class="subclass-group">
+                                <label for="characterSubclass"><i class="fas fa-star"></i> Subclasse:</label>
+                                <select id="characterSubclass">
+                                    <option value="">Selecione uma classe primeiro</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="initiativeMod">Modificador de Iniciativa:</label>
+                            <select id="initiativeMod">
+                                <option value="0">+0 (Padrão)</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                                <option value="3">+3</option>
+                                <option value="4">+4</option>
+                                <option value="5">+5</option>
+                                <option value="-1">-1</option>
+                                <option value="-2">-2</option>
+                                <option value="-3">-3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Cor do personagem:</label>
+                            <div class="color-picker">
+                                <div class="color-option selected" style="background-color: #9d4edd;" data-color="#9d4edd"></div>
+                                <div class="color-option" style="background-color: #4d96ff;" data-color="#4d96ff"></div>
+                                <div class="color-option" style="background-color: #6bcf7f;" data-color="#6bcf7f"></div>
+                                <div class="color-option" style="background-color: #ffd93d;" data-color="#ffd93d"></div>
+                                <div class="color-option" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
+                                <div class="color-option" style="background-color: #ff9a00;" data-color="#ff9a00"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="actionType">Tipo de Ação:</label>
+                        <select id="actionType">
+                            <option value="">Selecione um tipo...</option>
+                            <option value="attack">⚔️ Ataque/Combate</option>
+                            <option value="magic">✨ Magia/Feitiço</option>
+                            <option value="skill">🎯 Habilidade/Teste</option>
+                            <option value="dialog">💬 Diálogo/RP</option>
+                            <option value="narrative">📖 Narrativa</option>
+                            <option value="other">🔧 Outro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="textInput">Descrição da Ação:</label>
+                        <textarea id="textInput" placeholder="Descreva sua ação no jogo, role dados automaticamente usando os botões abaixo..."></textarea>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button id="addButton" class="btn-primary">
+                            <i class="fas fa-feather-alt"></i> Registrar Ação
+                        </button>
+                        <button id="clearInputButton" class="btn-secondary">
+                            <i class="fas fa-eraser"></i> Limpar
+                        </button>
+                    </div>
+                </section>
+                
+                <section class="dice-section">
+                    <h2><i class="fas fa-dice-d20"></i> Kit de Dados D&D</h2>
+                    
+                    <div class="dice-collection">
+                        <div class="dice-type active" data-dice="4">
+                            <div class="dice-icon">d4</div>
+                            <div class="dice-label">D4</div>
+                            <small>Dano leve</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="6">
+                            <div class="dice-icon">d6</div>
+                            <div class="dice-label">D6</div>
+                            <small>Dano básico</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="8">
+                            <div class="dice-icon">d8</div>
+                            <div class="dice-label">D8</div>
+                            <small>Armas versáteis</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="10">
+                            <div class="dice-icon">d10</div>
+                            <div class="dice-label">D10</div>
+                            <small>Armas grandes</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="12">
+                            <div class="dice-icon">d12</div>
+                            <div class="dice-label">D12</div>
+                            <small>Armas enormes</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="20">
+                            <div class="dice-icon">d20</div>
+                            <div class="dice-label">D20</div>
+                            <small>Testes de habilidade</small>
+                        </div>
+                        
+                        <div class="dice-type" data-dice="100">
+                            <div class="dice-icon">d%</div>
+                            <div class="dice-label">D100</div>
+                            <small>Porcentagem</small>
+                        </div>
+                    </div>
+                    
+                    <div class="dice-controls">
+                        <h4><i class="fas fa-sliders-h"></i> Configurações da Rolagem</h4>
+                        
+                        <div class="dice-options">
+                            <div class="option-group">
+                                <label for="diceQuantity">Quantidade de Dados:</label>
+                                <select id="diceQuantity">
+                                    <option value="1">1 dado</option>
+                                    <option value="2" selected>2 dados</option>
+                                    <option value="3">3 dados</option>
+                                    <option value="4">4 dados</option>
+                                    <option value="5">5 dados</option>
+                                    <option value="6">6 dados</option>
+                                    <option value="7">7 dados</option>
+                                    <option value="8">8 dados</option>
+                                    <option value="9">9 dados</option>
+                                    <option value="10">10 dados</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="modifier">Modificador (+/-):</label>
+                                <select id="modifier">
+                                    <option value="0">Nenhum</option>
+                                    <option value="1">+1</option>
+                                    <option value="2">+2</option>
+                                    <option value="3">+3</option>
+                                    <option value="4">+4</option>
+                                    <option value="5">+5</option>
+                                    <option value="-1">-1</option>
+                                    <option value="-2">-2</option>
+                                    <option value="-3">-3</option>
+                                    <option value="-4">-4</option>
+                                    <option value="-5">-5</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="rollType">Tipo de Rolagem:</label>
+                                <select id="rollType">
+                                    <option value="normal">Normal</option>
+                                    <option value="advantage">Vantagem (2d20 maior)</option>
+                                    <option value="disadvantage">Desvantagem (2d20 menor)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="dice-display-container">
+                            <div class="dice-display" id="diceDisplay">20</div>
+                            <button id="rollDiceButton" class="btn-dice dice-roll-btn">
+                                <i class="fas fa-dice-d20"></i> ROLAR DADOS
+                            </button>
+                            <p id="diceResultText" style="margin-top: 10px; color: #b8c1ec;">Clique para rolar os dados selecionados</p>
+                        </div>
+                        
+                        <div class="dice-history">
+                            <h4><i class="fas fa-history"></i> Histórico de Rolagens</h4>
+                            <div class="dice-history-list" id="diceHistory"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div class="right-panel">
+                <section class="initiative-section">
+                    <div class="list-header">
+                        <h2><i class="fas fa-swords"></i> Sistema de Iniciativa</h2>
+                        <div class="list-info">
+                            <span id="combatStatus">Fora de Combate</span>
+                            <button id="refreshInitiativeButton" class="refresh-btn" title="Atualizar iniciativa">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="initiative-controls">
+                        <button id="startCombatButton" class="btn-initiative">
+                            <i class="fas fa-play"></i> Iniciar Combate
+                        </button>
+                        <button id="rollInitiativeButton" class="btn-dice">
+                            <i class="fas fa-dice"></i> Rolar Iniciativa
+                        </button>
+                        <button id="nextTurnButton" class="btn-secondary">
+                            <i class="fas fa-forward"></i> Próximo Turno
+                        </button>
+                        <button id="endCombatButton" class="btn-danger">
+                            <i class="fas fa-stop"></i> Encerrar Combate
+                        </button>
+                    </div>
+                    
+                    <div class="round-counter">
+                        <div class="round-info">
+                            <span>Rodada:</span>
+                            <div class="round-number" id="roundNumber">1</div>
+                            <span>Turno:</span>
+                            <div class="round-number" id="turnNumber">1</div>
+                        </div>
+                        <button id="addRoundButton" class="btn-secondary" style="padding: 5px 10px;">
+                            <i class="fas fa-plus"></i> Rodada
+                        </button>
+                    </div>
+                    
+                    <div class="initiative-tracker">
+                        <h3><i class="fas fa-list-ol"></i> Ordem de Iniciativa</h3>
+                        <div class="initiative-list" id="initiativeList">
+                            <div class="no-initiative">
+                                <i class="fas fa-users"></i><br>
+                                Nenhuma iniciativa rolada ainda.<br>
+                                <small>Clique em "Rolar Iniciativa" para começar</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="enemy-section">
+                        <h3><i class="fas fa-skull"></i> Adicionar Inimigos</h3>
+                        <div class="enemy-form">
+                            <div class="enemy-input">
+                                <input type="text" id="enemyName" placeholder="Nome do inimigo">
+                            </div>
+                            <div class="enemy-input">
+                                <input type="number" id="enemyHP" placeholder="Pontos de Vida" min="1" value="10">
+                            </div>
+                            <div class="enemy-input">
+                                <select id="enemyInitiativeMod">
+                                    <option value="0">Iniciativa +0</option>
+                                    <option value="1">+1</option>
+                                    <option value="2">+2</option>
+                                    <option value="3">+3</option>
+                                    <option value="4">+4</option>
+                                    <option value="5">+5</option>
+                                    <option value="-1">-1</option>
+                                    <option value="-2">-2</option>
+                                    <option value="-3">-3</option>
+                                </select>
+                            </div>
+                            <button id="addEnemyButton" class="btn-secondary">
+                                <i class="fas fa-plus"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="combat-log">
+                        <h4><i class="fas fa-scroll"></i> Log de Combate</h4>
+                        <div id="combatLog">
+                            <div class="log-entry">
+                                <span class="log-time">[00:00]</span>
+                                Sistema de combate iniciado
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="list-section">
+                    <div class="list-header">
+                        <h2><i class="fas fa-book-dead"></i> Registro da Campanha</h2>
+                        <div class="list-info">
+                            <span id="itemCount">Carregando...</span>
+                            <button id="refreshButton" class="refresh-btn" title="Atualizar registro">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="list-container">
+                        <ul id="textList">
+                            <li class="loading">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando registro da campanha...
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="buttons">
+                        <button id="clearAllButton" class="btn-danger">
+                            <i class="fas fa-skull-crossbones"></i> Limpar Campanha
+                        </button>
+                        <button id="quickD20Button" class="btn-dice">
+                            <i class="fas fa-bolt"></i> Rolar D20 Rápido
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <!-- SEÇÃO DE ESTATÍSTICAS E NOTIFICAÇÕES -->
+<section class="dashboard-section">
+    <div class="list-header">
+        <h2><i class="fas fa-chart-bar"></i> Dashboard de Estatísticas</h2>
+        <div class="list-info">
+            <span id="notificationCount" class="notification-badge">0</span>
+            <button id="refreshStatsButton" class="refresh-btn" title="Atualizar estatísticas">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Jogadores Ativos</h3>
+                <div class="stat-number" id="activePlayers">0</div>
+                <div class="stat-trend">
+                    <span class="trend-up"><i class="fas fa-arrow-up"></i> 0%</span>
+                    <span>desde ontem</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-dice-d20"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Rolagens Hoje</h3>
+                <div class="stat-number" id="rollsToday">0</div>
+                <div class="stat-trend">
+                    <span class="trend-up"><i class="fas fa-arrow-up"></i> 0%</span>
+                    <span>vs. ontem</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-skull-crossbones"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Combates Ativos</h3>
+                <div class="stat-number" id="activeCombats">0</div>
+                <div class="stat-trend">
+                    <span>Total de turnos:</span>
+                    <span id="totalTurns">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Dados Rápidos</h3>
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <span>🎯 Críticos:</span>
+                        <strong id="criticalHits">0</strong>
+                    </div>
+                    <div class="quick-stat">
+                        <span>💀 Falhas:</span>
+                        <strong id="criticalFails">0</strong>
+                    </div>
+                    <div class="quick-stat">
+                        <span>⚔️ Inimigos:</span>
+                        <strong id="totalEnemies">0</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="dashboard-row">
+        <div class="chart-container">
+            <h3><i class="fas fa-chart-line"></i> Atividade por Hora</h3>
+            <div class="chart-placeholder" id="activityChart">
+                <canvas id="activityChartCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div class="class-distribution">
+            <h3><i class="fas fa-shield-alt"></i> Distribuição de Classes</h3>
+            <div class="distribution-list" id="classDistribution">
+                <div class="loading">Carregando distribuição...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notifications-panel">
+        <div class="notifications-header">
+            <h3><i class="fas fa-bell"></i> Notificações do Sistema</h3>
+            <button id="clearNotificationsButton" class="btn-secondary small">
+                <i class="fas fa-trash"></i> Limpar
+            </button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+            <div class="notification-item info">
+                <div class="notification-icon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">Dashboard carregado</div>
+                    <div class="notification-message">Estatísticas e notificações estão ativas</div>
+                    <div class="notification-time">Agora mesmo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+        
+        <footer>
+            <p>Plataforma de RPG D&D Online | Sistema completo de dados, iniciativa e combate</p>
+            <p>Todos os jogadores compartilham o mesmo mundo - A aventura espera por vocês!</p>
+            <p>Desenvolvido por Alexandre Oliveira Azahorg | +55 94 992327693 | Revisado por Magali Brito de Oliveira</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
