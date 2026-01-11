@@ -61,6 +61,1164 @@ const totalEnemies = document.getElementById('totalEnemies');
 const classDistribution = document.getElementById('classDistribution');
 const activityChartCanvas = document.getElementById('activityChartCanvas');
 
+// Banco de NPCs e Gerador de Encontros
+const refreshNPCsButton = document.getElementById('refreshNPCsButton');
+const npcCount = document.getElementById('npcCount');
+const npcTypeFilter = document.getElementById('npcTypeFilter');
+const npcLocationFilter = document.getElementById('npcLocationFilter');
+const addNewNPCButton = document.getElementById('addNewNPCButton');
+const npcsGrid = document.getElementById('npcsGrid');
+const npcModal = document.getElementById('npcModal');
+const npcModalBody = document.getElementById('npcModalBody');
+
+// Gerador de Encontros
+const encounterDifficulty = document.getElementById('encounterDifficulty');
+const encounterLocation = document.getElementById('encounterLocation');
+const encounterPartyLevel = document.getElementById('encounterPartyLevel');
+const encounterType = document.getElementById('encounterType');
+const partySize = document.getElementById('partySize');
+const generateEncounterButton = document.getElementById('generateEncounterButton');
+const encounterResult = document.getElementById('encounterResult');
+const addToInitiativeButton = document.getElementById('addToInitiativeButton');
+const saveEncounterButton = document.getElementById('saveEncounterButton');
+const clearEncounterButton = document.getElementById('clearEncounterButton');
+
+// NPC Rápido
+const quickNPCName = document.getElementById('quickNPCName');
+const quickNPCType = document.getElementById('quickNPCType');
+const quickNPCRace = document.getElementById('quickNPCRace');
+const quickNPCClass = document.getElementById('quickNPCClass');
+const quickNPCLocation = document.getElementById('quickNPCLocation');
+const quickNPCLevel = document.getElementById('quickNPCLevel');
+const quickNPCDescription = document.getElementById('quickNPCDescription');
+const quickNPCHP = document.getElementById('quickNPCHP');
+const quickNPCAC = document.getElementById('quickNPCAC');
+const quickNPCInit = document.getElementById('quickNPCInit');
+const quickNPCPercep = document.getElementById('quickNPCPercep');
+const generateQuickNPCButton = document.getElementById('generateQuickNPCButton');
+const saveQuickNPCButton = document.getElementById('saveQuickNPCButton');
+const clearQuickNPCButton = document.getElementById('clearQuickNPCButton');
+
+// Tab System
+const npcTabs = document.querySelectorAll('.npc-tab');
+const npcTabContents = document.querySelectorAll('.npc-tab-content');
+
+// Sistema de NPCs
+let npcs = [];
+let currentEncounter = null;
+let selectedNPC = null;
+
+// NPCs pré-definidos (exemplos)
+const defaultNPCs = [
+    {
+        id: 'npc_1',
+        name: 'Garald, o Ferreiro',
+        type: 'merchant',
+        race: 'human',
+        class: 'merchant',
+        location: 'town',
+        level: 2,
+        description: 'Ferreiro experiente da cidade, conhecido por sua honestidade e qualidade.',
+        hp: 45,
+        ac: 13,
+        initiative: 0,
+        perception: 12,
+        tags: ['ferreiro', 'honesto', 'qualidade'],
+        notes: 'Fornece armas e armaduras de qualidade. Pode melhorar equipamentos.',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'npc_2',
+        name: 'Elara, a Curandeira',
+        type: 'ally',
+        race: 'elf',
+        class: 'cleric',
+        location: 'temple',
+        level: 3,
+        description: 'Sacerdotisa dedicada à cura e proteção dos necessitados.',
+        hp: 32,
+        ac: 14,
+        initiative: 2,
+        perception: 15,
+        tags: ['curandeira', 'sacerdotisa', 'piedosa'],
+        notes: 'Oferece serviços de cura em troca de doações ao templo.',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'npc_3',
+        name: 'Grunk, o Orc Saqueador',
+        type: 'enemy',
+        race: 'orc',
+        class: 'warrior',
+        location: 'wilderness',
+        level: 1,
+        description: 'Orc brutal que lidera uma pequena gangue de saqueadores.',
+        hp: 30,
+        ac: 13,
+        initiative: 1,
+        perception: 10,
+        tags: ['brutal', 'saqueador', 'líder'],
+        notes: 'Ataca viajantes na estrada do norte.',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'npc_4',
+        name: 'Thorin Barba de Pedra',
+        type: 'ally',
+        race: 'dwarf',
+        class: 'warrior',
+        location: 'tavern',
+        level: 4,
+        description: 'Anão veterano de muitas batalhas, agora aposentado mas sempre pronto para ajudar.',
+        hp: 52,
+        ac: 16,
+        initiative: 1,
+        perception: 13,
+        tags: ['veterano', 'confiável', 'bebedor'],
+        notes: 'Conhece os segredos das montanhas ao norte.',
+        created_at: new Date().toISOString()
+    },
+    {
+        id: 'npc_5',
+        name: 'Lysandra, a Ilusionista',
+        type: 'neutral',
+        race: 'human',
+        class: 'mage',
+        location: 'town',
+        level: 5,
+        description: 'Maga especializada em ilusões, misteriosa e imprevisível.',
+        hp: 28,
+        ac: 12,
+        initiative: 3,
+        perception: 14,
+        tags: ['ilusionista', 'misteriosa', 'imprevisível'],
+        notes: 'Pode fornecer informações por um preço.',
+        created_at: new Date().toISOString()
+    }
+];
+
+// Banco de Encontros pré-definidos
+const encounterTemplates = {
+    easy: [
+        { name: 'Bando de Kobolds', description: 'Um grupo de kobolds armados com armadilhas e dardos venenosos.', enemies: ['kobold', 'kobold', 'kobold'] },
+        { name: 'Lobos da Floresta', description: 'Uma alcateia de lobos famintos caçando na floresta.', enemies: ['wolf', 'wolf', 'wolf'] },
+        { name: 'Bandidos da Estrada', description: 'Três bandidos mal equipados tentando assaltar viajantes.', enemies: ['bandit', 'bandit', 'bandit'] }
+    ],
+    medium: [
+        { name: 'Cultistas das Sombras', description: 'Um grupo de cultistas realizando um ritual macabro.', enemies: ['cultist', 'cultist', 'cultist', 'acolyte'] },
+        { name: 'Goblins e Bugbears', description: 'Uma força mista de goblins liderada por um bugbear.', enemies: ['goblin', 'goblin', 'goblin', 'bugbear'] },
+        { name: 'Zumbis Renascidos', description: 'Mortos-vivos emergindo de um cemitério antigo.', enemies: ['zombie', 'zombie', 'zombie', 'ghoul'] }
+    ],
+    hard: [
+        { name: 'Troll da Montanha', description: 'Um troll gigante acompanhado por seus servos goblins.', enemies: ['troll', 'goblin', 'goblin', 'goblin', 'goblin'] },
+        { name: 'Dragão Jovem', description: 'Um dragão jovem estabelecendo seu território.', enemies: ['young dragon', 'kobold', 'kobold', 'kobold'] },
+        { name: 'Necromante e seus Mortos', description: 'Um necromante poderoso com seu exército de mortos-vivos.', enemies: ['necromancer', 'zombie', 'zombie', 'skeleton', 'skeleton', 'ghost'] }
+    ],
+    deadly: [
+        { name: 'Demônio Invocado', description: 'Um demônio poderoso invocado por um culto maligno.', enemies: ['demon', 'cultist', 'cultist', 'cultist', 'acolyte', 'acolyte'] },
+        { name: 'Dragão Adulto', description: 'Um dragão adulto guardando seu tesouro.', enemies: ['adult dragon'] },
+        { name: 'Lich e seus Guardiões', description: 'Um lich imortal protegido por guardiões mágicos.', enemies: ['lich', 'death knight', 'wraith', 'wraith', 'skeleton mage'] }
+    ]
+};
+
+// Tabela de NPCs geráveis
+const npcTemplates = {
+    human: {
+        commoner: { hp: 4, ac: 10, initiative: 0, perception: 10 },
+        warrior: { hp: 16, ac: 13, initiative: 1, perception: 11 },
+        archer: { hp: 12, ac: 13, initiative: 2, perception: 13 },
+        mage: { hp: 8, ac: 11, initiative: 2, perception: 12 },
+        cleric: { hp: 12, ac: 14, initiative: 0, perception: 13 },
+        rogue: { hp: 10, ac: 12, initiative: 3, perception: 14 },
+        merchant: { hp: 8, ac: 10, initiative: 0, perception: 10 },
+        noble: { hp: 9, ac: 11, initiative: 0, perception: 11 },
+        guard: { hp: 14, ac: 14, initiative: 1, perception: 12 },
+        bandit: { hp: 11, ac: 12, initiative: 1, perception: 10 },
+        cultist: { hp: 9, ac: 12, initiative: 0, perception: 11 },
+        beast: { hp: 15, ac: 12, initiative: 2, perception: 13 }
+    },
+    elf: {
+        commoner: { hp: 4, ac: 11, initiative: 2, perception: 13 },
+        warrior: { hp: 15, ac: 14, initiative: 3, perception: 14 },
+        archer: { hp: 13, ac: 14, initiative: 4, perception: 15 },
+        mage: { hp: 9, ac: 12, initiative: 3, perception: 14 },
+        cleric: { hp: 13, ac: 15, initiative: 2, perception: 15 },
+        rogue: { hp: 11, ac: 13, initiative: 4, perception: 16 },
+        merchant: { hp: 8, ac: 11, initiative: 2, perception: 13 },
+        noble: { hp: 10, ac: 12, initiative: 2, perception: 14 }
+    },
+    dwarf: {
+        commoner: { hp: 6, ac: 12, initiative: 0, perception: 12 },
+        warrior: { hp: 18, ac: 15, initiative: 0, perception: 13 },
+        archer: { hp: 14, ac: 14, initiative: 1, perception: 14 },
+        mage: { hp: 10, ac: 13, initiative: 1, perception: 13 },
+        cleric: { hp: 16, ac: 16, initiative: 0, perception: 14 },
+        rogue: { hp: 12, ac: 14, initiative: 2, perception: 15 },
+        merchant: { hp: 10, ac: 12, initiative: 0, perception: 12 }
+    },
+    orc: {
+        commoner: { hp: 8, ac: 11, initiative: 0, perception: 10 },
+        warrior: { hp: 20, ac: 13, initiative: 1, perception: 11 },
+        archer: { hp: 14, ac: 13, initiative: 1, perception: 12 },
+        mage: { hp: 10, ac: 11, initiative: 1, perception: 11 },
+        cleric: { hp: 16, ac: 14, initiative: 0, perception: 12 },
+        rogue: { hp: 12, ac: 12, initiative: 2, perception: 13 },
+        beast: { hp: 18, ac: 13, initiative: 1, perception: 12 }
+    }
+};
+
+// =================== SISTEMA DE NPCS ===================
+
+// Carregar NPCs
+function loadNPCs() {
+    try {
+        const savedNPCs = localStorage.getItem('rpg_npcs');
+        if (savedNPCs) {
+            npcs = JSON.parse(savedNPCs);
+        } else {
+            npcs = [...defaultNPCs];
+            saveNPCs();
+        }
+        updateNPCsDisplay();
+        return true;
+    } catch (error) {
+        console.error('Erro ao carregar NPCs:', error);
+        npcs = [...defaultNPCs];
+        updateNPCsDisplay();
+        return false;
+    }
+}
+
+// Salvar NPCs
+function saveNPCs() {
+    try {
+        localStorage.setItem('rpg_npcs', JSON.stringify(npcs));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar NPCs:', error);
+        return false;
+    }
+}
+
+// Atualizar exibição de NPCs
+function updateNPCsDisplay() {
+    const typeFilter = npcTypeFilter.value;
+    const locationFilter = npcLocationFilter.value;
+    
+    let filteredNPCs = npcs;
+    
+    if (typeFilter !== 'all') {
+        filteredNPCs = filteredNPCs.filter(npc => npc.type === typeFilter);
+    }
+    
+    if (locationFilter !== 'all') {
+        filteredNPCs = filteredNPCs.filter(npc => npc.location === locationFilter);
+    }
+    
+    // Atualizar contador
+    npcCount.textContent = `${filteredNPCs.length} NPC${filteredNPCs.length !== 1 ? 's' : ''}`;
+    
+    // Atualizar grid
+    npcsGrid.innerHTML = '';
+    
+    if (filteredNPCs.length === 0) {
+        npcsGrid.innerHTML = `
+            <div class="loading-npcs">
+                <i class="fas fa-users-slash"></i><br>
+                Nenhum NPC encontrado<br>
+                <small>Mude os filtros ou crie novos NPCs</small>
+            </div>
+        `;
+        return;
+    }
+    
+    filteredNPCs.forEach(npc => {
+        const npcCard = document.createElement('div');
+        npcCard.className = 'npc-card';
+        npcCard.setAttribute('data-npc-id', npc.id);
+        
+        // Tipo para cor
+        const typeColors = {
+            ally: '#4d96ff',
+            enemy: '#ff6b6b',
+            neutral: '#6bcf7f',
+            merchant: '#ffd93d',
+            quest: '#9d4edd'
+        };
+        
+        // Descrição resumida
+        const shortDescription = npc.description.length > 100 
+            ? npc.description.substring(0, 100) + '...' 
+            : npc.description;
+        
+        npcCard.innerHTML = `
+            <div class="npc-card-header">
+                <div class="npc-name">${npc.name}</div>
+                <div class="npc-type ${npc.type}">${getTypeText(npc.type)}</div>
+            </div>
+            <div class="npc-info">
+                <div class="npc-info-item">
+                    <i class="fas fa-user-tag"></i>
+                    <span>${getRaceText(npc.race)} ${getClassText(npc.class)}</span>
+                </div>
+                <div class="npc-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>${getLocationText(npc.location)}</span>
+                </div>
+                <div class="npc-info-item">
+                    <i class="fas fa-star"></i>
+                    <span>Nível ${npc.level}</span>
+                </div>
+            </div>
+            <div class="npc-description">${shortDescription}</div>
+            <div class="npc-stats">
+                <div class="npc-stat">
+                    <div class="npc-stat-label">PV</div>
+                    <div class="npc-stat-value">${npc.hp}</div>
+                </div>
+                <div class="npc-stat">
+                    <div class="npc-stat-label">CA</div>
+                    <div class="npc-stat-value">${npc.ac}</div>
+                </div>
+                <div class="npc-stat">
+                    <div class="npc-stat-label">Iniciativa</div>
+                    <div class="npc-stat-value">${npc.initiative >= 0 ? '+' : ''}${npc.initiative}</div>
+                </div>
+            </div>
+        `;
+        
+        npcCard.addEventListener('click', () => showNPCDetails(npc.id));
+        npcsGrid.appendChild(npcCard);
+    });
+}
+
+// Mostrar detalhes do NPC
+function showNPCDetails(npcId) {
+    const npc = npcs.find(n => n.id === npcId);
+    if (!npc) return;
+    
+    selectedNPC = npc;
+    
+    npcModalBody.innerHTML = `
+        <div class="npc-detail-view">
+            <div class="npc-detail-header">
+                <div class="npc-detail-avatar" style="background-color: ${getTypeColor(npc.type)}">
+                    ${npc.name.charAt(0)}
+                </div>
+                <div class="npc-detail-info">
+                    <div class="npc-detail-name">${npc.name}</div>
+                    <div class="npc-detail-type ${npc.type}" style="background-color: ${getTypeColor(npc.type)}20; color: ${getTypeColor(npc.type)}">
+                        ${getTypeText(npc.type)}
+                    </div>
+                    <div class="npc-detail-row">
+                        <span class="npc-detail-label">Raça:</span>
+                        <span class="npc-detail-value">${getRaceText(npc.race)}</span>
+                    </div>
+                    <div class="npc-detail-row">
+                        <span class="npc-detail-label">Classe:</span>
+                        <span class="npc-detail-value">${getClassText(npc.class)}</span>
+                    </div>
+                    <div class="npc-detail-row">
+                        <span class="npc-detail-label">Localização:</span>
+                        <span class="npc-detail-value">${getLocationText(npc.location)}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="npc-detail-stats">
+                <div class="stat-detail">
+                    <div class="stat-detail-label">Nível</div>
+                    <div class="stat-detail-value">${npc.level}</div>
+                </div>
+                <div class="stat-detail">
+                    <div class="stat-detail-label">PV</div>
+                    <div class="stat-detail-value">${npc.hp}</div>
+                </div>
+                <div class="stat-detail">
+                    <div class="stat-detail-label">CA</div>
+                    <div class="stat-detail-value">${npc.ac}</div>
+                </div>
+                <div class="stat-detail">
+                    <div class="stat-detail-label">Iniciativa</div>
+                    <div class="stat-detail-value">${npc.initiative >= 0 ? '+' : ''}${npc.initiative}</div>
+                </div>
+                <div class="stat-detail">
+                    <div class="stat-detail-label">Percepção</div>
+                    <div class="stat-detail-value">${npc.perception}</div>
+                </div>
+            </div>
+            
+            <div class="npc-detail-description">
+                <h4>Descrição</h4>
+                <p>${npc.description}</p>
+                
+                ${npc.notes ? `
+                    <h4 style="margin-top: 15px;">Notas</h4>
+                    <p>${npc.notes}</p>
+                ` : ''}
+                
+                ${npc.tags && npc.tags.length > 0 ? `
+                    <h4 style="margin-top: 15px;">Tags</h4>
+                    <div class="npc-tags">
+                        ${npc.tags.map(tag => `<span class="npc-tag">${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    
+    npcModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Funções auxiliares de texto
+function getTypeText(type) {
+    const types = {
+        ally: 'Aliado',
+        enemy: 'Inimigo',
+        neutral: 'Neutro',
+        merchant: 'Comerciante',
+        quest: 'Missão'
+    };
+    return types[type] || type;
+}
+
+function getRaceText(race) {
+    const races = {
+        human: 'Humano',
+        elf: 'Elfo',
+        dwarf: 'Anão',
+        halfling: 'Halfling',
+        orc: 'Orc',
+        goblin: 'Goblin',
+        dragonborn: 'Dragonborn',
+        tiefling: 'Tiefling',
+        gnome: 'Gnomo',
+        'half-elf': 'Meio-Elfo',
+        'half-orc': 'Meio-Orc'
+    };
+    return races[race] || race;
+}
+
+function getClassText(className) {
+    const classes = {
+        commoner: 'Comum',
+        warrior: 'Guerreiro',
+        archer: 'Arqueiro',
+        mage: 'Mago',
+        cleric: 'Clérigo',
+        rogue: 'Ladino',
+        merchant: 'Mercador',
+        noble: 'Nobre',
+        guard: 'Guarda',
+        bandit: 'Bandido',
+        cultist: 'Cultista',
+        beast: 'Fera'
+    };
+    return classes[className] || className;
+}
+
+function getLocationText(location) {
+    const locations = {
+        town: 'Cidade/Vila',
+        wilderness: 'Selva/Floresta',
+        dungeon: 'Masmorra',
+        tavern: 'Taverna',
+        temple: 'Templo',
+        castle: 'Castelo',
+        road: 'Estrada',
+        mountains: 'Montanhas',
+        swamp: 'Pântano',
+        coast: 'Costa/Mar'
+    };
+    return locations[location] || location;
+}
+
+function getTypeColor(type) {
+    const colors = {
+        ally: '#4d96ff',
+        enemy: '#ff6b6b',
+        neutral: '#6bcf7f',
+        merchant: '#ffd93d',
+        quest: '#9d4edd'
+    };
+    return colors[type] || '#9d4edd';
+}
+
+// Adicionar novo NPC
+function addNewNPC() {
+    // Ir para a aba de NPC rápido
+    document.querySelector('.npc-tab[data-tab="quick-npc"]').click();
+    
+    // Limpar o formulário
+    clearQuickNPCForm();
+    
+    // Gerar um NPC aleatório como base
+    generateRandomNPC();
+    
+    // Notificação
+    addNotification('Novo NPC', 'Formulário pronto para criar um novo NPC.', 'info', true);
+}
+
+// =================== GERADOR DE ENCONTROS ===================
+
+// Gerar encontro
+function generateEncounter() {
+    const difficulty = encounterDifficulty.value;
+    const location = encounterLocation.value;
+    const partyLevel = parseInt(encounterPartyLevel.value);
+    const type = encounterType.value;
+    const size = parseInt(partySize.value);
+    
+    // Calcular XP total baseado no nível do grupo
+    const xpPerPlayer = getXPForLevel(partyLevel);
+    const totalXP = xpPerPlayer * size;
+    
+    // Ajustar pela dificuldade
+    let multiplier = 1;
+    switch (difficulty) {
+        case 'easy': multiplier = 0.5; break;
+        case 'medium': multiplier = 1; break;
+        case 'hard': multiplier = 1.5; break;
+        case 'deadly': multiplier = 2; break;
+    }
+    
+    const adjustedXP = Math.floor(totalXP * multiplier);
+    
+    // Selecionar template baseado na dificuldade
+    let templatePool = encounterTemplates[difficulty] || encounterTemplates.medium;
+    
+    // Se for aleatório, escolher dificuldade aleatória
+    if (difficulty === 'random') {
+        const difficulties = ['easy', 'medium', 'hard', 'deadly'];
+        const randomDiff = difficulties[Math.floor(Math.random() * difficulties.length)];
+        templatePool = encounterTemplates[randomDiff];
+    }
+    
+    const template = templatePool[Math.floor(Math.random() * templatePool.length)];
+    
+    // Gerar inimigos
+    const enemies = [];
+    const enemyCount = Math.max(2, Math.floor(Math.random() * 4) + 2);
+    
+    for (let i = 0; i < enemyCount; i++) {
+        const enemyType = template.enemies[Math.floor(Math.random() * template.enemies.length)];
+        enemies.push(generateNPCFromTemplate(enemyType, location));
+    }
+    
+    // Criar objeto do encontro
+    currentEncounter = {
+        id: generateId(),
+        name: template.name,
+        description: template.description,
+        difficulty: difficulty,
+        location: location,
+        partyLevel: partyLevel,
+        partySize: size,
+        enemies: enemies,
+        xp: adjustedXP,
+        treasure: generateTreasure(difficulty, partyLevel),
+        created_at: new Date().toISOString()
+    };
+    
+    // Atualizar exibição
+    updateEncounterDisplay();
+    
+    // Habilitar botões
+    addToInitiativeButton.disabled = false;
+    saveEncounterButton.disabled = false;
+    
+    // Notificação
+    addNotification(
+        'Encontro gerado!',
+        `${currentEncounter.name} criado com ${currentEncounter.enemies.length} inimigos.`,
+        'combat'
+    );
+}
+
+// Atualizar exibição do encontro
+function updateEncounterDisplay() {
+    if (!currentEncounter) {
+        encounterResult.innerHTML = `
+            <div class="no-encounter">
+                <i class="fas fa-dragon"></i><br>
+                Configure as opções e clique em "Gerar Encontro"<br>
+                <small>Um encontro será criado automaticamente</small>
+            </div>
+        `;
+        return;
+    }
+    
+    const difficultyText = {
+        easy: 'Fácil',
+        medium: 'Médio',
+        hard: 'Difícil',
+        deadly: 'Mortal'
+    };
+    
+    // Contar inimigos por tipo
+    const enemyCounts = {};
+    currentEncounter.enemies.forEach(enemy => {
+        enemyCounts[enemy.class] = (enemyCounts[enemy.class] || 0) + 1;
+    });
+    
+    encounterResult.innerHTML = `
+        <div class="encounter-details">
+            <div class="encounter-header">
+                <div class="encounter-title">${currentEncounter.name}</div>
+                <div class="encounter-difficulty ${currentEncounter.difficulty}">
+                    ${difficultyText[currentEncounter.difficulty]}
+                </div>
+            </div>
+            
+            <div class="encounter-description">
+                <p>${currentEncounter.description}</p>
+                <p><strong>Local:</strong> ${getLocationText(currentEncounter.location)}</p>
+            </div>
+            
+            <div class="encounter-npcs">
+                <h4>Participantes do Encontro:</h4>
+                ${Object.entries(enemyCounts).map(([type, count]) => {
+                    const enemy = currentEncounter.enemies.find(e => e.class === type);
+                    return `
+                        <div class="encounter-npc ${enemy.type}">
+                            <div class="npc-avatar">${enemy.name.charAt(0)}</div>
+                            <div class="npc-details">
+                                <div class="npc-name-small">${enemy.name}</div>
+                                <div class="npc-info-small">
+                                    <span>PV: ${enemy.hp}</span>
+                                    <span>CA: ${enemy.ac}</span>
+                                    <span>Iniciativa: ${enemy.initiative >= 0 ? '+' : ''}${enemy.initiative}</span>
+                                </div>
+                            </div>
+                            <div class="npc-count">${count}x</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <div class="encounter-stats">
+                <div class="encounter-stat">
+                    <div class="stat-label">XP Total</div>
+                    <div class="stat-value">${currentEncounter.xp}</div>
+                </div>
+                <div class="encounter-stat">
+                    <div class="stat-label">Nível do Grupo</div>
+                    <div class="stat-value">${currentEncounter.partyLevel}</div>
+                </div>
+                <div class="encounter-stat">
+                    <div class="stat-label">Inimigos</div>
+                    <div class="stat-value">${currentEncounter.enemies.length}</div>
+                </div>
+                <div class="encounter-stat">
+                    <div class="stat-label">Tesouro</div>
+                    <div class="stat-value">${currentEncounter.treasure.value} PO</div>
+                </div>
+            </div>
+            
+            <div class="encounter-description">
+                <h4>💎 Tesouro:</h4>
+                <ul>
+                    ${currentEncounter.treasure.items.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+// Adicionar encontro à iniciativa
+function addEncounterToInitiative() {
+    if (!currentEncounter || !isCombatActive) {
+        alert('Inicie o combate primeiro!');
+        return;
+    }
+    
+    currentEncounter.enemies.forEach((enemy, index) => {
+        // Adicionar número para nomes duplicados
+        const enemyName = currentEncounter.enemies.filter(e => e.name === enemy.name).length > 1
+            ? `${enemy.name} ${index + 1}`
+            : enemy.name;
+        
+        const participant = {
+            name: enemyName,
+            color: '#ff6b6b',
+            class: enemy.class,
+            initiative: rollDice(20) + enemy.initiative,
+            type: 'enemy',
+            currentHP: enemy.hp,
+            maxHP: enemy.hp,
+            conditions: []
+        };
+        
+        initiativeOrder.push(participant);
+    });
+    
+    // Reordenar iniciativa
+    initiativeOrder.sort((a, b) => b.initiative - a.initiative);
+    updateInitiativeDisplay();
+    
+    // Notificação
+    addNotification(
+        'Encontro adicionado!',
+        `${currentEncounter.enemies.length} inimigos adicionados à iniciativa.`,
+        'combat'
+    );
+    
+    // Atualizar dashboard
+    updateDashboardStats();
+}
+
+// Salvar encontro
+function saveEncounter() {
+    if (!currentEncounter) return;
+    
+    // Adicionar ao array de encontros salvos
+    const savedEncounters = JSON.parse(localStorage.getItem('rpg_saved_encounters') || '[]');
+    savedEncounters.push(currentEncounter);
+    localStorage.setItem('rpg_saved_encounters', JSON.stringify(savedEncounters));
+    
+    // Notificação
+    addNotification(
+        'Encontro salvo!',
+        `${currentEncounter.name} foi salvo na biblioteca.`,
+        'success',
+        true
+    );
+}
+
+// Limpar encontro
+function clearEncounter() {
+    currentEncounter = null;
+    updateEncounterDisplay();
+    addToInitiativeButton.disabled = true;
+    saveEncounterButton.disabled = true;
+}
+
+// =================== NPC RÁPIDO ===================
+
+// Gerar NPC aleatório
+function generateRandomNPC() {
+    const races = ['human', 'elf', 'dwarf', 'halfling', 'orc', 'dragonborn', 'tiefling'];
+    const classes = ['commoner', 'warrior', 'archer', 'mage', 'cleric', 'rogue', 'merchant', 'guard', 'bandit'];
+    const types = ['ally', 'enemy', 'neutral', 'merchant'];
+    const locations = ['town', 'wilderness', 'dungeon', 'tavern', 'temple', 'castle'];
+    
+    const race = races[Math.floor(Math.random() * races.length)];
+    const npcClass = classes[Math.floor(Math.random() * classes.length)];
+    const type = types[Math.floor(Math.random() * types.length)];
+    const location = locations[Math.floor(Math.random() * locations.length)];
+    
+    // Nome baseado na raça
+    const name = generateNPCName(race, type);
+    
+    // Descrição baseada nas características
+    const description = generateNPCDescription(race, npcClass, type);
+    
+    // Obter estatísticas do template
+    const template = npcTemplates[race]?.[npcClass] || npcTemplates.human.commoner;
+    
+    // Atualizar formulário
+    quickNPCName.value = name;
+    quickNPCRace.value = race;
+    quickNPCClass.value = npcClass;
+    quickNPCType.value = type;
+    quickNPCLocation.value = location;
+    quickNPCLevel.value = Math.floor(Math.random() * 5) + 1;
+    quickNPCDescription.value = description;
+    quickNPCHP.value = template.hp * quickNPCLevel.value;
+    quickNPCAC.value = template.ac;
+    quickNPCInit.value = template.initiative;
+    quickNPCPercep.value = template.perception;
+}
+
+// Gerar NPC a partir do formulário
+function generateNPCFromForm() {
+    const name = quickNPCName.value.trim() || `NPC ${Math.floor(Math.random() * 1000)}`;
+    const race = quickNPCRace.value;
+    const npcClass = quickNPCClass.value;
+    const type = quickNPCType.value;
+    const location = quickNPCLocation.value;
+    const level = parseInt(quickNPCLevel.value);
+    const description = quickNPCDescription.value.trim() || generateNPCDescription(race, npcClass, type);
+    
+    // Obter estatísticas do template
+    const template = npcTemplates[race]?.[npcClass] || npcTemplates.human.commoner;
+    
+    // Atualizar campos de estatísticas
+    quickNPCHP.value = template.hp * level;
+    quickNPCAC.value = template.ac;
+    quickNPCInit.value = template.initiative;
+    quickNPCPercep.value = template.perception;
+    
+    // Notificação
+    addNotification('NPC gerado!', `${name} foi criado com sucesso.`, 'success', true);
+}
+
+// Salvar NPC rápido
+function saveQuickNPC() {
+    const npc = {
+        id: `npc_${Date.now()}`,
+        name: quickNPCName.value.trim() || `NPC ${Math.floor(Math.random() * 1000)}`,
+        type: quickNPCType.value,
+        race: quickNPCRace.value,
+        class: quickNPCClass.value,
+        location: quickNPCLocation.value,
+        level: parseInt(quickNPCLevel.value),
+        description: quickNPCDescription.value.trim() || 'Sem descrição.',
+        hp: parseInt(quickNPCHP.value),
+        ac: parseInt(quickNPCAC.value),
+        initiative: parseInt(quickNPCInit.value),
+        perception: parseInt(quickNPCPercep.value),
+        tags: generateTags(quickNPCClass.value, quickNPCType.value),
+        notes: 'Criado pelo gerador rápido.',
+        created_at: new Date().toISOString()
+    };
+    
+    // Adicionar ao array de NPCs
+    npcs.unshift(npc);
+    saveNPCs();
+    updateNPCsDisplay();
+    
+    // Notificação
+    addNotification(
+        'NPC salvo!',
+        `${npc.name} foi adicionado ao banco de NPCs.`,
+        'success',
+        true
+    );
+    
+    // Limpar formulário
+    clearQuickNPCForm();
+}
+
+// Limpar formulário de NPC rápido
+function clearQuickNPCForm() {
+    quickNPCName.value = '';
+    quickNPCDescription.value = '';
+    quickNPCHP.value = '10';
+    quickNPCAC.value = '12';
+    quickNPCInit.value = '1';
+    quickNPCPercep.value = '10';
+}
+
+// =================== FUNÇÕES AUXILIARES ===================
+
+// Gerar NPC a partir de um template
+function generateNPCFromTemplate(templateType, location) {
+    const templates = {
+        kobold: { race: 'goblin', class: 'commoner', type: 'enemy', hp: 5, ac: 12, initiative: 2, perception: 10 },
+        goblin: { race: 'goblin', class: 'archer', type: 'enemy', hp: 7, ac: 13, initiative: 2, perception: 11 },
+        wolf: { race: 'beast', class: 'beast', type: 'enemy', hp: 11, ac: 13, initiative: 3, perception: 13 },
+        bandit: { race: 'human', class: 'bandit', type: 'enemy', hp: 11, ac: 12, initiative: 1, perception: 10 },
+        cultist: { race: 'human', class: 'cultist', type: 'enemy', hp: 9, ac: 12, initiative: 0, perception: 11 },
+        acolyte: { race: 'human', class: 'cleric', type: 'enemy', hp: 9, ac: 10, initiative: 0, perception: 13 },
+        zombie: { race: 'undead', class: 'commoner', type: 'enemy', hp: 22, ac: 8, initiative: -2, perception: 8 },
+        skeleton: { race: 'undead', class: 'archer', type: 'enemy', hp: 13, ac: 13, initiative: 2, perception: 10 },
+        ghoul: { race: 'undead', class: 'beast', type: 'enemy', hp: 22, ac: 12, initiative: 2, perception: 12 },
+        bugbear: { race: 'orc', class: 'warrior', type: 'enemy', hp: 27, ac: 16, initiative: 1, perception: 11 },
+        troll: { race: 'giant', class: 'beast', type: 'enemy', hp: 84, ac: 15, initiative: 1, perception: 13 },
+        'young dragon': { race: 'dragon', class: 'beast', type: 'enemy', hp: 136, ac: 17, initiative: 0, perception: 16 },
+        necromancer: { race: 'human', class: 'mage', type: 'enemy', hp: 66, ac: 12, initiative: 2, perception: 13 },
+        'adult dragon': { race: 'dragon', class: 'beast', type: 'enemy', hp: 256, ac: 19, initiative: 0, perception: 18 },
+        demon: { race: 'fiend', class: 'beast', type: 'enemy', hp: 200, ac: 18, initiative: 3, perception: 15 },
+        lich: { race: 'undead', class: 'mage', type: 'enemy', hp: 135, ac: 17, initiative: 2, perception: 16 },
+        'death knight': { race: 'undead', class: 'warrior', type: 'enemy', hp: 180, ac: 20, initiative: 0, perception: 12 },
+        wraith: { race: 'undead', class: 'mage', type: 'enemy', hp: 67, ac: 13, initiative: 3, perception: 14 },
+        'skeleton mage': { race: 'undead', class: 'mage', type: 'enemy', hp: 45, ac: 13, initiative: 2, perception: 12 }
+    };
+    
+    const template = templates[templateType] || templates.kobold;
+    
+    return {
+        id: generateId(),
+        name: `${templateType.charAt(0).toUpperCase() + templateType.slice(1)}`,
+        type: template.type,
+        race: template.race,
+        class: template.class,
+        location: location,
+        level: Math.ceil(template.hp / 10),
+        description: `Um ${templateType} encontrado na região.`,
+        hp: template.hp,
+        ac: template.ac,
+        initiative: template.initiative,
+        perception: template.perception,
+        created_at: new Date().toISOString()
+    };
+}
+
+// Gerar nome de NPC
+function generateNPCName(race, type) {
+    const nameLists = {
+        human: ['Garald', 'Elara', 'Marcus', 'Lysandra', 'Thorin', 'Isolde', 'Roland', 'Seraphina'],
+        elf: ['Aelar', 'Lyra', 'Faelar', 'Sylas', 'Elowen', 'Thalion', 'Nimue', 'Calen'],
+        dwarf: ['Thrain', 'Hilda', 'Borin', 'Frida', 'Durin', 'Helga', 'Gimli', 'Brunhilda'],
+        orc: ['Grunk', 'Mog', 'Korg', 'Gash', 'Zug', 'Snag', 'Grak', 'Ruk'],
+        dragonborn: ['Kaz', 'Sora', 'Vorik', 'Tiamat', 'Drako', 'Zephyr', 'Ignis', 'Nova'],
+        tiefling: ['Mephisto', 'Lilith', 'Asmodeus', 'Nyx', 'Belial', 'Morgana', 'Zariel', 'Vesper']
+    };
+    
+    const names = nameLists[race] || nameLists.human;
+    const name = names[Math.floor(Math.random() * names.length)];
+    
+    // Adicionar título baseado no tipo
+    const titles = {
+        ally: ['o Protetor', 'o Guardião', 'o Leal', 'o Confiável'],
+        enemy: ['o Cruel', 'o Traiçoeiro', 'o Sanguinário', 'o Implacável'],
+        neutral: ['o Viajante', 'o Misterioso', 'o Solitário', 'o Observador'],
+        merchant: ['o Mercador', 'o Comerciante', 'o Negociante', 'o Fornecedor']
+    };
+    
+    const titleList = titles[type] || titles.neutral;
+    const title = titleList[Math.floor(Math.random() * titleList.length)];
+    
+    return `${name} ${title}`;
+}
+
+// Gerar descrição de NPC
+function generateNPCDescription(race, npcClass, type) {
+    const raceDesc = {
+        human: 'Uma figura humana',
+        elf: 'Uma figura élfica',
+        dwarf: 'Uma figura anã',
+        orc: 'Uma figura orc',
+        dragonborn: 'Uma figura dragonborn',
+        tiefling: 'Uma figura tiefling'
+    };
+    
+    const classDesc = {
+        commoner: 'comum',
+        warrior: 'guerreira',
+        archer: 'atiradora',
+        mage: 'arcana',
+        cleric: 'devota',
+        rogue: 'furtiva',
+        merchant: 'comerciante',
+        guard: 'de guarda',
+        bandit: 'bandida'
+    };
+    
+    const typeDesc = {
+        ally: 'amigável e disposta a ajudar',
+        enemy: 'hostil e perigosa',
+        neutral: 'cautelosa e observadora',
+        merchant: 'interessada em negócios'
+    };
+    
+    return `${raceDesc[race] || 'Uma figura'} ${classDesc[npcClass] || ''}, ${typeDesc[type] || 'neutra'}.`;
+}
+
+// Gerar tags
+function generateTags(npcClass, type) {
+    const tags = [];
+    
+    // Tags baseadas na classe
+    if (npcClass.includes('mage') || npcClass.includes('cleric')) tags.push('mágico');
+    if (npcClass.includes('warrior') || npcClass.includes('guard')) tags.push('combatente');
+    if (npcClass.includes('archer') || npcClass.includes('rogue')) tags.push('precisão');
+    if (npcClass.includes('merchant')) tags.push('comércio');
+    if (npcClass.includes('bandit')) tags.push('criminoso');
+    
+    // Tags baseadas no tipo
+    if (type === 'ally') tags.push('confiável');
+    if (type === 'enemy') tags.push('perigoso');
+    if (type === 'merchant') tags.push('negociante');
+    
+    return tags;
+}
+
+// Gerar tesouro
+function generateTreasure(difficulty, level) {
+    const baseValue = {
+        easy: 50,
+        medium: 100,
+        hard: 250,
+        deadly: 500
+    };
+    
+    const value = baseValue[difficulty] * level;
+    
+    // Itens de tesouro
+    const items = [
+        'Pequeno saco de moedas de ouro',
+        'Pedaço de joia bruta',
+        'Pergaminho com feitiço simples',
+        'Poção de cura menor',
+        'Arma comum em bom estado',
+        'Mapa antigo',
+        'Chave ornamentada',
+        'Estatueta de valor artístico',
+        'Livro raro',
+        'Gema polida'
+    ];
+    
+    // Selecionar alguns itens aleatórios
+    const selectedItems = [];
+    const numItems = Math.floor(Math.random() * 3) + 1;
+    
+    for (let i = 0; i < numItems; i++) {
+        selectedItems.push(items[Math.floor(Math.random() * items.length)]);
+    }
+    
+    return {
+        value: value,
+        items: selectedItems
+    };
+}
+
+// Obter XP para nível
+function getXPForLevel(level) {
+    const xpTable = {
+        1: 25, 2: 50, 3: 75, 4: 125, 5: 250,
+        6: 300, 7: 350, 8: 450, 9: 550, 10: 600,
+        11: 800, 12: 1000, 13: 1100, 14: 1250, 15: 1400,
+        16: 1600, 17: 2000, 18: 2100, 19: 2400, 20: 2800
+    };
+    
+    return xpTable[level] || 100;
+}
+
+// =================== EVENT LISTENERS ===================
+
+// Sistema de Tabs
+npcTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        // Remover classe active de todas as tabs
+        npcTabs.forEach(t => t.classList.remove('active'));
+        npcTabContents.forEach(c => c.classList.remove('active'));
+        
+        // Adicionar classe active à tab clicada
+        tab.classList.add('active');
+        
+        // Mostrar conteúdo correspondente
+        const tabId = tab.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+    });
+});
+
+// Filtros de NPCs
+npcTypeFilter.addEventListener('change', updateNPCsDisplay);
+npcLocationFilter.addEventListener('change', updateNPCsDisplay);
+
+// Botões do Banco de NPCs
+refreshNPCsButton.addEventListener('click', () => {
+    refreshNPCsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    loadNPCs();
+    setTimeout(() => {
+        refreshNPCsButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    }, 500);
+});
+
+addNewNPCButton.addEventListener('click', addNewNPC);
+
+// Botões do Gerador de Encontros
+generateEncounterButton.addEventListener('click', generateEncounter);
+addToInitiativeButton.addEventListener('click', addEncounterToInitiative);
+saveEncounterButton.addEventListener('click', saveEncounter);
+clearEncounterButton.addEventListener('click', clearEncounter);
+
+// Botões do NPC Rápido
+generateQuickNPCButton.addEventListener('click', generateNPCFromForm);
+saveQuickNPCButton.addEventListener('click', saveQuickNPC);
+clearQuickNPCButton.addEventListener('click', clearQuickNPCForm);
+
+// Modal de NPC
+document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+        npcModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    });
+});
+
+// Fechar modal clicando fora
+npcModal.addEventListener('click', (e) => {
+    if (e.target === npcModal) {
+        npcModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+});
+
+// Botões do modal
+document.getElementById('editNPCButton')?.addEventListener('click', () => {
+    if (!selectedNPC) return;
+    
+    // Implementar edição
+    addNotification('Em desenvolvimento', 'Edição de NPCs em breve!', 'info', true);
+});
+
+document.getElementById('deleteNPCButton')?.addEventListener('click', () => {
+    if (!selectedNPC || !confirm(`Tem certeza que deseja excluir "${selectedNPC.name}"?`)) return;
+    
+    npcs = npcs.filter(npc => npc.id !== selectedNPC.id);
+    saveNPCs();
+    updateNPCsDisplay();
+    
+    npcModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    addNotification('NPC excluído', `${selectedNPC.name} foi removido do banco.`, 'danger', true);
+});
+
+document.getElementById('addToEncounterButton')?.addEventListener('click', () => {
+    if (!selectedNPC) return;
+    
+    // Adicionar ao encontro atual
+    if (currentEncounter) {
+        currentEncounter.enemies.push(selectedNPC);
+        updateEncounterDisplay();
+        addNotification('NPC adicionado', `${selectedNPC.name} foi adicionado ao encontro.`, 'success', true);
+    } else {
+        addNotification('Sem encontro', 'Crie um encontro primeiro.', 'warning', true);
+    }
+});
+
+// =================== INICIALIZAÇÃO ATUALIZADA ===================
+
+// Atualize a função initializeApp para incluir NPCs:
+
+async function initializeApp() {
+    await loadMessages();
+    loadCombatState();
+    loadDashboardData();
+    loadNPCs(); // ← ADICIONE ESTA LINHA
+    
+    if (messages.length === 0) {
+        const welcomeMessage = {
+            id: 'welcome',
+            content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
+            user_name: 'Mestre do Jogo',
+            character_class: 'Mestre',
+            character_subclass: 'Mestre das Aventuras',
+            user_color: '#ffd93d',
+            action_type: 'narrative',
+            created_at: new Date().toISOString(),
+            is_dice_roll: false
+        };
+        messages.push(welcomeMessage);
+        await saveMessages();
+        updateListDisplay();
+    }
+    
+    // Configurar notificações automáticas
+    setupAutomaticNotifications();
+    
+    // Inicializar dashboard
+    updateDashboardStats();
+    
+    // Gerar um NPC aleatório no formulário rápido
+    generateRandomNPC();
+    
+    // Adicionar notificação de boas-vindas
+    addNotification(
+        'Banco de NPCs ativo!',
+        'Sistema de NPCs e gerador de encontros carregado. Crie personagens únicos para sua campanha!',
+        'success'
+    );
+    
+    setInterval(loadMessages, 10000);
+    setInterval(updateDashboardStats, 30000);
+    setInterval(saveDashboardData, 60000);
+}
+
 // Sistema de notificações
 let notifications = [];
 let activityData = {
