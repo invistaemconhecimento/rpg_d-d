@@ -99,6 +99,992 @@ const generateQuickNPCButton = document.getElementById('generateQuickNPCButton')
 const saveQuickNPCButton = document.getElementById('saveQuickNPCButton');
 const clearQuickNPCButton = document.getElementById('clearQuickNPCButton');
 
+// Mapa de Combate
+const toggleGridButton = document.getElementById('toggleGridButton');
+const gridSize = document.getElementById('gridSize');
+const gridScale = document.getElementById('gridScale');
+const cellSize = document.getElementById('cellSize');
+const clearMapButton = document.getElementById('clearMapButton');
+const combatMap = document.getElementById('combatMap');
+const mapElements = document.getElementById('mapElements');
+const measuredDistance = document.getElementById('measuredDistance');
+const startMeasurementButton = document.getElementById('startMeasurementButton');
+const clearMeasurementButton = document.getElementById('clearMeasurementButton');
+const saveMapButton = document.getElementById('saveMapButton');
+const loadMapButton = document.getElementById('loadMapButton');
+const exportMapButton = document.getElementById('exportMapButton');
+const characterDetails = document.getElementById('characterDetails');
+const elementName = document.getElementById('elementName');
+const elementType = document.getElementById('elementType');
+const elementHP = document.getElementById('elementHP');
+const elementNotes = document.getElementById('elementNotes');
+const saveElementButton = document.getElementById('saveElementButton');
+const deleteElementButton = document.getElementById('deleteElementButton');
+
+// Sistema do Mapa
+let mapData = {
+    gridSize: 30,
+    cellSize: 25,
+    showGrid: true,
+    elements: [],
+    terrains: {},
+    selectedTool: 'select',
+    selectedElement: null,
+    isMeasuring: false,
+    measurementPoints: []
+};
+
+let selectedColor = '#4d96ff';
+let selectedTerrain = 'grass';
+
+// =================== SISTEMA DO MAPA DE COMBATE ===================
+
+// Inicializar mapa
+function initializeMap() {
+    createGrid();
+    loadMapData();
+    setupEventListeners();
+    updateMapElementsList();
+    
+    // Notificação
+    addNotification('Mapa carregado', 'Sistema de mapa de combate ativado!', 'success');
+}
+
+// Criar grade do mapa
+function createGrid() {
+    combatMap.innerHTML = '';
+    
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'grid-container';
+    gridContainer.style.gridTemplateColumns = `repeat(${mapData.gridSize}, ${mapData.cellSize}px)`;
+    gridContainer.style.width = `${mapData.gridSize * mapData.cellSize}px`;
+    gridContainer.style.height = `${mapData.gridSize * mapData.cellSize}px`;
+    
+    // Criar células
+    for (let y = 0; y < mapData.gridSize; y++) {
+        const row = document.createElement('div');
+        row.className = 'grid-row';
+        
+        for (let x = 0; x < mapData.gridSize; x++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.x = x;
+            cell.dataset.y = y;
+            cell.style.width = `${mapData.cellSize}px`;
+            cell.style.height = `${mapData.cellSize}px`;
+            
+            // Aplicar terreno se existir
+            const terrainKey = `${x},${y}`;
+            if (mapData.terrains[terrainKey]) {
+                const terrainTile = document.createElement('div');
+                terrainTile.className = `terrain-tile ${mapData.terrains[terrainKey]}`;
+                cell.appendChild(terrainTile);
+            }
+            
+            // Event listeners da célula
+            cell.addEventListener('click', (e) => handleCellClick(e, x, y));
+            cell.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                handleCellRightClick(x, y);
+            });
+            
+            row.appendChild(cell);
+        }
+        
+        gridContainer.appendChild(row);
+    }
+    
+    combatMap.appendChild(gridContainer);
+    updateGridElements();
+}
+
+// Atualizar elementos no mapa
+function updateGridElements() {
+    // Remover elementos antigos
+    document.querySelectorAll('.map-element').forEach(el => el.remove());
+    
+    // Adicionar elementos
+    mapData.elements.forEach(element => {
+        const cell = document.querySelector(`.grid-cell[data-x="${element.x}"][data-y="${element.y}"]`);
+        if (!cell) return;
+        
+        const elementDiv = document.createElement('div');
+        elementDiv.className = `map-element ${element.type}`;
+        elementDiv.dataset.elementId = element.id;
+        elementDiv.style.width = `${mapData.cellSize - 4}px`;
+        elementDiv.style.height = `${mapData.cellSize - 4}px`;
+        elementDiv.style.left = `${element.x * mapData.cellSize + 2}px`;
+        elementDiv.style.top = `${element.y * mapData.cellSize + 2}px`;
+        elementDiv.style.backgroundColor = element.color || selectedColor;
+        elementDiv.style.borderColor = element.color || selectedColor;
+        
+        // Ícone baseado no tipo
+        let icon = 'user';
+        if (element.type === 'enemy') icon = 'skull';
+        if (element.type === 'obstacle') icon = 'mountain';
+        if (element.type === 'terrain') icon = 'tree';
+        
+        elementDiv.innerHTML = `
+            <i class="fas fa-${icon}"></i>
+            <div class="element-label">${element.name}</div>
+        `;
+        
+        // Event listeners do elemento
+        elementDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectElement(element.id);
+        });
+        
+        elementDiv.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            showElementDetails(element.id);
+        });
+        
+        // Arrastar elemento
+        makeDraggable(elementDiv, element);
+        
+        combatMap.querySelector('.grid-container').appendChild(elementDiv);
+    });
+    
+    // Atualizar lista lateral
+    updateMapElementsList();
+}
+
+// Manipular clique na célula
+function handleCellClick(e, x, y) {
+    const cell = e.target.closest('.grid-cell');
+    
+    switch (mapData.selectedTool) {
+        case 'select':
+            // Selecionar elemento se existir
+            const element = mapData.elements.find(el => el.x === x && el.y === y);
+            if (element) {
+                selectElement(element.id);
+            } else {
+                clearSelection();
+            }
+            break;
+            
+        case 'character':
+        case 'enemy':
+        case 'obstacle':
+            addElement(x, y, mapData.selectedTool);
+            break;
+            
+        case 'terrain':
+            addTerrain(x, y, selectedTerrain);
+            break;
+            
+        case 'erase':
+            removeElementAt(x, y);
+            removeTerrainAt(x, y);
+            break;
+    }
+    
+    // Medição de distância
+    if (mapData.isMeasuring) {
+        handleMeasurementClick(x, y);
+    }
+}
+
+// Manipular clique direito na célula
+function handleCellRightClick(x, y) {
+    // Remover elemento ou terreno
+    removeElementAt(x, y);
+    removeTerrainAt(x, y);
+}
+
+// Adicionar elemento
+function addElement(x, y, type) {
+    // Verificar se já existe elemento na célula
+    if (mapData.elements.some(el => el.x === x && el.y === y)) {
+        addNotification('Célula ocupada', 'Já existe um elemento nesta célula.', 'warning', true);
+        return;
+    }
+    
+    const element = {
+        id: `element_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: type === 'character' ? 'Personagem' : 
+               type === 'enemy' ? 'Inimigo' : 
+               type === 'obstacle' ? 'Obstáculo' : 'Elemento',
+        type: type,
+        x: x,
+        y: y,
+        color: selectedColor,
+        hp: 10,
+        notes: '',
+        created_at: new Date().toISOString()
+    };
+    
+    mapData.elements.push(element);
+    updateGridElements();
+    saveMapData();
+    
+    addNotification('Elemento adicionado', `${element.name} adicionado ao mapa.`, 'success', true);
+}
+
+// Adicionar terreno
+function addTerrain(x, y, terrainType) {
+    const terrainKey = `${x},${y}`;
+    mapData.terrains[terrainKey] = terrainType;
+    
+    // Atualizar visualização
+    const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+    if (cell) {
+        // Remover terreno antigo
+        cell.querySelector('.terrain-tile')?.remove();
+        
+        // Adicionar novo terreno
+        const terrainTile = document.createElement('div');
+        terrainTile.className = `terrain-tile ${terrainType}`;
+        cell.appendChild(terrainTile);
+    }
+    
+    saveMapData();
+}
+
+// Remover elemento
+function removeElementAt(x, y) {
+    const index = mapData.elements.findIndex(el => el.x === x && el.y === y);
+    if (index !== -1) {
+        const element = mapData.elements[index];
+        mapData.elements.splice(index, 1);
+        
+        // Se era o elemento selecionado, limpar seleção
+        if (mapData.selectedElement === element.id) {
+            clearSelection();
+        }
+        
+        updateGridElements();
+        saveMapData();
+        
+        addNotification('Elemento removido', `${element.name} removido do mapa.`, 'info', true);
+    }
+}
+
+// Remover terreno
+function removeTerrainAt(x, y) {
+    const terrainKey = `${x},${y}`;
+    if (mapData.terrains[terrainKey]) {
+        delete mapData.terrains[terrainKey];
+        
+        // Atualizar visualização
+        const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+        cell?.querySelector('.terrain-tile')?.remove();
+        
+        saveMapData();
+    }
+}
+
+// Selecionar elemento
+function selectElement(elementId) {
+    // Desselecionar elemento anterior
+    document.querySelectorAll('.map-element.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    // Selecionar novo elemento
+    const element = mapData.elements.find(el => el.id === elementId);
+    if (!element) return;
+    
+    mapData.selectedElement = elementId;
+    
+    const elementDiv = document.querySelector(`.map-element[data-element-id="${elementId}"]`);
+    if (elementDiv) {
+        elementDiv.classList.add('selected');
+    }
+    
+    // Mostrar detalhes
+    showElementDetails(elementId);
+}
+
+// Limpar seleção
+function clearSelection() {
+    mapData.selectedElement = null;
+    document.querySelectorAll('.map-element.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+    hideElementDetails();
+}
+
+// Mostrar detalhes do elemento
+function showElementDetails(elementId) {
+    const element = mapData.elements.find(el => el.id === elementId);
+    if (!element) return;
+    
+    // Preencher formulário
+    elementName.value = element.name;
+    elementType.value = element.type;
+    elementHP.value = element.hp || 10;
+    elementNotes.value = element.notes || '';
+    
+    // Selecionar cor
+    document.querySelectorAll('.color-option-small').forEach(option => {
+        option.classList.remove('selected');
+        if (option.style.backgroundColor === element.color) {
+            option.classList.add('selected');
+        }
+    });
+    
+    // Mostrar painel
+    characterDetails.classList.add('active');
+}
+
+// Ocultar detalhes do elemento
+function hideElementDetails() {
+    characterDetails.classList.remove('active');
+}
+
+// Atualizar lista de elementos
+function updateMapElementsList() {
+    mapElements.innerHTML = '';
+    
+    if (mapData.elements.length === 0) {
+        mapElements.innerHTML = `
+            <div class="no-elements">
+                <i class="fas fa-plus-circle"></i><br>
+                Nenhum elemento no mapa<br>
+                <small>Use as ferramentas para adicionar</small>
+            </div>
+        `;
+        return;
+    }
+    
+    mapData.elements.forEach(element => {
+        const elementItem = document.createElement('div');
+        elementItem.className = 'map-element-item';
+        elementItem.style.borderLeftColor = element.color;
+        elementItem.dataset.elementId = element.id;
+        
+        // Ícone baseado no tipo
+        let icon = 'user';
+        let iconColor = '#4d96ff';
+        if (element.type === 'enemy') {
+            icon = 'skull';
+            iconColor = '#ff6b6b';
+        } else if (element.type === 'obstacle') {
+            icon = 'mountain';
+            iconColor = '#8a8ac4';
+        } else if (element.type === 'terrain') {
+            icon = 'tree';
+            iconColor = '#6bcf7f';
+        }
+        
+        elementItem.innerHTML = `
+            <div class="element-icon" style="background-color: ${element.color}">
+                <i class="fas fa-${icon}"></i>
+            </div>
+            <div class="element-info">
+                <div class="element-name">${element.name}</div>
+                <div class="element-type">${element.type} - (${element.x}, ${element.y})</div>
+            </div>
+            <div class="element-actions">
+                <button class="element-action-btn" onclick="selectElement('${element.id}')" title="Selecionar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="element-action-btn" onclick="removeElement('${element.id}')" title="Remover">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        // Clique no item da lista
+        elementItem.addEventListener('click', (e) => {
+            if (!e.target.closest('.element-actions')) {
+                selectElement(element.id);
+                
+                // Centralizar no mapa
+                const cell = document.querySelector(`.grid-cell[data-x="${element.x}"][data-y="${element.y}"]`);
+                if (cell) {
+                    cell.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                }
+            }
+        });
+        
+        mapElements.appendChild(elementItem);
+    });
+}
+
+// Remover elemento por ID
+function removeElement(elementId) {
+    if (!confirm('Tem certeza que deseja remover este elemento?')) return;
+    
+    const element = mapData.elements.find(el => el.id === elementId);
+    if (!element) return;
+    
+    mapData.elements = mapData.elements.filter(el => el.id !== elementId);
+    
+    if (mapData.selectedElement === elementId) {
+        clearSelection();
+    }
+    
+    updateGridElements();
+    saveMapData();
+    
+    addNotification('Elemento removido', `${element.name} foi removido.`, 'info', true);
+}
+
+// Salvar elemento
+function saveElement() {
+    const element = mapData.elements.find(el => el.id === mapData.selectedElement);
+    if (!element) return;
+    
+    element.name = elementName.value || element.type;
+    element.type = elementType.value;
+    element.hp = parseInt(elementHP.value) || 10;
+    element.notes = elementNotes.value;
+    
+    // Cor selecionada
+    const selectedColorOption = document.querySelector('.color-option-small.selected');
+    if (selectedColorOption) {
+        element.color = selectedColorOption.style.backgroundColor;
+    }
+    
+    updateGridElements();
+    saveMapData();
+    hideElementDetails();
+    
+    addNotification('Elemento atualizado', `${element.name} foi atualizado.`, 'success', true);
+}
+
+// =================== SISTEMA DE MEDIÇÃO ===================
+
+// Iniciar medição
+function startMeasurement() {
+    mapData.isMeasuring = !mapData.isMeasuring;
+    mapData.measurementPoints = [];
+    
+    // Limpar medição anterior
+    clearMeasurement();
+    
+    if (mapData.isMeasuring) {
+        startMeasurementButton.innerHTML = '<i class="fas fa-stop"></i> Parar';
+        startMeasurementButton.classList.add('btn-danger');
+        startMeasurementButton.classList.remove('btn-secondary');
+        
+        addNotification('Medição ativada', 'Clique em duas células para medir a distância.', 'info', true);
+    } else {
+        startMeasurementButton.innerHTML = '<i class="fas fa-play"></i> Medir';
+        startMeasurementButton.classList.remove('btn-danger');
+        startMeasurementButton.classList.add('btn-secondary');
+    }
+}
+
+// Manipular clique de medição
+function handleMeasurementClick(x, y) {
+    mapData.measurementPoints.push({ x, y });
+    
+    // Marcar célula
+    const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+    if (cell) {
+        cell.classList.add(mapData.measurementPoints.length === 1 ? 'measure-start' : 'measure-end');
+    }
+    
+    // Se temos dois pontos, calcular distância
+    if (mapData.measurementPoints.length === 2) {
+        calculateDistance();
+        mapData.isMeasuring = false;
+        startMeasurementButton.innerHTML = '<i class="fas fa-play"></i> Medir';
+        startMeasurementButton.classList.remove('btn-danger');
+        startMeasurementButton.classList.add('btn-secondary');
+    }
+}
+
+// Calcular distância
+function calculateDistance() {
+    if (mapData.measurementPoints.length !== 2) return;
+    
+    const [point1, point2] = mapData.measurementPoints;
+    
+    // Distância de Manhattan (movimento em grade)
+    const dx = Math.abs(point2.x - point1.x);
+    const dy = Math.abs(point2.y - point1.y);
+    
+    // Distância euclidiana (em linha reta)
+    const distanceStraight = Math.sqrt(dx * dx + dy * dy);
+    
+    // Distância em quadrados (movimento D&D)
+    const distanceSquares = Math.max(dx, dy);
+    
+    // Atualizar display
+    measuredDistance.textContent = `${distanceSquares} quadrados`;
+    
+    // Desenhar linha de medição
+    drawMeasurementLine(point1, point2, distanceSquares);
+    
+    addNotification('Distância medida', `${distanceSquares} quadrados entre os pontos.`, 'success', true);
+}
+
+// Desenhar linha de medição
+function drawMeasurementLine(point1, point2, distance) {
+    const container = combatMap.querySelector('.grid-container');
+    
+    // Calcular posições em pixels
+    const x1 = point1.x * mapData.cellSize + mapData.cellSize / 2;
+    const y1 = point1.y * mapData.cellSize + mapData.cellSize / 2;
+    const x2 = point2.x * mapData.cellSize + mapData.cellSize / 2;
+    const y2 = point2.y * mapData.cellSize + mapData.cellSize / 2;
+    
+    // Calcular comprimento e ângulo
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    
+    // Criar linha
+    const line = document.createElement('div');
+    line.className = 'measurement-line';
+    line.style.width = `${length}px`;
+    line.style.left = `${x1}px`;
+    line.style.top = `${y1}px`;
+    line.style.transform = `rotate(${angle}deg)`;
+    
+    // Criar label
+    const label = document.createElement('div');
+    label.className = 'measurement-label';
+    label.textContent = `${distance} quadrados`;
+    label.style.left = `${(x1 + x2) / 2}px`;
+    label.style.top = `${(y1 + y2) / 2 - 20}px`;
+    
+    container.appendChild(line);
+    container.appendChild(label);
+}
+
+// Limpar medição
+function clearMeasurement() {
+    mapData.measurementPoints = [];
+    
+    // Remover marcações das células
+    document.querySelectorAll('.measure-start, .measure-end, .measure-path').forEach(cell => {
+        cell.classList.remove('measure-start', 'measure-end', 'measure-path');
+    });
+    
+    // Remover linhas e labels
+    document.querySelectorAll('.measurement-line, .measurement-label').forEach(el => {
+        el.remove();
+    });
+    
+    measuredDistance.textContent = '0 quadrados';
+    
+    if (mapData.isMeasuring) {
+        mapData.isMeasuring = false;
+        startMeasurementButton.innerHTML = '<i class="fas fa-play"></i> Medir';
+        startMeasurementButton.classList.remove('btn-danger');
+        startMeasurementButton.classList.add('btn-secondary');
+    }
+}
+
+// =================== SISTEMA DE ARRASTAR E SOLTAR ===================
+
+// Tornar elemento arrastável
+function makeDraggable(elementDiv, elementData) {
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+    
+    elementDiv.addEventListener('mousedown', startDrag);
+    elementDiv.addEventListener('touchstart', startDragTouch);
+    
+    function startDrag(e) {
+        e.preventDefault();
+        isDragging = true;
+        
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = elementData.x;
+        initialY = elementData.y;
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+    }
+    
+    function startDragTouch(e) {
+        e.preventDefault();
+        if (e.touches.length !== 1) return;
+        
+        isDragging = true;
+        
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        initialX = elementData.x;
+        initialY = elementData.y;
+        
+        document.addEventListener('touchmove', dragTouch);
+        document.addEventListener('touchend', stopDrag);
+    }
+    
+    function drag(e) {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        // Calcular nova posição em células
+        const cellSize = mapData.cellSize;
+        const newX = Math.round(initialX + dx / cellSize);
+        const newY = Math.round(initialY + dy / cellSize);
+        
+        // Verificar limites
+        if (newX >= 0 && newX < mapData.gridSize && 
+            newY >= 0 && newY < mapData.gridSize) {
+            
+            // Verificar se a célula está ocupada
+            const cellOccupied = mapData.elements.some(el => 
+                el.id !== elementData.id && el.x === newX && el.y === newY);
+            
+            if (!cellOccupied) {
+                elementDiv.style.left = `${newX * cellSize + 2}px`;
+                elementDiv.style.top = `${newY * cellSize + 2}px`;
+                
+                // Atualizar posição no elemento
+                elementData.x = newX;
+                elementData.y = newY;
+            }
+        }
+    }
+    
+    function dragTouch(e) {
+        if (!isDragging || e.touches.length !== 1) return;
+        
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        
+        const cellSize = mapData.cellSize;
+        const newX = Math.round(initialX + dx / cellSize);
+        const newY = Math.round(initialY + dy / cellSize);
+        
+        if (newX >= 0 && newX < mapData.gridSize && 
+            newY >= 0 && newY < mapData.gridSize) {
+            
+            const cellOccupied = mapData.elements.some(el => 
+                el.id !== elementData.id && el.x === newX && el.y === newY);
+            
+            if (!cellOccupied) {
+                elementDiv.style.left = `${newX * cellSize + 2}px`;
+                elementDiv.style.top = `${newY * cellSize + 2}px`;
+                
+                elementData.x = newX;
+                elementData.y = newY;
+            }
+        }
+    }
+    
+    function stopDrag() {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        
+        // Salvar posição final
+        saveMapData();
+        updateMapElementsList();
+        
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('touchmove', dragTouch);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchend', stopDrag);
+    }
+}
+
+// =================== SALVAR E CARREGAR MAPA ===================
+
+// Salvar dados do mapa
+function saveMapData() {
+    try {
+        const mapDataToSave = {
+            gridSize: mapData.gridSize,
+            elements: mapData.elements,
+            terrains: mapData.terrains,
+            lastModified: new Date().toISOString()
+        };
+        
+        localStorage.setItem('rpg_combat_map', JSON.stringify(mapDataToSave));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar mapa:', error);
+        return false;
+    }
+}
+
+// Carregar dados do mapa
+function loadMapData() {
+    try {
+        const savedData = localStorage.getItem('rpg_combat_map');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            
+            mapData.gridSize = data.gridSize || 30;
+            mapData.elements = data.elements || [];
+            mapData.terrains = data.terrains || {};
+            
+            updateGridSize();
+            createGrid();
+            
+            addNotification('Mapa carregado', 'Mapa de combate restaurado.', 'success', true);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar mapa:', error);
+    }
+}
+
+// Atualizar tamanho da grade
+function updateGridSize() {
+    gridSize.textContent = `Grade ${mapData.gridSize}x${mapData.gridSize}`;
+    gridScale.value = mapData.gridSize;
+    cellSize.value = mapData.cellSize;
+}
+
+// Limpar mapa
+function clearMap() {
+    if (!confirm('Tem certeza que deseja limpar todo o mapa? Esta ação não pode ser desfeita.')) return;
+    
+    mapData.elements = [];
+    mapData.terrains = {};
+    mapData.selectedElement = null;
+    
+    updateGridElements();
+    clearMeasurement();
+    hideElementDetails();
+    saveMapData();
+    
+    addNotification('Mapa limpo', 'Todos os elementos foram removidos.', 'info');
+}
+
+// Exportar mapa
+function exportMap() {
+    const exportData = {
+        map: mapData,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `mapa_combate_${new Date().toISOString().slice(0,10)}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    addNotification('Mapa exportado', 'Mapa salvo como arquivo JSON.', 'success', true);
+}
+
+// Importar mapa
+function importMap() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                if (importedData.map) {
+                    mapData = importedData.map;
+                    updateGridSize();
+                    createGrid();
+                    saveMapData();
+                    
+                    addNotification('Mapa importado', 'Mapa carregado com sucesso!', 'success');
+                } else {
+                    addNotification('Erro na importação', 'Arquivo inválido.', 'danger', true);
+                }
+            } catch (error) {
+                console.error('Erro ao importar mapa:', error);
+                addNotification('Erro na importação', 'Não foi possível ler o arquivo.', 'danger', true);
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+// =================== CONFIGURAR EVENT LISTENERS ===================
+
+function setupEventListeners() {
+    // Ferramentas do mapa
+    document.querySelectorAll('.map-tool-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.map-tool-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            mapData.selectedTool = btn.dataset.tool;
+            
+            // Notificar mudança de ferramenta
+            const toolNames = {
+                select: 'Seleção',
+                character: 'Personagem',
+                enemy: 'Inimigo',
+                obstacle: 'Obstáculo',
+                terrain: 'Terreno',
+                erase: 'Apagar'
+            };
+            
+            addNotification(`Ferramenta: ${toolNames[mapData.selectedTool]}`, 'Clique no mapa para usar.', 'info', true);
+        });
+    });
+    
+    // Configurações da grade
+    gridScale.addEventListener('change', () => {
+        mapData.gridSize = parseInt(gridScale.value);
+        createGrid();
+        saveMapData();
+    });
+    
+    cellSize.addEventListener('change', () => {
+        mapData.cellSize = parseInt(cellSize.value);
+        createGrid();
+        saveMapData();
+    });
+    
+    // Alternar grade
+    toggleGridButton.addEventListener('click', () => {
+        mapData.showGrid = !mapData.showGrid;
+        document.querySelectorAll('.grid-cell').forEach(cell => {
+            cell.style.border = mapData.showGrid ? '1px solid rgba(83, 52, 131, 0.1)' : 'none';
+        });
+        
+        toggleGridButton.innerHTML = mapData.showGrid 
+            ? '<i class="fas fa-th"></i>' 
+            : '<i class="fas fa-th-large"></i>';
+    });
+    
+    // Botões principais
+    clearMapButton.addEventListener('click', clearMap);
+    saveMapButton.addEventListener('click', () => {
+        saveMapData();
+        addNotification('Mapa salvo', 'Progresso do mapa foi salvo.', 'success', true);
+    });
+    
+    loadMapButton.addEventListener('click', () => {
+        if (confirm('Carregar mapa salvo? Isso substituirá o mapa atual.')) {
+            loadMapData();
+        }
+    });
+    
+    exportMapButton.addEventListener('click', exportMap);
+    
+    // Botão de importação (oculto)
+    const importButton = document.createElement('button');
+    importButton.style.display = 'none';
+    importButton.addEventListener('click', importMap);
+    document.body.appendChild(importButton);
+    
+    // Simular clique no botão de importação quando necessário
+    loadMapButton.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        importButton.click();
+    });
+    
+    // Medição
+    startMeasurementButton.addEventListener('click', startMeasurement);
+    clearMeasurementButton.addEventListener('click', clearMeasurement);
+    
+    // Paleta de terrenos
+    document.querySelectorAll('.terrain-option').forEach(option => {
+        option.addEventListener('click', () => {
+            document.querySelectorAll('.terrain-option').forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            selectedTerrain = option.dataset.terrain;
+        });
+    });
+    
+    // Seleção de cor
+    document.querySelectorAll('.color-option-small').forEach(option => {
+        option.addEventListener('click', () => {
+            document.querySelectorAll('.color-option-small').forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            selectedColor = option.style.backgroundColor;
+        });
+    });
+    
+    // Detalhes do elemento
+    document.querySelector('.close-details').addEventListener('click', hideElementDetails);
+    saveElementButton.addEventListener('click', saveElement);
+    deleteElementButton.addEventListener('click', () => {
+        if (mapData.selectedElement) {
+            removeElement(mapData.selectedElement);
+            hideElementDetails();
+        }
+    });
+    
+    // Teclas de atalho
+    document.addEventListener('keydown', (e) => {
+        // Tecla ESC para limpar seleção
+        if (e.key === 'Escape') {
+            clearSelection();
+            clearMeasurement();
+        }
+        
+        // Tecla Delete para remover elemento selecionado
+        if (e.key === 'Delete' && mapData.selectedElement) {
+            removeElement(mapData.selectedElement);
+            hideElementDetails();
+        }
+        
+        // Teclas 1-6 para ferramentas
+        if (e.key >= '1' && e.key <= '6') {
+            const toolIndex = parseInt(e.key) - 1;
+            const tools = document.querySelectorAll('.map-tool-btn');
+            if (tools[toolIndex]) {
+                tools[toolIndex].click();
+            }
+        }
+    });
+}
+
+// =================== INICIALIZAÇÃO ATUALIZADA ===================
+
+// Atualize a função initializeApp para incluir o mapa:
+
+async function initializeApp() {
+    await loadMessages();
+    loadCombatState();
+    loadDashboardData();
+    loadNPCs();
+    initializeMap(); // ← ADICIONE ESTA LINHA
+    
+    if (messages.length === 0) {
+        const welcomeMessage = {
+            id: 'welcome',
+            content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
+            user_name: 'Mestre do Jogo',
+            character_class: 'Mestre',
+            character_subclass: 'Mestre das Aventuras',
+            user_color: '#ffd93d',
+            action_type: 'narrative',
+            created_at: new Date().toISOString(),
+            is_dice_roll: false
+        };
+        messages.push(welcomeMessage);
+        await saveMessages();
+        updateListDisplay();
+    }
+    
+    // Configurar notificações automáticas
+    setupAutomaticNotifications();
+    
+    // Inicializar dashboard
+    updateDashboardStats();
+    
+    // Adicionar notificação de boas-vindas
+    addNotification(
+        'Mapa de combate ativo!',
+        'Sistema de mapa interativo carregado. Posicione personagens e inimigos para batalhas épicas!',
+        'success'
+    );
+    
+    setInterval(loadMessages, 10000);
+    setInterval(updateDashboardStats, 30000);
+    setInterval(saveDashboardData, 60000);
+}
+
 // Tab System
 const npcTabs = document.querySelectorAll('.npc-tab');
 const npcTabContents = document.querySelectorAll('.npc-tab-content');
