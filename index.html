@@ -458,6 +458,327 @@
         </div>
     </div>
 </section>
+
+<!-- SEÇÃO DE NPCs E ENCONTROS -->
+<section class="npcs-section">
+    <div class="list-header">
+        <h2><i class="fas fa-users"></i> Banco de NPCs & Gerador de Encontros</h2>
+        <div class="list-info">
+            <span id="npcCount">0 NPCs</span>
+            <button id="refreshNPCsButton" class="refresh-btn" title="Atualizar NPCs">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="npcs-tabs">
+        <button class="npc-tab active" data-tab="npcs-list">Banco de NPCs</button>
+        <button class="npc-tab" data-tab="encounter-generator">Gerador de Encontros</button>
+        <button class="npc-tab" data-tab="quick-npc">Criar NPC Rápido</button>
+    </div>
+    
+    <!-- BANCO DE NPCs -->
+    <div class="npc-tab-content active" id="npcs-list">
+        <div class="npc-filters">
+            <div class="filter-group">
+                <label for="npcTypeFilter">Tipo:</label>
+                <select id="npcTypeFilter">
+                    <option value="all">Todos</option>
+                    <option value="ally">Aliado</option>
+                    <option value="neutral">Neutro</option>
+                    <option value="enemy">Inimigo</option>
+                    <option value="merchant">Comerciante</option>
+                    <option value="quest">Missão</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="npcLocationFilter">Localização:</label>
+                <select id="npcLocationFilter">
+                    <option value="all">Todas</option>
+                    <option value="town">Cidade/Vila</option>
+                    <option value="wilderness">Selva/Floresta</option>
+                    <option value="dungeon">Masmorra</option>
+                    <option value="tavern">Taverna</option>
+                    <option value="temple">Templo</option>
+                    <option value="castle">Castelo</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button id="addNewNPCButton" class="btn-secondary">
+                    <i class="fas fa-plus"></i> Novo NPC
+                </button>
+            </div>
+        </div>
+        
+        <div class="npcs-grid" id="npcsGrid">
+            <div class="loading-npcs">
+                <i class="fas fa-spinner fa-spin"></i> Carregando NPCs...
+            </div>
+        </div>
+    </div>
+    
+    <!-- GERADOR DE ENCONTROS -->
+    <div class="npc-tab-content" id="encounter-generator">
+        <div class="encounter-controls">
+            <div class="encounter-options">
+                <div class="option-row">
+                    <div class="option-group">
+                        <label for="encounterDifficulty">Dificuldade:</label>
+                        <select id="encounterDifficulty">
+                            <option value="easy">Fácil</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="hard">Difícil</option>
+                            <option value="deadly">Mortal</option>
+                            <option value="random">Aleatório</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="encounterLocation">Localização:</label>
+                        <select id="encounterLocation">
+                            <option value="town">Cidade/Vila</option>
+                            <option value="wilderness" selected>Selva/Floresta</option>
+                            <option value="dungeon">Masmorra</option>
+                            <option value="road">Estrada</option>
+                            <option value="mountains">Montanhas</option>
+                            <option value="swamp">Pântano</option>
+                            <option value="coast">Costa/Mar</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="encounterPartyLevel">Nível do Grupo:</label>
+                        <select id="encounterPartyLevel">
+                            <option value="1">Nível 1</option>
+                            <option value="2">Nível 2</option>
+                            <option value="3">Nível 3</option>
+                            <option value="4">Nível 4</option>
+                            <option value="5" selected>Nível 5</option>
+                            <option value="6">Nível 6</option>
+                            <option value="7">Nível 7</option>
+                            <option value="8">Nível 8</option>
+                            <option value="9">Nível 9</option>
+                            <option value="10">Nível 10</option>
+                            <option value="11">Nível 11</option>
+                            <option value="12">Nível 12</option>
+                            <option value="13">Nível 13</option>
+                            <option value="14">Nível 14</option>
+                            <option value="15">Nível 15</option>
+                            <option value="16">Nível 16</option>
+                            <option value="17">Nível 17</option>
+                            <option value="18">Nível 18</option>
+                            <option value="19">Nível 19</option>
+                            <option value="20">Nível 20</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="option-row">
+                    <div class="option-group">
+                        <label for="encounterType">Tipo de Encontro:</label>
+                        <select id="encounterType">
+                            <option value="combat">Combate</option>
+                            <option value="social">Social</option>
+                            <option value="mixed">Misto</option>
+                            <option value="random">Aleatório</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="partySize">Tamanho do Grupo:</label>
+                        <select id="partySize">
+                            <option value="1">1 jogador</option>
+                            <option value="2">2 jogadores</option>
+                            <option value="3">3 jogadores</option>
+                            <option value="4" selected>4 jogadores</option>
+                            <option value="5">5 jogadores</option>
+                            <option value="6">6 jogadores</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <button id="generateEncounterButton" class="btn-primary">
+                            <i class="fas fa-dice"></i> Gerar Encontro
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="encounter-result" id="encounterResult">
+                <div class="no-encounter">
+                    <i class="fas fa-dragon"></i><br>
+                    Configure as opções e clique em "Gerar Encontro"<br>
+                    <small>Um encontro será criado automaticamente</small>
+                </div>
+            </div>
+            
+            <div class="encounter-actions">
+                <button id="addToInitiativeButton" class="btn-dice" disabled>
+                    <i class="fas fa-swords"></i> Adicionar à Iniciativa
+                </button>
+                <button id="saveEncounterButton" class="btn-secondary" disabled>
+                    <i class="fas fa-save"></i> Salvar Encontro
+                </button>
+                <button id="clearEncounterButton" class="btn-danger">
+                    <i class="fas fa-trash"></i> Limpar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CRIAR NPC RÁPIDO -->
+    <div class="npc-tab-content" id="quick-npc">
+        <div class="quick-npc-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quickNPCName">Nome do NPC:</label>
+                    <input type="text" id="quickNPCName" placeholder="Ex: Garald, Elara, Grunk..." maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="quickNPCType">Tipo:</label>
+                    <select id="quickNPCType">
+                        <option value="ally">Aliado</option>
+                        <option value="enemy">Inimigo</option>
+                        <option value="neutral" selected>Neutro</option>
+                        <option value="merchant">Comerciante</option>
+                        <option value="quest">Missão</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quickNPCRace">Raça:</label>
+                    <select id="quickNPCRace">
+                        <option value="human">Humano</option>
+                        <option value="elf">Elfo</option>
+                        <option value="dwarf">Anão</option>
+                        <option value="halfling">Halfling</option>
+                        <option value="orc">Orc</option>
+                        <option value="goblin">Goblin</option>
+                        <option value="dragonborn">Dragonborn</option>
+                        <option value="tiefling">Tiefling</option>
+                        <option value="gnome">Gnomo</option>
+                        <option value="half-elf">Meio-Elfo</option>
+                        <option value="half-orc">Meio-Orc</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quickNPCClass">Classe/Ocupação:</label>
+                    <select id="quickNPCClass">
+                        <option value="commoner">Comum</option>
+                        <option value="warrior">Guerreiro</option>
+                        <option value="archer">Arqueiro</option>
+                        <option value="mage">Mago</option>
+                        <option value="cleric">Clérigo</option>
+                        <option value="rogue">Ladino</option>
+                        <option value="merchant">Mercador</option>
+                        <option value="noble">Nobre</option>
+                        <option value="guard">Guarda</option>
+                        <option value="bandit">Bandido</option>
+                        <option value="cultist">Cultista</option>
+                        <option value="beast">Fera</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quickNPCLocation">Localização:</label>
+                    <select id="quickNPCLocation">
+                        <option value="town">Cidade/Vila</option>
+                        <option value="wilderness">Selva/Floresta</option>
+                        <option value="dungeon">Masmorra</option>
+                        <option value="tavern">Taverna</option>
+                        <option value="temple">Templo</option>
+                        <option value="castle">Castelo</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quickNPCLevel">Nível/Desafio:</label>
+                    <select id="quickNPCLevel">
+                        <option value="0">1/8 (0)</option>
+                        <option value="0.125">1/4 (0.125)</option>
+                        <option value="0.5">1/2 (0.5)</option>
+                        <option value="1" selected>1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="quickNPCDescription">Descrição/Notas:</label>
+                    <textarea id="quickNPCDescription" placeholder="Aparência, personalidade, objetivos..." rows="3"></textarea>
+                </div>
+            </div>
+            
+            <div class="quick-stats">
+                <div class="stat-input">
+                    <label for="quickNPCHP">PV:</label>
+                    <input type="number" id="quickNPCHP" value="10" min="1" max="500">
+                </div>
+                <div class="stat-input">
+                    <label for="quickNPCAC">CA:</label>
+                    <input type="number" id="quickNPCAC" value="12" min="1" max="30">
+                </div>
+                <div class="stat-input">
+                    <label for="quickNPCInit">Iniciativa:</label>
+                    <input type="number" id="quickNPCInit" value="1" min="-5" max="10">
+                </div>
+                <div class="stat-input">
+                    <label for="quickNPCPercep">Percepção:</label>
+                    <input type="number" id="quickNPCPercep" value="10" min="1" max="30">
+                </div>
+            </div>
+            
+            <div class="form-buttons">
+                <button id="generateQuickNPCButton" class="btn-primary">
+                    <i class="fas fa-magic"></i> Gerar NPC
+                </button>
+                <button id="saveQuickNPCButton" class="btn-secondary">
+                    <i class="fas fa-save"></i> Salvar no Banco
+                </button>
+                <button id="clearQuickNPCButton" class="btn-danger">
+                    <i class="fas fa-eraser"></i> Limpar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL DE DETALHES DO NPC -->
+    <div class="npc-modal" id="npcModal">
+        <div class="npc-modal-content">
+            <div class="npc-modal-header">
+                <h3><i class="fas fa-user"></i> Detalhes do NPC</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="npc-modal-body" id="npcModalBody">
+                <!-- Conteúdo carregado dinamicamente -->
+            </div>
+            <div class="npc-modal-footer">
+                <button id="editNPCButton" class="btn-secondary">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button id="deleteNPCButton" class="btn-danger">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+                <button id="addToEncounterButton" class="btn-dice">
+                    <i class="fas fa-plus"></i> Adicionar ao Encontro
+                </button>
+            </div>
+        </div>
+    </div>
+</section>        
         
         <footer>
             <p>Plataforma de RPG D&D Online | Sistema completo de dados, iniciativa e combate</p>
