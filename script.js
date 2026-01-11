@@ -46,6 +46,521 @@ const enemyHPInput = document.getElementById('enemyHP');
 const enemyInitiativeModInput = document.getElementById('enemyInitiativeMod');
 const addEnemyButton = document.getElementById('addEnemyButton');
 
+// Dashboard e Notificações
+const refreshStatsButton = document.getElementById('refreshStatsButton');
+const clearNotificationsButton = document.getElementById('clearNotificationsButton');
+const notificationCount = document.getElementById('notificationCount');
+const notificationsList = document.getElementById('notificationsList');
+const activePlayers = document.getElementById('activePlayers');
+const rollsToday = document.getElementById('rollsToday');
+const activeCombats = document.getElementById('activeCombats');
+const totalTurns = document.getElementById('totalTurns');
+const criticalHits = document.getElementById('criticalHits');
+const criticalFails = document.getElementById('criticalFails');
+const totalEnemies = document.getElementById('totalEnemies');
+const classDistribution = document.getElementById('classDistribution');
+const activityChartCanvas = document.getElementById('activityChartCanvas');
+
+// Sistema de notificações
+let notifications = [];
+let activityData = {
+    hourlyActivity: new Array(24).fill(0),
+    classDistribution: {},
+    rollStats: {
+        today: 0,
+        yesterday: 0,
+        criticals: 0,
+        fails: 0
+    },
+    playerStats: {
+        active: 0,
+        total: 0,
+        trend: 0
+    }
+};
+
+// Adicione estas funções após as outras funções existentes:
+
+// =================== SISTEMA DE NOTIFICAÇÕES ===================
+
+// Adicionar notificação
+function addNotification(title, message, type = 'info', autoClear = false, timeout = 5000) {
+    const notification = {
+        id: generateId(),
+        title: title,
+        message: message,
+        type: type,
+        time: new Date().toISOString(),
+        read: false
+    };
+    
+    notifications.unshift(notification); // Adiciona no início
+    updateNotificationDisplay();
+    
+    // Atualizar badge
+    updateNotificationBadge();
+    
+    // Auto-clear se configurado
+    if (autoClear) {
+        setTimeout(() => {
+            removeNotification(notification.id);
+        }, timeout);
+    }
+    
+    // Efeito visual
+    const notificationElement = document.querySelector(`[data-notification-id="${notification.id}"]`);
+    if (notificationElement) {
+        notificationElement.classList.add('new-notification');
+        setTimeout(() => {
+            notificationElement.classList.remove('new-notification');
+        }, 1500);
+    }
+    
+    return notification;
+}
+
+// Remover notificação
+function removeNotification(notificationId) {
+    notifications = notifications.filter(n => n.id !== notificationId);
+    updateNotificationDisplay();
+    updateNotificationBadge();
+}
+
+// Limpar todas as notificações
+function clearAllNotifications() {
+    if (notifications.length === 0) return;
+    
+    if (confirm(`Tem certeza que deseja limpar todas as ${notifications.length} notificações?`)) {
+        notifications = [];
+        updateNotificationDisplay();
+        updateNotificationBadge();
+        addNotification('Notificações limpas', 'Todas as notificações foram removidas.', 'info', true);
+    }
+}
+
+// Atualizar exibição de notificações
+function updateNotificationDisplay() {
+    notificationsList.innerHTML = '';
+    
+    if (notifications.length === 0) {
+        notificationsList.innerHTML = `
+            <div class="notification-item info">
+                <div class="notification-icon">
+                    <i class="fas fa-bell-slash"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">Sem notificações</div>
+                    <div class="notification-message">Nenhuma notificação no momento</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    notifications.forEach(notification => {
+        const notificationItem = document.createElement('div');
+        notificationItem.className = `notification-item ${notification.type}`;
+        notificationItem.setAttribute('data-notification-id', notification.id);
+        
+        // Ícone baseado no tipo
+        let icon = 'info-circle';
+        if (notification.type === 'success') icon = 'check-circle';
+        if (notification.type === 'warning') icon = 'exclamation-triangle';
+        if (notification.type === 'danger') icon = 'exclamation-circle';
+        if (notification.type === 'combat') icon = 'swords';
+        if (notification.type === 'dice') icon = 'dice-d20';
+        
+        // Tempo relativo
+        const timeAgo = getTimeAgo(notification.time);
+        
+        notificationItem.innerHTML = `
+            <div class="notification-icon">
+                <i class="fas fa-${icon}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-message">${notification.message}</div>
+                <div class="notification-time">${timeAgo}</div>
+            </div>
+            <button class="delete-notification-btn" onclick="removeNotification('${notification.id}')">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        notificationsList.appendChild(notificationItem);
+    });
+}
+
+// Atualizar badge de notificações
+function updateNotificationBadge() {
+    const unreadCount = notifications.filter(n => !n.read).length;
+    notificationCount.textContent = unreadCount;
+    notificationCount.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+}
+
+// Função para calcular tempo relativo
+function getTimeAgo(dateString) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Agora mesmo';
+    if (diffMins < 60) return `${diffMins} min atrás`;
+    if (diffHours < 24) return `${diffHours} h atrás`;
+    if (diffDays === 1) return 'Ontem';
+    if (diffDays < 7) return `${diffDays} dias atrás`;
+    
+    return date.toLocaleDateString('pt-BR');
+}
+
+// =================== DASHBOARD DE ESTATÍSTICAS ===================
+
+// Atualizar estatísticas
+function updateDashboardStats() {
+    // Estatísticas de jogadores
+    const uniquePlayers = new Set(messages.map(msg => msg.user_name));
+    activityData.playerStats.active = uniquePlayers.size;
+    activityData.playerStats.total = messages.filter(msg => msg.user_name).length;
+    
+    // Estatísticas de rolagens do dia
+    const today = new Date().toDateString();
+    activityData.rollStats.today = diceResults.filter(roll => {
+        const rollDate = new Date(roll.timestamp).toDateString();
+        return rollDate === today;
+    }).length;
+    
+    // Estatísticas de críticos e falhas
+    activityData.rollStats.criticals = diceResults.filter(roll => roll.isCritical).length;
+    activityData.rollStats.fails = diceResults.filter(roll => roll.isCriticalFail).length;
+    
+    // Estatísticas de combate
+    const combatCount = isCombatActive ? 1 : 0;
+    const enemyCount = initiativeOrder.filter(p => p.type === 'enemy').length;
+    
+    // Atualizar elementos HTML
+    activePlayers.textContent = activityData.playerStats.active;
+    rollsToday.textContent = activityData.rollStats.today;
+    activeCombats.textContent = combatCount;
+    totalTurns.textContent = currentRound;
+    criticalHits.textContent = activityData.rollStats.criticals;
+    criticalFails.textContent = activityData.rollStats.fails;
+    totalEnemies.textContent = enemyCount;
+    
+    // Atualizar distribuição de classes
+    updateClassDistribution();
+    
+    // Atualizar gráfico de atividade
+    updateActivityChart();
+    
+    // Notificação de atualização
+    addNotification('Estatísticas atualizadas', 'O dashboard foi atualizado com os dados mais recentes.', 'success', true, 3000);
+}
+
+// Atualizar distribuição de classes
+function updateClassDistribution() {
+    const classCounts = {};
+    
+    messages.forEach(msg => {
+        if (msg.character_class) {
+            classCounts[msg.character_class] = (classCounts[msg.character_class] || 0) + 1;
+        }
+    });
+    
+    // Ordenar por quantidade
+    const sortedClasses = Object.entries(classCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5); // Top 5 classes
+    
+    activityData.classDistribution = Object.fromEntries(sortedClasses);
+    
+    // Atualizar display
+    classDistribution.innerHTML = '';
+    
+    if (sortedClasses.length === 0) {
+        classDistribution.innerHTML = `
+            <div class="loading" style="text-align: center; padding: 20px;">
+                <i class="fas fa-users"></i><br>
+                Nenhuma classe registrada ainda
+            </div>
+        `;
+        return;
+    }
+    
+    const maxCount = Math.max(...sortedClasses.map(c => c[1]));
+    
+    sortedClasses.forEach(([className, count]) => {
+        const percentage = (count / maxCount) * 100;
+        const classItem = document.createElement('div');
+        classItem.className = 'class-item';
+        classItem.innerHTML = `
+            <div>
+                <div class="class-name">
+                    <span>${className}</span>
+                </div>
+                <div class="class-bar">
+                    <div class="class-bar-fill" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+            <div class="class-count">${count}</div>
+        `;
+        classDistribution.appendChild(classItem);
+    });
+}
+
+// Atualizar gráfico de atividade
+function updateActivityChart() {
+    // Coletar dados por hora
+    const hourlyData = new Array(24).fill(0);
+    
+    messages.forEach(msg => {
+        const hour = new Date(msg.created_at).getHours();
+        hourlyData[hour]++;
+    });
+    
+    activityData.hourlyActivity = hourlyData;
+    
+    // Criar/atualizar gráfico
+    const ctx = activityChartCanvas.getContext('2d');
+    
+    // Destruir gráfico anterior se existir
+    if (window.activityChart) {
+        window.activityChart.destroy();
+    }
+    
+    window.activityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+            datasets: [{
+                label: 'Atividade',
+                data: hourlyData,
+                borderColor: '#9d4edd',
+                backgroundColor: 'rgba(157, 78, 221, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#ffd93d',
+                pointBorderColor: '#ffd93d',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(25, 25, 45, 0.9)',
+                    titleColor: '#ffd93d',
+                    bodyColor: '#b8c1ec',
+                    borderColor: '#9d4edd',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(83, 52, 131, 0.2)'
+                    },
+                    ticks: {
+                        color: '#8a8ac4',
+                        maxTicksLimit: 6
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(83, 52, 131, 0.2)'
+                    },
+                    ticks: {
+                        color: '#8a8ac4'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Salvar estatísticas no localStorage
+function saveDashboardData() {
+    try {
+        localStorage.setItem('rpg_dashboard_data', JSON.stringify({
+            notifications: notifications,
+            activityData: activityData,
+            lastUpdate: new Date().toISOString()
+        }));
+    } catch (error) {
+        console.error('Erro ao salvar dados do dashboard:', error);
+    }
+}
+
+// Carregar estatísticas do localStorage
+function loadDashboardData() {
+    try {
+        const savedData = localStorage.getItem('rpg_dashboard_data');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            notifications = data.notifications || [];
+            activityData = data.activityData || {
+                hourlyActivity: new Array(24).fill(0),
+                classDistribution: {},
+                rollStats: { today: 0, yesterday: 0, criticals: 0, fails: 0 },
+                playerStats: { active: 0, total: 0, trend: 0 }
+            };
+            
+            updateNotificationDisplay();
+            updateNotificationBadge();
+            updateDashboardStats();
+            
+            addNotification('Dashboard restaurado', 'Estatísticas carregadas da sessão anterior.', 'info', true);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dados do dashboard:', error);
+    }
+}
+
+// =================== EVENT LISTENERS ADICIONAIS ===================
+
+// Adicione estes listeners na seção de Event Listeners existente:
+
+refreshStatsButton.addEventListener('click', () => {
+    refreshStatsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    updateDashboardStats();
+    setTimeout(() => {
+        refreshStatsButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    }, 500);
+});
+
+clearNotificationsButton.addEventListener('click', clearAllNotifications);
+
+// =================== FUNÇÕES DE NOTIFICAÇÃO AUTOMÁTICA ===================
+
+// Monitorar eventos para notificações automáticas
+function setupAutomaticNotifications() {
+    // Monitorar novas mensagens
+    const originalAddMessage = addMessage;
+    addMessage = async function() {
+        const result = await originalAddMessage.apply(this, arguments);
+        if (result) {
+            addNotification(
+                'Nova ação registrada',
+                `${userNameInput.value || 'Aventureiro'} adicionou uma nova ação.`,
+                'info',
+                true
+            );
+            updateDashboardStats();
+        }
+        return result;
+    };
+    
+    // Monitorar rolagens de dados
+    const originalRollDiceWithOptions = rollDiceWithOptions;
+    rollDiceWithOptions = async function() {
+        const result = await originalRollDiceWithOptions.apply(this, arguments);
+        if (result) {
+            let message = `${userNameInput.value || 'Aventureiro'} rolou ${diceQuantity.value}d${selectedDice}`;
+            if (result.isCritical) {
+                message += ' - 🎯 CRÍTICO!';
+                addNotification('Crítico!', message, 'dice', true);
+            } else if (result.isCriticalFail) {
+                message += ' - 💀 FALHA CRÍTICA!';
+                addNotification('Falha crítica!', message, 'dice', true);
+            } else {
+                addNotification('Dados rolados', message, 'dice', true);
+            }
+            updateDashboardStats();
+        }
+        return result;
+    };
+    
+    // Monitorar sistema de combate
+    const originalStartCombat = startCombat;
+    startCombat = function() {
+        originalStartCombat.apply(this, arguments);
+        addNotification('Combate iniciado', 'O sistema de combate foi ativado!', 'combat');
+        updateDashboardStats();
+    };
+    
+    const originalEndCombat = endCombat;
+    endCombat = function() {
+        originalEndCombat.apply(this, arguments);
+        addNotification('Combate encerrado', 'O combate foi finalizado.', 'combat');
+        updateDashboardStats();
+    };
+    
+    const originalAddEnemy = addEnemy;
+    addEnemy = function() {
+        originalAddEnemy.apply(this, arguments);
+        const name = enemyNameInput.value.trim() || 'Novo inimigo';
+        addNotification('Inimigo adicionado', `${name} foi adicionado ao combate.`, 'combat', true);
+        updateDashboardStats();
+    };
+    
+    const originalNextTurn = nextTurn;
+    nextTurn = function() {
+        originalNextTurn.apply(this, arguments);
+        if (initiativeOrder[currentTurn]) {
+            addNotification(
+                'Próximo turno',
+                `Turno de ${initiativeOrder[currentTurn].name}`,
+                'combat',
+                true,
+                3000
+            );
+            updateDashboardStats();
+        }
+    };
+}
+
+// =================== INICIALIZAÇÃO ATUALIZADA ===================
+
+// Atualize a função initializeApp para incluir o dashboard:
+
+async function initializeApp() {
+    await loadMessages();
+    loadCombatState();
+    loadDashboardData();
+    
+    if (messages.length === 0) {
+        const welcomeMessage = {
+            id: 'welcome',
+            content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
+            user_name: 'Mestre do Jogo',
+            character_class: 'Mestre',
+            character_subclass: 'Mestre das Aventuras',
+            user_color: '#ffd93d',
+            action_type: 'narrative',
+            created_at: new Date().toISOString(),
+            is_dice_roll: false
+        };
+        messages.push(welcomeMessage);
+        await saveMessages();
+        updateListDisplay();
+    }
+    
+    // Configurar notificações automáticas
+    setupAutomaticNotifications();
+    
+    // Inicializar dashboard
+    updateDashboardStats();
+    
+    // Adicionar notificação de boas-vindas
+    addNotification(
+        'Bem-vindo ao Dashboard',
+        'Sistema de estatísticas e notificações ativado. Acompanhe sua campanha em tempo real!',
+        'success'
+    );
+    
+    setInterval(loadMessages, 10000);
+    setInterval(updateDashboardStats, 30000); // Atualizar estatísticas a cada 30 segundos
+    setInterval(saveDashboardData, 60000); // Salvar dados a cada minuto
+}
+
 // Configurações do usuário
 let userColor = '#9d4edd';
 let messages = [];
