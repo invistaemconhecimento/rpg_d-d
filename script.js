@@ -1,3 +1,210 @@
+// Adicione estas variáveis no início do arquivo:
+let characterSheets = [];
+let currentStep = 1;
+let attributePoints = 27;
+let selectedSheetColor = '#9d4edd';
+
+// Sistema de fichas
+const refreshSheetsButton = document.getElementById('refreshSheetsButton');
+const characterCount = document.getElementById('characterCount');
+const sheetClassFilter = document.getElementById('sheetClassFilter');
+const sheetLevelFilter = document.getElementById('sheetLevelFilter');
+const createNewSheetButton = document.getElementById('createNewSheetButton');
+const sheetsGrid = document.getElementById('sheetsGrid');
+const sheetModal = document.getElementById('sheetModal');
+const sheetModalBody = document.getElementById('sheetModalBody');
+
+// Elementos do wizard
+const wizardSteps = document.querySelectorAll('.wizard-step');
+const stepContents = document.querySelectorAll('.wizard-step-content');
+const prevStepButton = document.getElementById('prevStepButton');
+const nextStepButton = document.getElementById('nextStepButton');
+const finishSheetButton = document.getElementById('finishSheetButton');
+
+// Atributos
+const attrPoints = document.getElementById('attrPoints');
+const strScore = document.getElementById('strScore');
+const dexScore = document.getElementById('dexScore');
+const conScore = document.getElementById('conScore');
+const intScore = document.getElementById('intScore');
+const wisScore = document.getElementById('wisScore');
+const chaScore = document.getElementById('chaScore');
+
+// Botões de atributos
+document.querySelectorAll('.attr-decrease').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const attribute = this.closest('.attribute-card').dataset.attribute;
+        decreaseAttribute(attribute);
+    });
+});
+
+document.querySelectorAll('.attr-increase').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const attribute = this.closest('.attribute-card').dataset.attribute;
+        increaseAttribute(attribute);
+    });
+});
+
+// Funções principais que você precisa implementar:
+function loadCharacterSheets() {
+    // Carrega fichas do localStorage
+}
+
+function saveCharacterSheets() {
+    // Salva fichas no localStorage
+}
+
+function updateSheetsDisplay() {
+    // Atualiza a lista de fichas
+}
+
+function showSheetDetails(sheetId) {
+    // Mostra detalhes da ficha no modal
+}
+
+function createNewCharacter() {
+    // Cria uma nova ficha
+}
+
+function calculateAttributeModifier(score) {
+    // Calcula modificador de atributo
+    return Math.floor((score - 10) / 2);
+}
+
+function updateAttributeModifiers() {
+    // Atualiza todos os modificadores
+    const str = parseInt(strScore.value);
+    const dex = parseInt(dexScore.value);
+    const con = parseInt(conScore.value);
+    const int = parseInt(intScore.value);
+    const wis = parseInt(wisScore.value);
+    const cha = parseInt(chaScore.value);
+    
+    document.getElementById('strMod').textContent = formatModifier(calculateAttributeModifier(str));
+    document.getElementById('dexMod').textContent = formatModifier(calculateAttributeModifier(dex));
+    document.getElementById('conMod').textContent = formatModifier(calculateAttributeModifier(con));
+    document.getElementById('intMod').textContent = formatModifier(calculateAttributeModifier(int));
+    document.getElementById('wisMod').textContent = formatModifier(calculateAttributeModifier(wis));
+    document.getElementById('chaMod').textContent = formatModifier(calculateAttributeModifier(cha));
+}
+
+function formatModifier(mod) {
+    return mod >= 0 ? `+${mod}` : `${mod}`;
+}
+
+function updateAttributePoints() {
+    // Calcula pontos gastos
+    const baseCost = 27;
+    const attributes = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    let totalCost = 0;
+    
+    attributes.forEach(attr => {
+        const score = parseInt(document.getElementById(`${attr}Score`).value);
+        totalCost += getAttributeCost(score);
+    });
+    
+    attributePoints = baseCost - totalCost;
+    attrPoints.textContent = attributePoints;
+    
+    // Atualiza botões
+    document.querySelectorAll('.attr-increase').forEach(btn => {
+        btn.disabled = attributePoints <= 0;
+    });
+}
+
+function getAttributeCost(score) {
+    // Tabela de custos do método de compra por pontos
+    const costTable = {
+        8: 0, 9: 1, 10: 2, 11: 3, 12: 4,
+        13: 5, 14: 7, 15: 9
+    };
+    return costTable[score] || 0;
+}
+
+function increaseAttribute(attribute) {
+    if (attributePoints <= 0) return;
+    
+    const input = document.getElementById(`${attribute}Score`);
+    let value = parseInt(input.value);
+    
+    if (value < 15) {
+        value++;
+        input.value = value;
+        updateAttributeModifiers();
+        updateAttributePoints();
+    }
+}
+
+function decreaseAttribute(attribute) {
+    const input = document.getElementById(`${attribute}Score`);
+    let value = parseInt(input.value);
+    
+    if (value > 8) {
+        value--;
+        input.value = value;
+        updateAttributeModifiers();
+        updateAttributePoints();
+    }
+}
+
+// Sistema de navegação do wizard
+function goToStep(step) {
+    // Oculta todos os steps
+    wizardSteps.forEach(s => s.classList.remove('active'));
+    stepContents.forEach(c => c.classList.remove('active'));
+    
+    // Mostra o step atual
+    document.querySelector(`.wizard-step[data-step="${step}"]`).classList.add('active');
+    document.querySelector(`.wizard-step-content[data-step="${step}"]`).classList.add('active');
+    
+    // Atualiza botões
+    prevStepButton.disabled = step === 1;
+    nextStepButton.style.display = step < 4 ? 'block' : 'none';
+    finishSheetButton.style.display = step === 4 ? 'block' : 'none';
+    
+    currentStep = step;
+    
+    // Atualiza preview no passo 4
+    if (step === 4) {
+        updateCharacterPreview();
+    }
+}
+
+// Event listeners
+prevStepButton.addEventListener('click', () => goToStep(currentStep - 1));
+nextStepButton.addEventListener('click', () => goToStep(currentStep + 1));
+
+wizardSteps.forEach(step => {
+    step.addEventListener('click', () => {
+        const stepNumber = parseInt(step.dataset.step);
+        if (stepNumber < currentStep) {
+            goToStep(stepNumber);
+        }
+    });
+});
+
+// Inicialização
+function initializeCharacterSheets() {
+    loadCharacterSheets();
+    updateSheetsDisplay();
+    updateAttributeModifiers();
+    updateAttributePoints();
+    
+    // Notificação
+    addNotification('Fichas carregadas', 'Sistema de fichas de personagens ativado!', 'success');
+}
+
+// Atualize a função initializeApp para incluir as fichas:
+async function initializeApp() {
+    // ... código existente ...
+    
+    // Inicializar sistemas
+    initializeMap();
+    initializeCharacterSheets(); // ← ADICIONE ESTA LINHA
+    
+    // ... resto do código ...
+}
+
 // =================== CONFIGURAÇÃO DO JSONBIN.IO ===================
 const JSONBIN_BIN_ID = '69620ca9ae596e708fd204c5';
 const JSONBIN_API_KEY = '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i';
