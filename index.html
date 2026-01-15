@@ -17,7 +17,9 @@
         </header>
         
         <div class="app-container">
+            <!-- PAINEL ESQUERDO -->
             <div class="left-panel">
+                <!-- DIÁRIO DO AVENTUREIRO -->
                 <section class="input-section">
                     <h2><i class="fas fa-scroll"></i> Diário do Aventureiro</h2>
                     
@@ -113,6 +115,7 @@
                     </div>
                 </section>
                 
+                <!-- KIT DE DADOS D&D -->
                 <section class="dice-section">
                     <h2><i class="fas fa-dice-d20"></i> Kit de Dados D&D</h2>
                     
@@ -221,7 +224,9 @@
                 </section>
             </div>
             
+            <!-- PAINEL DIREITO -->
             <div class="right-panel">
+                <!-- SISTEMA DE INICIATIVA -->
                 <section class="initiative-section">
                     <div class="list-header">
                         <h2><i class="fas fa-swords"></i> Sistema de Iniciativa</h2>
@@ -310,6 +315,7 @@
                     </div>
                 </section>
                 
+                <!-- REGISTRO DA CAMPANHA -->
                 <section class="list-section">
                     <div class="list-header">
                         <h2><i class="fas fa-book-dead"></i> Registro da Campanha</h2>
@@ -341,7 +347,7 @@
             </div>
         </div>
         
-        <!-- SEÇÃO DE DASHBOARD E NOTIFICAÇÕES -->
+        <!-- DASHBOARD DE ESTATÍSTICAS -->
         <section class="dashboard-section">
             <div class="list-header">
                 <h2><i class="fas fa-chart-bar"></i> Dashboard de Estatísticas</h2>
@@ -458,7 +464,7 @@
             </div>
         </section>
         
-        <!-- SEÇÃO DE FICHAS DE PERSONAGENS -->
+        <!-- FICHAS DE PERSONAGENS -->
         <section class="character-sheets-section">
             <div class="list-header">
                 <h2><i class="fas fa-scroll"></i> Fichas de Personagens</h2>
@@ -476,7 +482,7 @@
                 <button class="sheet-tab" data-tab="quick-templates">Templates</button>
             </div>
             
-            <!-- LISTA DE FICHAS -->
+            <!-- ABA 1: LISTA DE FICHAS -->
             <div class="sheet-tab-content active" id="sheets-list">
                 <div class="sheets-filters">
                     <div class="filter-group">
@@ -493,7 +499,7 @@
                             <option value="Patrulheiro">Patrulheiro</option>
                             <option value="Ladino">Ladino</option>
                             <option value="Feiticeiro">Feiticeiro</option>
-                            <option value="Bruxo">Buxo</option>
+                            <option value="Bruxo">Bruxo</option>
                             <option value="Mago">Mago</option>
                             <option value="Artífice">Artífice</option>
                         </select>
@@ -528,9 +534,9 @@
                 </div>
             </div>
             
-            <!-- CRIADOR DE FICHAS -->
+            <!-- ABA 2: CRIADOR DE FICHAS -->
             <div class="sheet-tab-content" id="new-character">
-                <div id="characterSheetWizard" style="display: none;">
+                <div id="characterSheetWizard">
                     <div class="creator-wizard">
                         <div class="wizard-steps">
                             <div class="wizard-step active" data-step="1">
@@ -765,4 +771,237 @@
                                         <input type="number" id="sheetHp" value="10" min="1" max="999">
                                     </div>
                                     <div class="form-group">
-                                        <label for="sheetAc">Classe de Armadura (CA):</label
+                                        <label for="sheetAc">Classe de Armadura (CA):</label>
+                                        <input type="number" id="sheetAc" value="10" min="1" max="30">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="sheetSpeed">Velocidade:</label>
+                                        <input type="text" id="sheetSpeed" value="9m" placeholder="Ex: 9m, 12m, 15m">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sheetColor">Cor da Ficha:</label>
+                                        <div class="color-picker">
+                                            <div class="color-option selected" style="background-color: #9d4edd;" data-color="#9d4edd"></div>
+                                            <div class="color-option" style="background-color: #4d96ff;" data-color="#4d96ff"></div>
+                                            <div class="color-option" style="background-color: #6bcf7f;" data-color="#6bcf7f"></div>
+                                            <div class="color-option" style="background-color: #ffd93d;" data-color="#ffd93d"></div>
+                                            <div class="color-option" style="background-color: #ff6b6b;" data-color="#ff6b6b"></div>
+                                            <div class="color-option" style="background-color: #ff9a00;" data-color="#ff9a00"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="sheetDescription">Descrição do Personagem (Opcional):</label>
+                                        <textarea id="sheetDescription" placeholder="Descreva a aparência, personalidade, história, etc..." rows="4"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- PASSO 4: RESUMO -->
+                        <div class="wizard-step-content" data-step="4">
+                            <h3><i class="fas fa-file-alt"></i> Resumo do Personagem</h3>
+                            
+                            <div class="summary-section">
+                                <div class="summary-preview">
+                                    <div class="preview-header">
+                                        <div class="preview-avatar" id="previewAvatar">
+                                            ?
+                                        </div>
+                                        <div class="preview-info">
+                                            <h4 id="previewName">Sem nome</h4>
+                                            <div class="preview-details">
+                                                <span id="previewRace">Raça</span> •
+                                                <span id="previewClass">Classe</span> •
+                                                <span id="previewLevel">Nível 1</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="preview-stats">
+                                        <div class="preview-stat">
+                                            <span>Pontos de Vida</span>
+                                            <strong id="previewHp">10</strong>
+                                        </div>
+                                        <div class="preview-stat">
+                                            <span>Classe de Armadura</span>
+                                            <strong id="previewAc">10</strong>
+                                        </div>
+                                        <div class="preview-stat">
+                                            <span>Velocidade</span>
+                                            <strong id="previewSpeed">9m</strong>
+                                        </div>
+                                        <div class="preview-stat">
+                                            <span>Antecedente</span>
+                                            <strong id="previewBackground">Não definido</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="preview-attributes">
+                                        <div class="preview-attribute">
+                                            <div class="attr-name">Força</div>
+                                            <div class="attr-value" id="previewStr">10 (+0)</div>
+                                        </div>
+                                        <div class="preview-attribute">
+                                            <div class="attr-name">Destreza</div>
+                                            <div class="attr-value" id="previewDex">10 (+0)</div>
+                                        </div>
+                                        <div class="preview-attribute">
+                                            <div class="attr-name">Constituição</div>
+                                            <div class="attr-value" id="previewCon">10 (+0)</div>
+                                        </div>
+                                        <div class="preview-attribute">
+                                            <div class="attr-name">Inteligência</div>
+                                            <div class="attr-value" id="previewInt">10 (+0)</div>
+                                        </div>
+                                        <div class="preview-attribute">
+                                            <div class="attr-name">Sabedoria</div>
+                                            <div class="attr-value" id="previewWis">10 (+0)</div>
+                                        </div>
+                                        <div class="preview-attribute">
+                                            <div class="attr-name">Carisma</div>
+                                            <div class="attr-value" id="previewCha">10 (+0)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="preview-description">
+                                        <h5>Informações da Ficha</h5>
+                                        <p>Esta ficha será salva e poderá ser usada na mesa de RPG. Você poderá editá-la ou excluí-la a qualquer momento.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- NAVEGAÇÃO DO WIZARD -->
+                        <div class="wizard-navigation" id="wizardNavigation">
+                            <button id="prevStepButton" class="btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Anterior
+                            </button>
+                            <button id="nextStepButton" class="btn-primary">
+                                Próximo <i class="fas fa-arrow-right"></i>
+                            </button>
+                            <button id="finishSheetButton" class="btn-success" style="display: none;">
+                                <i class="fas fa-check"></i> Finalizar Ficha
+                            </button>
+                            <button id="cancelSheetButton" class="btn-danger">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ABA 3: TEMPLATES -->
+            <div class="sheet-tab-content" id="quick-templates">
+                <div class="quick-stats-section">
+                    <h3><i class="fas fa-magic"></i> Templates Rápidos</h3>
+                    <p>Use estes templates para criar personagens rapidamente com configurações pré-definidas.</p>
+                    
+                    <div class="quick-templates">
+                        <h4><i class="fas fa-user-plus"></i> Personagens Pré-configurados</h4>
+                        
+                        <div class="templates-grid">
+                            <div class="template-card" data-template="warrior">
+                                <div class="template-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="template-info">
+                                    <h5>Guerreiro do Reino</h5>
+                                    <p>Humano • Guerreiro • Nível 1</p>
+                                    <button class="btn-secondary small use-template-btn" data-template="warrior">
+                                        <i class="fas fa-plus"></i> Usar Template
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="template-card" data-template="wizard">
+                                <div class="template-icon">
+                                    <i class="fas fa-hat-wizard"></i>
+                                </div>
+                                <div class="template-info">
+                                    <h5>Mago Arcano</h5>
+                                    <p>Elfo • Mago • Nível 1</p>
+                                    <button class="btn-secondary small use-template-btn" data-template="wizard">
+                                        <i class="fas fa-plus"></i> Usar Template
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="template-card" data-template="rogue">
+                                <div class="template-icon">
+                                    <i class="fas fa-user-ninja"></i>
+                                </div>
+                                <div class="template-info">
+                                    <h5>Ladino das Sombras</h5>
+                                    <p>Halfling • Ladino • Nível 1</p>
+                                    <button class="btn-secondary small use-template-btn" data-template="rogue">
+                                        <i class="fas fa-plus"></i> Usar Template
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="template-card" data-template="cleric">
+                                <div class="template-icon">
+                                    <i class="fas fa-pray"></i>
+                                </div>
+                                <div class="template-info">
+                                    <h5>Clérigo Devoto</h5>
+                                    <p>Anão • Clérigo • Nível 1</p>
+                                    <button class="btn-secondary small use-template-btn" data-template="cleric">
+                                        <i class="fas fa-plus"></i> Usar Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- FOOTER -->
+        <footer>
+            <p>Plataforma de RPG - Sistema Completo &copy; 2024</p>
+            <p>Desenvolvido para mestres e jogadores de RPG de mesa</p>
+            <p><i class="fas fa-dice-d20"></i> Que seus dados rolem 20s naturais! <i class="fas fa-dice-d20"></i></p>
+        </footer>
+    </div>
+    
+    <!-- MODAL PARA VISUALIZAR FICHA -->
+    <div id="sheetModal" class="sheet-modal">
+        <div class="sheet-modal-content">
+            <div class="sheet-modal-header">
+                <div class="sheet-modal-avatar" id="sheetModalAvatar">
+                    ?
+                </div>
+                <div class="sheet-modal-title">
+                    <h2 id="sheetModalName">Nome do Personagem</h2>
+                    <p id="sheetModalDetails">Detalhes do Personagem</p>
+                </div>
+                <button class="close-sheet-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="sheet-modal-body" id="sheetModalBody">
+                <!-- Conteúdo será preenchido via JavaScript -->
+            </div>
+            
+            <div class="sheet-modal-footer">
+                <button class="btn-close-modal">
+                    <i class="fas fa-times"></i> Fechar
+                </button>
+                <button class="btn-use-sheet">
+                    <i class="fas fa-play"></i> Usar na Mesa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
