@@ -308,34 +308,201 @@ function getAttributeCost(score) {
     return costTable[score] || 0;
 }
 
+// =================== SISTEMA DE SALVAMENTO E COMPARTILHAMENTO ===================
+
+// Carregar TODOS os dados do servidor
+async function loadAllData() {
+    try {
+        const response = await fetch(JSONBIN_URL + '/latest', {
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        
+        const data = await response.json();
+        const record = data.record || {};
+        
+        console.log('Dados carregados do servidor:', record);
+        
+        // Carregar mensagens
+        if (record.messages && Array.isArray(record.messages)) {
+            messages = record.messages;
+        } else {
+            messages = [];
+        }
+        
+        // CARREGAR FICHAS DO SERVIDOR - CRÍTICO PARA COMPARTILHAMENTO
+        if (record.characterSheets && Array.isArray(record.characterSheets)) {
+            characterSheets = record.characterSheets;
+            console.log(`Carregadas ${characterSheets.length} fichas do servidor`);
+        } else {
+            characterSheets = [];
+        }
+        
+        // Carregar estado de combate
+        if (record.combatState) {
+            const combat = record.combatState;
+            isCombatActive = combat.isCombatActive || false;
+            currentRound = combat.currentRound || 1;
+            currentTurn = combat.currentTurn || 0;
+            initiativeOrder = combat.initiativeOrder || [];
+            combatParticipants = combat.combatParticipants || [];
+        }
+        
+        // Extrair resultados de dados
+        diceResults = [];
+        messages.forEach(msg => {
+            if (msg.is_dice_roll && msg.dice_total) {
+                diceResults.push({
+                    total: msg.dice_total,
+                    diceType: parseInt(msg.dice_type.replace('d', '')) || 20,
+                    results: msg.dice_results || [msg.dice_total],
+                    modifier: msg.dice_modifier || 0,
+                    rollType: msg.roll_type || 'normal',
+                    isCritical: msg.is_critical || false,
+                    isCriticalFail: msg.is_critical_fail || false,
+                    timestamp: msg.created_at
+                });
+            }
+        });
+        
+        // Atualizar todas as exibições
+        updateListDisplay();
+        updateDiceHistory();
+        updateInitiativeDisplay();
+        updateCombatStatus();
+        updateTurnDisplay();
+        updateSheetsDisplay();
+        updateDashboardStats();
+        
+        // Salvar localmente como backup
+        localStorage.setItem('rpg_messages', JSON.stringify(messages));
+        localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
+        
+        return true;
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados do servidor:', error);
+        
+        // Fallback para localStorage
+        const savedMessages = localStorage.getItem('rpg_messages');
+        const savedSheets = localStorage.getItem('rpg_character_sheets');
+        
+        if (savedMessages) {
+            try {
+                messages = JSON.parse(savedMessages);
+            } catch (parseError) {
+                console.error('Erro ao analisar mensagens locais:', parseError);
+            }
+        }
+        
+        if (savedSheets) {
+            try {
+                characterSheets = JSON.parse(savedSheets);
+            } catch (parseError) {
+                console.error('Erro ao analisar fichas locais:', parseError);
+            }
+        }
+        
+        updateListDisplay();
+        updateSheetsDisplay();
+        
+        addNotification('Usando dados locais', 'Não foi possível conectar ao servidor', 'warning', true);
+        return false;
+    }
+}
+
+// Salvar TODOS os dados no servidor (para compartilhamento)
+async function saveAllData() {
+    try {
+        const dataToSave = {
+            messages: messages,
+            combatState: {
+                isCombatActive,
+                currentRound,
+                currentTurn,
+                initiativeOrder,
+                combatParticipants
+            },
+            characterSheets: characterSheets, // FICHAS INCLUÍDAS AQUI
+            lastUpdate: new Date().toISOString()
+        };
+        
+        console.log('Enviando dados para servidor:', dataToSave);
+        
+        const response = await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY,
+                'Content-Type': 'application/json',
+                'X-Bin-Versioning': 'false'
+            },
+            body: JSON.stringify(dataToSave)
+        });
+        
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        
+        // Salvar localmente também
+        localStorage.setItem('rpg_messages', JSON.stringify(messages));
+        localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
+        
+        console.log('Dados salvos com sucesso no servidor!');
+        return true;
+        
+    } catch (error) {
+        console.error('Erro ao salvar dados no servidor:', error);
+        
+        // Fallback para localStorage
+        localStorage.setItem('rpg_messages', JSON.stringify(messages));
+        localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
+        
+        addNotification('Erro de conexão', 'Dados salvos apenas localmente', 'danger', true);
+        return false;
+    }
+}
+
 // =================== SISTEMA DE FICHAS ===================
 
-// Carregar fichas do localStorage
+// Carregar fichas do localStorage (fallback)
 function loadCharacterSheets() {
     try {
         const savedSheets = localStorage.getItem('rpg_character_sheets');
         if (savedSheets) {
             characterSheets = JSON.parse(savedSheets);
-            console.log(`Carregadas ${characterSheets.length} fichas`);
-            addNotification('Fichas carregadas', `${characterSheets.length} fichas de personagem restauradas`, 'success', true, 3000);
+            console.log(`Carregadas ${characterSheets.length} fichas do localStorage`);
         } else {
             characterSheets = [];
         }
     } catch (error) {
         console.error('Erro ao carregar fichas:', error);
         characterSheets = [];
-        addNotification('Erro ao carregar', 'Não foi possível carregar as fichas salvas', 'danger', true);
     }
 }
 
-// Salvar fichas no localStorage
-function saveCharacterSheets() {
+// Salvar fichas (localmente e no servidor)
+async function saveCharacterSheets() {
     try {
+        // Primeiro salva localmente (rápido)
         localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
-        return true;
+        
+        // Atualiza a exibição imediatamente
+        updateSheetsDisplay();
+        
+        // Depois tenta salvar no servidor para compartilhar
+        const saved = await saveAllData();
+        
+        if (saved) {
+            console.log(`Fichas salvas e compartilhadas: ${characterSheets.length} fichas`);
+            return true;
+        }
+        
+        return false;
+        
     } catch (error) {
         console.error('Erro ao salvar fichas:', error);
-        addNotification('Erro ao salvar', 'Não foi possível salvar as fichas', 'danger', true);
         return false;
     }
 }
@@ -802,15 +969,16 @@ function editSheet(sheetId) {
 }
 
 // Deletar ficha
-function deleteSheet(sheetId) {
+async function deleteSheet(sheetId) {
     if (!confirm('Tem certeza que deseja excluir esta ficha?')) return;
     
     const sheet = characterSheets.find(s => s.id === sheetId);
     if (!sheet) return;
     
     characterSheets = characterSheets.filter(s => s.id !== sheetId);
-    saveCharacterSheets();
-    updateSheetsDisplay();
+    
+    // Salvar localmente e no servidor
+    await saveCharacterSheets();
     
     addNotification('Ficha excluída', `${sheet.name} foi removido`, 'warning', true);
 }
@@ -861,7 +1029,7 @@ function createNewCharacter() {
 }
 
 // Finalizar criação da ficha
-function finishCharacterSheet() {
+async function finishCharacterSheet() {
     if (!validateCurrentStep()) return;
     
     // Coletar dados
@@ -888,7 +1056,9 @@ function finishCharacterSheet() {
         cha: parseInt(chaScore.value) || 10,
         // Data
         created: currentSheetBeingEdited ? undefined : new Date().toISOString(),
-        updated: new Date().toISOString()
+        updated: new Date().toISOString(),
+        // Identificação do criador (opcional, para controle)
+        createdBy: userNameInput.value.trim() || 'Desconhecido'
     };
     
     if (!characterSheet.name) {
@@ -908,8 +1078,9 @@ function finishCharacterSheet() {
         // Atualizar ficha existente
         const index = characterSheets.findIndex(s => s.id === currentSheetBeingEdited);
         if (index !== -1) {
-            // Manter data de criação
+            // Manter data de criação e criador
             characterSheet.created = characterSheets[index].created;
+            characterSheet.createdBy = characterSheets[index].createdBy || characterSheet.createdBy;
             characterSheets[index] = characterSheet;
             addNotification('Ficha atualizada', `${characterSheet.name} foi atualizado`, 'success');
         }
@@ -919,9 +1090,8 @@ function finishCharacterSheet() {
         addNotification('Ficha criada', `${characterSheet.name} foi criado com sucesso!`, 'success');
     }
     
-    // Salvar
-    saveCharacterSheets();
-    updateSheetsDisplay();
+    // Salvar e compartilhar
+    await saveCharacterSheets();
     
     // Trocar para aba de listagem
     switchToTab('sheets-list');
@@ -1182,103 +1352,6 @@ function updateListDisplay() {
     });
 }
 
-// Carregar mensagens do servidor
-async function loadMessages() {
-    try {
-        const response = await fetch(JSONBIN_URL + '/latest', {
-            headers: {
-                'X-Master-Key': JSONBIN_API_KEY,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-        
-        const data = await response.json();
-        
-        if (data.record && Array.isArray(data.record.messages)) {
-            messages = data.record.messages;
-        } else if (Array.isArray(data.record)) {
-            messages = data.record;
-        } else {
-            messages = [];
-        }
-        
-        // Extrair resultados de dados
-        diceResults = [];
-        messages.forEach(msg => {
-            if (msg.is_dice_roll && msg.dice_total) {
-                diceResults.push({
-                    total: msg.dice_total,
-                    diceType: parseInt(msg.dice_type.replace('d', '')) || 20,
-                    results: msg.dice_results || [msg.dice_total],
-                    modifier: msg.dice_modifier || 0,
-                    rollType: msg.roll_type || 'normal',
-                    isCritical: msg.is_critical || false,
-                    isCriticalFail: msg.is_critical_fail || false,
-                    timestamp: msg.created_at
-                });
-            }
-        });
-        
-        updateListDisplay();
-        updateDiceHistory();
-        
-        return true;
-        
-    } catch (error) {
-        console.error('Erro ao carregar mensagens:', error);
-        
-        const savedMessages = localStorage.getItem('rpg_messages');
-        if (savedMessages) {
-            try {
-                messages = JSON.parse(savedMessages);
-                updateListDisplay();
-            } catch (parseError) {
-                console.error('Erro ao analisar dados locais:', parseError);
-            }
-        }
-        
-        return false;
-    }
-}
-
-// Salvar mensagens no servidor
-async function saveMessages() {
-    try {
-        const response = await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: {
-                'X-Master-Key': JSONBIN_API_KEY,
-                'Content-Type': 'application/json',
-                'X-Bin-Versioning': 'false'
-            },
-            body: JSON.stringify({ 
-                messages: messages,
-                combatState: {
-                    isCombatActive,
-                    currentRound,
-                    currentTurn,
-                    initiativeOrder,
-                    combatParticipants
-                },
-                characterSheets: characterSheets
-            })
-        });
-        
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-        
-        localStorage.setItem('rpg_messages', JSON.stringify(messages));
-        
-        return true;
-        
-    } catch (error) {
-        console.error('Erro ao salvar mensagens:', error);
-        localStorage.setItem('rpg_messages', JSON.stringify(messages));
-        return false;
-    }
-}
-
 // Adicionar uma nova mensagem
 async function addMessage() {
     const text = textInput.value.trim();
@@ -1311,7 +1384,7 @@ async function addMessage() {
     messages.push(newMessage);
     updateListDisplay();
     
-    const success = await saveMessages();
+    const success = await saveAllData(); // Salva tudo, incluindo fichas
     
     addButton.disabled = false;
     addButton.innerHTML = '<i class="fas fa-feather-alt"></i> Registrar Ação';
@@ -1441,7 +1514,7 @@ async function rollDiceWithOptions() {
     
     messages.push(diceMessage);
     updateListDisplay();
-    await saveMessages();
+    await saveAllData(); // Salva tudo, incluindo fichas
     
     diceDisplay.style.transform = 'scale(1.2)';
     diceDisplay.style.boxShadow = '0 0 30px rgba(157, 78, 221, 0.8)';
@@ -1472,7 +1545,7 @@ async function deleteMessage(messageId) {
     
     messages = messages.filter(msg => msg.id !== messageId);
     updateListDisplay();
-    await saveMessages();
+    await saveAllData();
     addNotification('Registro excluído', 'Ação foi removida do histórico', 'warning', true);
 }
 
@@ -1490,7 +1563,7 @@ async function deleteAllMessages() {
     
     updateListDisplay();
     updateDiceHistory();
-    await saveMessages();
+    await saveAllData();
     
     alert('Campanha reiniciada!');
     addNotification('Campanha reiniciada', 'Todos os registros foram excluídos', 'warning');
@@ -1729,7 +1802,7 @@ async function rollInitiative() {
     addCombatLog('Iniciativa rolada! Ordem definida.', 'system');
     addNotification('Iniciativa rolada', 'Ordem de combate definida', 'combat');
     
-    await saveCombatState();
+    await saveAllData();
 }
 
 // Função para obter inimigos atuais
@@ -1805,7 +1878,7 @@ function updateInitiativeDisplay() {
         hpInput.addEventListener('change', (e) => {
             participant.currentHP = parseInt(e.target.value);
             updateHPColor(hpInput, participant.currentHP, participant.maxHP);
-            saveCombatState();
+            saveAllData();
         });
         
         const hpSpan = document.createElement('span');
@@ -1838,7 +1911,7 @@ function updateInitiativeDisplay() {
                     participant.conditions.push(condition);
                     conditionTag.style.opacity = '1';
                 }
-                saveCombatState();
+                saveAllData();
             });
             
             if (participant.conditions.includes(condition)) {
@@ -1901,7 +1974,7 @@ function nextTurn() {
     const currentParticipant = initiativeOrder[currentTurn];
     addCombatLog(`Turno de ${currentParticipant.name} (Iniciativa: ${currentParticipant.initiative})`, 'turn');
     
-    saveCombatState();
+    saveAllData();
 }
 
 // Função para atualizar display do turno
@@ -1956,7 +2029,7 @@ function addCombatLog(message, type = 'info') {
 }
 
 // Função para encerrar combate
-function endCombat() {
+async function endCombat() {
     if (!isCombatActive) {
         alert('Não há combate ativo!');
         return;
@@ -1973,12 +2046,12 @@ function endCombat() {
         addCombatLog('Combate encerrado!', 'system');
         addNotification('Combate encerrado', 'O combate foi finalizado', 'combat');
         
-        saveCombatState();
+        await saveAllData();
     }
 }
 
 // Função para adicionar inimigo
-function addEnemy() {
+async function addEnemy() {
     if (!isCombatActive) {
         alert('Inicie o combate primeiro!');
         return;
@@ -2025,70 +2098,7 @@ function addEnemy() {
     }
     
     addNotification('Inimigo adicionado', `${name} foi adicionado ao combate`, 'combat', true);
-    saveCombatState();
-}
-
-// Função para salvar estado do combate
-async function saveCombatState() {
-    try {
-        const combatState = {
-            isCombatActive,
-            currentRound,
-            currentTurn,
-            initiativeOrder,
-            combatParticipants
-        };
-        
-        localStorage.setItem('rpg_combat_state', JSON.stringify(combatState));
-        
-        // Também salvar no servidor
-        const response = await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: {
-                'X-Master-Key': JSONBIN_API_KEY,
-                'Content-Type': 'application/json',
-                'X-Bin-Versioning': 'false'
-            },
-            body: JSON.stringify({ 
-                messages: messages,
-                combatState: combatState,
-                characterSheets: characterSheets
-            })
-        });
-        
-        return response.ok;
-        
-    } catch (error) {
-        console.error('Erro ao salvar estado do combate:', error);
-        return false;
-    }
-}
-
-// Função para carregar estado do combate
-function loadCombatState() {
-    try {
-        const savedState = localStorage.getItem('rpg_combat_state');
-        if (savedState) {
-            const combatState = JSON.parse(savedState);
-            
-            isCombatActive = combatState.isCombatActive || false;
-            currentRound = combatState.currentRound || 1;
-            currentTurn = combatState.currentTurn || 0;
-            initiativeOrder = combatState.initiativeOrder || [];
-            combatParticipants = combatState.combatParticipants || [];
-            
-            updateInitiativeDisplay();
-            updateCombatStatus();
-            updateTurnDisplay();
-            if (roundNumber) roundNumber.textContent = currentRound;
-            
-            if (isCombatActive) {
-                addCombatLog('Estado do combate carregado', 'system');
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao carregar estado do combate:', error);
-    }
+    await saveAllData();
 }
 
 // =================== DASHBOARD DE ESTATÍSTICAS ===================
@@ -2303,10 +2313,8 @@ function loadDashboardData() {
 async function initializeApp() {
     console.log('Inicializando aplicação RPG...');
     
-    // Carregar dados
-    await loadMessages();
-    loadCombatState();
-    loadCharacterSheets();
+    // Carregar dados DO SERVIDOR (incluindo fichas de outros jogadores)
+    await loadAllData();
     loadDashboardData();
     
     // Inicializar displays
@@ -2333,20 +2341,24 @@ async function initializeApp() {
             is_dice_roll: false
         };
         messages.push(welcomeMessage);
-        await saveMessages();
+        await saveAllData();
         updateListDisplay();
     }
     
     // Notificação de boas-vindas
     addNotification(
         'Sistema RPG Iniciado',
-        'Sistema de fichas, combate e estatísticas ativado!',
+        'Sistema de fichas COMPARTILHADO, combate e estatísticas ativado!',
         'success'
     );
     
-    // Configurar atualizações periódicas
-    setInterval(loadMessages, 10000);
-    setInterval(updateDashboardStats, 30000);
+    // Configurar atualizações periódicas - Sincroniza a cada 15 segundos
+    setInterval(async () => {
+        await loadAllData(); // Atualiza dados do servidor
+        updateDashboardStats();
+    }, 15000); // 15 segundos
+    
+    // Salvar dashboard periodicamente
     setInterval(saveDashboardData, 60000);
     
     console.log('Aplicação RPG inicializada com sucesso!');
@@ -2373,14 +2385,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Botão para atualizar lista de fichas
+    // Botão para atualizar lista de fichas (sincroniza com servidor)
     if (refreshSheetsButton) {
-        refreshSheetsButton.addEventListener('click', () => {
+        refreshSheetsButton.addEventListener('click', async () => {
             refreshSheetsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            loadCharacterSheets();
-            updateSheetsDisplay();
+            await loadAllData(); // Carrega dados do servidor
             setTimeout(() => {
                 refreshSheetsButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                addNotification('Fichas sincronizadas', 
+                              'Dados atualizados do servidor', 
+                              'success', true);
             }, 500);
         });
     }
@@ -2532,13 +2546,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (refreshButton) {
-        refreshButton.addEventListener('click', () => {
+        refreshButton.addEventListener('click', async () => {
             refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            loadMessages().then(() => {
-                setTimeout(() => {
-                    refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
-                }, 500);
-            });
+            await loadAllData();
+            setTimeout(() => {
+                refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            }, 500);
         });
     }
     
@@ -2576,9 +2589,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     if (refreshInitiativeButton) {
-        refreshInitiativeButton.addEventListener('click', () => {
+        refreshInitiativeButton.addEventListener('click', async () => {
             refreshInitiativeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            loadCombatState();
+            await loadAllData();
             setTimeout(() => {
                 refreshInitiativeButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
             }, 500);
@@ -2590,7 +2603,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentRound++;
             if (roundNumber) roundNumber.textContent = currentRound;
             addCombatLog(`Rodada ${currentRound} iniciada manualmente`, 'system');
-            saveCombatState();
+            saveAllData();
         });
     }
     
