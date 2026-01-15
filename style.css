@@ -2398,3 +2398,130 @@ textarea:focus {
     background: rgba(157, 78, 221, 0.5);
     color: white;
 }
+/* Adicione ao final do arquivo style.css */
+
+/* WIZARD NAVIGATION */
+.wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(83, 52, 131, 0.3);
+}
+
+.wizard-navigation button {
+    padding: 10px 20px;
+}
+
+/* RESET ATTRIBUTES BUTTON */
+#resetAttributesButton {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+}
+
+/* SHEET SPEED INPUT */
+#sheetSpeed {
+    width: 100%;
+    padding: 12px;
+    background: rgba(20, 20, 35, 0.8);
+    border: 2px solid #533483;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #e0e0ff;
+    transition: all 0.3s;
+}
+
+#sheetSpeed:focus {
+    outline: none;
+    border-color: #9d4edd;
+    box-shadow: 0 0 10px rgba(157, 78, 221, 0.5);
+}
+
+/* MODAL STYLES */
+.sheet-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.sheet-modal-content {
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    border-radius: 15px;
+    border: 3px solid #533483;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    animation: slideInUp 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* FORM GROUP FOR SHEET SPEED */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #b8c1ec;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* LOADING STATE FOR SHEETS */
+.loading-sheets {
+    text-align: center;
+    padding: 40px;
+    color: #8a8ac4;
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
+/* ATTRIBUTE BUTTONS STYLES */
+.attr-decrease, .attr-increase {
+    background: rgba(157, 78, 221, 0.2);
+    border: 1px solid #9d4edd;
+    color: #9d4edd;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.attr-decrease:hover, .attr-increase:hover {
+    background: rgba(157, 78, 221, 0.4);
+    transform: scale(1.1);
+}
+
+.attr-decrease:disabled, .attr-increase:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
