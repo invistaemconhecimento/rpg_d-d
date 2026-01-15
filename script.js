@@ -59,6 +59,82 @@ const subclasses = {
     'Artífice': ['Alquimista', 'Artilheiro', 'Ferreiro de Batalha']
 };
 
+// Templates pré-definidos
+const characterTemplates = {
+    warrior: {
+        name: 'Guerreiro do Reino',
+        race: 'Humano',
+        class: 'Guerreiro',
+        subclass: 'Campeão',
+        level: 1,
+        hp: 12,
+        ac: 16,
+        speed: '9m',
+        background: 'Soldado',
+        str: 16,
+        dex: 10,
+        con: 14,
+        int: 8,
+        wis: 10,
+        cha: 12,
+        color: '#4d96ff'
+    },
+    wizard: {
+        name: 'Mago Arcano',
+        race: 'Elfo',
+        class: 'Mago',
+        subclass: 'Evocação',
+        level: 1,
+        hp: 8,
+        ac: 12,
+        speed: '9m',
+        background: 'Sábio',
+        str: 8,
+        dex: 14,
+        con: 10,
+        int: 16,
+        wis: 12,
+        cha: 10,
+        color: '#9d4edd'
+    },
+    rogue: {
+        name: 'Ladino das Sombras',
+        race: 'Halfling',
+        class: 'Ladino',
+        subclass: 'Ladrão',
+        level: 1,
+        hp: 10,
+        ac: 14,
+        speed: '7.5m',
+        background: 'Criminoso',
+        str: 8,
+        dex: 16,
+        con: 12,
+        int: 10,
+        wis: 10,
+        cha: 14,
+        color: '#6bcf7f'
+    },
+    cleric: {
+        name: 'Clérigo Devoto',
+        race: 'Anão',
+        class: 'Clérigo',
+        subclass: 'Domínio da Vida',
+        level: 1,
+        hp: 10,
+        ac: 18,
+        speed: '7.5m',
+        background: 'Acólito',
+        str: 12,
+        dex: 8,
+        con: 14,
+        int: 10,
+        wis: 16,
+        cha: 10,
+        color: '#ffd93d'
+    }
+};
+
 // =================== INICIALIZAÇÃO DOS ELEMENTOS ===================
 // Elementos do sistema de fichas
 const refreshSheetsButton = document.getElementById('refreshSheetsButton');
@@ -70,6 +146,11 @@ const sheetsGrid = document.getElementById('sheetsGrid');
 const sheetModal = document.getElementById('sheetModal');
 const sheetModalBody = document.getElementById('sheetModalBody');
 const closeSheetModal = document.querySelector('.close-sheet-modal');
+const sheetModalAvatar = document.getElementById('sheetModalAvatar');
+const sheetModalName = document.getElementById('sheetModalName');
+const sheetModalDetails = document.getElementById('sheetModalDetails');
+const useSheetButton = document.querySelector('.btn-use-sheet');
+const closeModalButton = document.querySelector('.btn-close-modal');
 
 // Elementos do wizard
 const wizardSteps = document.querySelectorAll('.wizard-step');
@@ -98,6 +179,8 @@ const sheetHpInput = document.getElementById('sheetHp');
 const sheetAcInput = document.getElementById('sheetAc');
 const sheetSpeedInput = document.getElementById('sheetSpeed');
 const sheetBackgroundInput = document.getElementById('sheetBackground');
+const sheetDescriptionInput = document.getElementById('sheetDescription');
+const sheetColorPicker = document.querySelectorAll('#new-character .color-picker .color-option');
 
 // Elementos do preview
 const previewName = document.getElementById('previewName');
@@ -108,6 +191,13 @@ const previewHp = document.getElementById('previewHp');
 const previewAc = document.getElementById('previewAc');
 const previewSpeed = document.getElementById('previewSpeed');
 const previewBackground = document.getElementById('previewBackground');
+const previewStr = document.getElementById('previewStr');
+const previewDex = document.getElementById('previewDex');
+const previewCon = document.getElementById('previewCon');
+const previewInt = document.getElementById('previewInt');
+const previewWis = document.getElementById('previewWis');
+const previewCha = document.getElementById('previewCha');
+const previewAvatar = document.getElementById('previewAvatar');
 
 // Elementos do sistema principal
 const textInput = document.getElementById('textInput');
@@ -167,9 +257,90 @@ const totalEnemies = document.getElementById('totalEnemies');
 const classDistribution = document.getElementById('classDistribution');
 const activityChartCanvas = document.getElementById('activityChartCanvas');
 
+// Templates
+const useTemplateButtons = document.querySelectorAll('.use-template-btn');
+const sheetTabs = document.querySelectorAll('.sheet-tab');
+
+// =================== FUNÇÕES AUXILIARES ===================
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString('pt-BR');
+}
+
+function getTimeAgo(dateString) {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Agora mesmo';
+    if (diffMins < 60) return `${diffMins} min atrás`;
+    if (diffHours < 24) return `${diffHours} h atrás`;
+    if (diffDays === 1) return 'Ontem';
+    if (diffDays < 7) return `${diffDays} dias atrás`;
+    
+    return date.toLocaleDateString('pt-BR');
+}
+
+function rollDice(sides) {
+    return Math.floor(Math.random() * sides) + 1;
+}
+
+function calculateAttributeModifier(score) {
+    return Math.floor((score - 10) / 2);
+}
+
+function formatModifier(mod) {
+    return mod >= 0 ? `+${mod}` : `${mod}`;
+}
+
+function getAttributeCost(score) {
+    const costTable = {
+        8: 0, 9: 1, 10: 2, 11: 3, 12: 4,
+        13: 5, 14: 7, 15: 9
+    };
+    return costTable[score] || 0;
+}
+
 // =================== SISTEMA DE FICHAS ===================
 
-// Função para atualizar subclasses
+// Carregar fichas do localStorage
+function loadCharacterSheets() {
+    try {
+        const savedSheets = localStorage.getItem('rpg_character_sheets');
+        if (savedSheets) {
+            characterSheets = JSON.parse(savedSheets);
+            console.log(`Carregadas ${characterSheets.length} fichas`);
+            addNotification('Fichas carregadas', `${characterSheets.length} fichas de personagem restauradas`, 'success', true, 3000);
+        } else {
+            characterSheets = [];
+        }
+    } catch (error) {
+        console.error('Erro ao carregar fichas:', error);
+        characterSheets = [];
+        addNotification('Erro ao carregar', 'Não foi possível carregar as fichas salvas', 'danger', true);
+    }
+}
+
+// Salvar fichas no localStorage
+function saveCharacterSheets() {
+    try {
+        localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar fichas:', error);
+        addNotification('Erro ao salvar', 'Não foi possível salvar as fichas', 'danger', true);
+        return false;
+    }
+}
+
+// Atualizar subclasses
 function updateSheetSubclasses() {
     const selectedClass = sheetClassInput.value;
     const subclassSelect = sheetSubclassInput;
@@ -183,48 +354,28 @@ function updateSheetSubclasses() {
             option.textContent = subclass;
             subclassSelect.appendChild(option);
         });
-    } else {
-        subclassSelect.innerHTML = '<option value="">Selecione uma classe primeiro</option>';
     }
 }
 
-// Função para atualizar modificadores de atributos
+// Atualizar modificadores de atributos
 function updateAttributeModifiers() {
-    const str = parseInt(strScore.value) || 10;
-    const dex = parseInt(dexScore.value) || 10;
-    const con = parseInt(conScore.value) || 10;
-    const int = parseInt(intScore.value) || 10;
-    const wis = parseInt(wisScore.value) || 10;
-    const cha = parseInt(chaScore.value) || 10;
-    
-    document.getElementById('strMod').textContent = formatModifier(calculateAttributeModifier(str));
-    document.getElementById('dexMod').textContent = formatModifier(calculateAttributeModifier(dex));
-    document.getElementById('conMod').textContent = formatModifier(calculateAttributeModifier(con));
-    document.getElementById('intMod').textContent = formatModifier(calculateAttributeModifier(int));
-    document.getElementById('wisMod').textContent = formatModifier(calculateAttributeModifier(wis));
-    document.getElementById('chaMod').textContent = formatModifier(calculateAttributeModifier(cha));
-}
-
-// Função para formatar modificador
-function formatModifier(mod) {
-    return mod >= 0 ? `+${mod}` : `${mod}`;
-}
-
-// Função para calcular modificador
-function calculateAttributeModifier(score) {
-    return Math.floor((score - 10) / 2);
-}
-
-// Função para calcular custo do atributo
-function getAttributeCost(score) {
-    const costTable = {
-        8: 0, 9: 1, 10: 2, 11: 3, 12: 4,
-        13: 5, 14: 7, 15: 9
+    const attributes = {
+        str: strScore,
+        dex: dexScore,
+        con: conScore,
+        int: intScore,
+        wis: wisScore,
+        cha: chaScore
     };
-    return costTable[score] || 0;
+    
+    for (const [attr, input] of Object.entries(attributes)) {
+        const score = parseInt(input.value) || 10;
+        const mod = calculateAttributeModifier(score);
+        document.getElementById(`${attr}Mod`).textContent = formatModifier(mod);
+    }
 }
 
-// Função para atualizar pontos de atributo
+// Atualizar pontos de atributo
 function updateAttributePoints() {
     const baseCost = 27;
     const attributes = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -264,6 +415,7 @@ function increaseAttribute(attribute) {
         input.value = value;
         updateAttributeModifiers();
         updateAttributePoints();
+        if (currentStep === 4) updateCharacterPreview();
     }
 }
 
@@ -276,6 +428,7 @@ function decreaseAttribute(attribute) {
         input.value = value;
         updateAttributeModifiers();
         updateAttributePoints();
+        if (currentStep === 4) updateCharacterPreview();
     }
 }
 
@@ -325,11 +478,6 @@ function validateCurrentStep() {
                 sheetClassInput.focus();
                 return false;
             }
-            if (parseInt(sheetLevelInput.value) < 1 || parseInt(sheetLevelInput.value) > 20) {
-                alert('O nível deve estar entre 1 e 20.');
-                sheetLevelInput.focus();
-                return false;
-            }
             break;
             
         case 2: // Atributos
@@ -357,14 +505,17 @@ function validateCurrentStep() {
 
 // Atualizar preview do personagem
 function updateCharacterPreview() {
-    previewName.textContent = sheetNameInput.value.trim() || 'Sem nome';
+    const name = sheetNameInput.value.trim() || 'Sem nome';
+    previewName.textContent = name;
+    previewAvatar.textContent = name.charAt(0).toUpperCase();
+    
     previewRace.textContent = sheetRaceInput.value || 'Raça não definida';
-    previewClass.textContent = `${sheetClassInput.value || 'Classe'} ${sheetSubclassInput.value ? `(${sheetSubclassInput.value})` : ''}`;
+    previewClass.textContent = sheetClassInput.value || 'Classe';
     previewLevel.textContent = sheetLevelInput.value || '1';
     previewHp.textContent = sheetHpInput.value || '10';
     previewAc.textContent = sheetAcInput.value || '10';
     previewSpeed.textContent = sheetSpeedInput.value || '9m';
-    previewBackground.textContent = sheetBackgroundInput.value || 'Fundo não definido';
+    previewBackground.textContent = sheetBackgroundInput.value || 'Não definido';
     
     // Atualizar atributos no preview
     const attributes = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
@@ -375,49 +526,19 @@ function updateCharacterPreview() {
     });
 }
 
-// Carregar fichas do localStorage
-function loadCharacterSheets() {
-    try {
-        const savedSheets = localStorage.getItem('rpg_character_sheets');
-        if (savedSheets) {
-            characterSheets = JSON.parse(savedSheets);
-            console.log(`Carregadas ${characterSheets.length} fichas`);
-            addNotification('Fichas carregadas', `${characterSheets.length} fichas de personagem restauradas`, 'success', true, 3000);
-        } else {
-            characterSheets = [];
-        }
-    } catch (error) {
-        console.error('Erro ao carregar fichas:', error);
-        characterSheets = [];
-        addNotification('Erro ao carregar', 'Não foi possível carregar as fichas salvas', 'danger', true);
-    }
-}
-
-// Salvar fichas no localStorage
-function saveCharacterSheets() {
-    try {
-        localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
-        return true;
-    } catch (error) {
-        console.error('Erro ao salvar fichas:', error);
-        addNotification('Erro ao salvar', 'Não foi possível salvar as fichas', 'danger', true);
-        return false;
-    }
-}
-
 // Atualizar a exibição da lista de fichas
 function updateSheetsDisplay() {
     if (!sheetsGrid) return;
     
     sheetsGrid.innerHTML = '';
-    characterCount.textContent = characterSheets.length;
+    if (characterCount) characterCount.textContent = characterSheets.length;
     
     if (characterSheets.length === 0) {
         sheetsGrid.innerHTML = `
             <div class="empty-sheets">
                 <i class="fas fa-user-plus"></i>
                 <h3>Nenhuma ficha criada ainda</h3>
-                <p>Clique em "Criar Nova Ficha" para começar</p>
+                <p>Clique em "Nova Ficha" para começar</p>
             </div>
         `;
         return;
@@ -431,9 +552,12 @@ function updateSheetsDisplay() {
         if (classFilter && classFilter !== 'all' && sheet.class !== classFilter) return false;
         if (levelFilter && levelFilter !== 'all') {
             const level = parseInt(sheet.level) || 1;
-            if (levelFilter === '1-5' && (level < 1 || level > 5)) return false;
-            if (levelFilter === '6-10' && (level < 6 || level > 10)) return false;
-            if (levelFilter === '11+' && level < 11) return false;
+            if (levelFilter.includes('-')) {
+                const [min, max] = levelFilter.split('-').map(Number);
+                if (level < min || level > max) return false;
+            } else if (parseInt(levelFilter) !== level) {
+                return false;
+            }
         }
         return true;
     });
@@ -443,7 +567,7 @@ function updateSheetsDisplay() {
         sheetCard.className = 'character-sheet-card';
         sheetCard.dataset.id = sheet.id;
         
-        const initiative = calculateAttributeModifier(sheet.dex || 10) + (sheet.initiativeBonus || 0);
+        const initiative = calculateAttributeModifier(sheet.dex || 10);
         const color = sheet.color || selectedSheetColor;
         
         sheetCard.innerHTML = `
@@ -460,7 +584,7 @@ function updateSheetsDisplay() {
             <div class="sheet-stats">
                 <div class="stat">
                     <span class="stat-label">PV</span>
-                    <span class="stat-value">${sheet.hp || 10}/${sheet.maxHP || 10}</span>
+                    <span class="stat-value">${sheet.hp || 10}/${sheet.maxHP || sheet.hp || 10}</span>
                 </div>
                 <div class="stat">
                     <span class="stat-label">CA</span>
@@ -493,7 +617,7 @@ function updateSheetsDisplay() {
     });
 }
 
-// Mostrar detalhes da ficha
+// Mostrar detalhes da ficha no modal
 function showSheetDetails(sheetId) {
     const sheet = characterSheets.find(s => s.id === sheetId);
     if (!sheet) {
@@ -505,85 +629,85 @@ function showSheetDetails(sheetId) {
     
     const color = sheet.color || selectedSheetColor;
     
+    // Atualizar cabeçalho do modal
+    sheetModalAvatar.textContent = sheet.name ? sheet.name.charAt(0).toUpperCase() : '?';
+    sheetModalAvatar.style.backgroundColor = color;
+    sheetModalName.textContent = sheet.name || 'Sem nome';
+    sheetModalDetails.textContent = `${sheet.race || 'Raça'} • ${sheet.class || 'Classe'} ${sheet.subclass ? `(${sheet.subclass})` : ''} • Nível ${sheet.level || 1}`;
+    
+    // Atualizar corpo do modal
     sheetModalBody.innerHTML = `
-        <div class="sheet-modal-header" style="background-color: ${color}">
-            <div class="sheet-modal-avatar" style="background-color: ${color}">
-                ${sheet.name ? sheet.name.charAt(0).toUpperCase() : '?'}
-            </div>
-            <div class="sheet-modal-title">
-                <h2>${sheet.name || 'Sem nome'}</h2>
-                <p>${sheet.race || 'Raça'} • ${sheet.class || 'Classe'} ${sheet.subclass ? `(${sheet.subclass})` : ''} • Nível ${sheet.level || 1}</p>
-            </div>
+        <div class="modal-section">
+            <h3><i class="fas fa-heart"></i> Pontos de Vida</h3>
+            <p>${sheet.hp || 10}/${sheet.maxHP || sheet.hp || 10}</p>
         </div>
         
-        <div class="sheet-modal-content">
-            <div class="modal-section">
-                <h3><i class="fas fa-heart"></i> Pontos de Vida</h3>
-                <p>${sheet.hp || 10}/${sheet.maxHP || 10}</p>
-            </div>
-            
-            <div class="modal-section">
-                <h3><i class="fas fa-shield-alt"></i> Defesa</h3>
-                <p>Classe de Armadura: ${sheet.ac || 10}</p>
-            </div>
-            
-            <div class="modal-section">
-                <h3><i class="fas fa-running"></i> Movimento</h3>
-                <p>${sheet.speed || '9m'}</p>
-            </div>
-            
-            <div class="modal-section">
-                <h3><i class="fas fa-book"></i> Antecedente</h3>
-                <p>${sheet.background || 'Não definido'}</p>
-            </div>
-            
-            <div class="modal-section">
-                <h3><i class="fas fa-chart-line"></i> Atributos</h3>
-                <div class="modal-attributes">
-                    <div class="modal-attr">
-                        <span class="attr-name">Força</span>
-                        <span class="attr-value">${sheet.str || 10} (${formatModifier(calculateAttributeModifier(sheet.str || 10))})</span>
-                    </div>
-                    <div class="modal-attr">
-                        <span class="attr-name">Destreza</span>
-                        <span class="attr-value">${sheet.dex || 10} (${formatModifier(calculateAttributeModifier(sheet.dex || 10))})</span>
-                    </div>
-                    <div class="modal-attr">
-                        <span class="attr-name">Constituição</span>
-                        <span class="attr-value">${sheet.con || 10} (${formatModifier(calculateAttributeModifier(sheet.con || 10))})</span>
-                    </div>
-                    <div class="modal-attr">
-                        <span class="attr-name">Inteligência</span>
-                        <span class="attr-value">${sheet.int || 10} (${formatModifier(calculateAttributeModifier(sheet.int || 10))})</span>
-                    </div>
-                    <div class="modal-attr">
-                        <span class="attr-name">Sabedoria</span>
-                        <span class="attr-value">${sheet.wis || 10} (${formatModifier(calculateAttributeModifier(sheet.wis || 10))})</span>
-                    </div>
-                    <div class="modal-attr">
-                        <span class="attr-name">Carisma</span>
-                        <span class="attr-value">${sheet.cha || 10} (${formatModifier(calculateAttributeModifier(sheet.cha || 10))})</span>
-                    </div>
+        <div class="modal-section">
+            <h3><i class="fas fa-shield-alt"></i> Defesa</h3>
+            <p>Classe de Armadura: ${sheet.ac || 10}</p>
+        </div>
+        
+        <div class="modal-section">
+            <h3><i class="fas fa-running"></i> Movimento</h3>
+            <p>${sheet.speed || '9m'}</p>
+        </div>
+        
+        <div class="modal-section">
+            <h3><i class="fas fa-book"></i> Informações</h3>
+            <p><strong>Antecedente:</strong> ${sheet.background || 'Não definido'}</p>
+            ${sheet.description ? `<p><strong>Descrição:</strong> ${sheet.description}</p>` : ''}
+        </div>
+        
+        <div class="modal-section">
+            <h3><i class="fas fa-chart-line"></i> Atributos</h3>
+            <div class="modal-attributes">
+                <div class="modal-attr">
+                    <span class="attr-name">Força</span>
+                    <span class="attr-value">${sheet.str || 10} (${formatModifier(calculateAttributeModifier(sheet.str || 10))})</span>
+                </div>
+                <div class="modal-attr">
+                    <span class="attr-name">Destreza</span>
+                    <span class="attr-value">${sheet.dex || 10} (${formatModifier(calculateAttributeModifier(sheet.dex || 10))})</span>
+                </div>
+                <div class="modal-attr">
+                    <span class="attr-name">Constituição</span>
+                    <span class="attr-value">${sheet.con || 10} (${formatModifier(calculateAttributeModifier(sheet.con || 10))})</span>
+                </div>
+                <div class="modal-attr">
+                    <span class="attr-name">Inteligência</span>
+                    <span class="attr-value">${sheet.int || 10} (${formatModifier(calculateAttributeModifier(sheet.int || 10))})</span>
+                </div>
+                <div class="modal-attr">
+                    <span class="attr-name">Sabedoria</span>
+                    <span class="attr-value">${sheet.wis || 10} (${formatModifier(calculateAttributeModifier(sheet.wis || 10))})</span>
+                </div>
+                <div class="modal-attr">
+                    <span class="attr-name">Carisma</span>
+                    <span class="attr-value">${sheet.cha || 10} (${formatModifier(calculateAttributeModifier(sheet.cha || 10))})</span>
                 </div>
             </div>
-            
-            <div class="modal-section">
-                <h3><i class="fas fa-swords"></i> Iniciativa</h3>
-                <p>${formatModifier(calculateAttributeModifier(sheet.dex || 10))}</p>
-            </div>
         </div>
         
-        <div class="sheet-modal-footer">
-            <button class="btn-close-modal" onclick="closeModal()">
-                <i class="fas fa-times"></i> Fechar
-            </button>
-            <button class="btn-use-sheet" onclick="useSheetInGame('${sheet.id}')">
-                <i class="fas fa-play"></i> Usar na Mesa
-            </button>
+        <div class="modal-section">
+            <h3><i class="fas fa-swords"></i> Iniciativa</h3>
+            <p>${formatModifier(calculateAttributeModifier(sheet.dex || 10))}</p>
         </div>
     `;
     
-    sheetModal.style.display = 'block';
+    // Configurar botões do modal
+    const btnUseSheet = document.querySelector('.btn-use-sheet');
+    const btnCloseModal = document.querySelector('.btn-close-modal');
+    
+    if (btnUseSheet) {
+        btnUseSheet.onclick = () => useSheetInGame(sheetId);
+    }
+    
+    if (btnCloseModal) {
+        btnCloseModal.onclick = closeModal;
+    }
+    
+    // Mostrar modal
+    sheetModal.style.display = 'flex';
 }
 
 // Fechar modal
@@ -636,6 +760,7 @@ function editSheet(sheetId) {
     sheetAcInput.value = sheet.ac || 10;
     sheetSpeedInput.value = sheet.speed || '9m';
     sheetBackgroundInput.value = sheet.background || '';
+    sheetDescriptionInput.value = sheet.description || '';
     
     // Atributos
     strScore.value = sheet.str || 10;
@@ -644,6 +769,16 @@ function editSheet(sheetId) {
     intScore.value = sheet.int || 10;
     wisScore.value = sheet.wis || 10;
     chaScore.value = sheet.cha || 10;
+    
+    // Cor da ficha
+    selectedSheetColor = sheet.color || selectedSheetColor;
+    sheetColorPicker.forEach(opt => {
+        if (opt.getAttribute('data-color') === selectedSheetColor) {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
     
     // Atualizar subclasses
     updateSheetSubclasses();
@@ -660,8 +795,8 @@ function editSheet(sheetId) {
     // Ir para o primeiro passo
     goToStep(1);
     
-    // Mostrar o wizard
-    document.getElementById('characterSheetWizard').style.display = 'block';
+    // Trocar para aba de criação
+    switchToTab('new-character');
     
     addNotification('Editando ficha', `Editando ${sheet.name}`, 'info', true);
 }
@@ -694,6 +829,7 @@ function createNewCharacter() {
     sheetAcInput.value = '10';
     sheetSpeedInput.value = '9m';
     sheetBackgroundInput.value = '';
+    sheetDescriptionInput.value = '';
     
     // Resetar atributos para valores padrão
     strScore.value = '10';
@@ -703,6 +839,16 @@ function createNewCharacter() {
     wisScore.value = '10';
     chaScore.value = '10';
     
+    // Resetar cor
+    selectedSheetColor = '#9d4edd';
+    sheetColorPicker.forEach((opt, index) => {
+        if (index === 0) {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
+    
     // Resetar pontos
     attributePoints = 27;
     updateAttributeModifiers();
@@ -710,9 +856,6 @@ function createNewCharacter() {
     
     // Ir para o primeiro passo
     goToStep(1);
-    
-    // Mostrar o wizard
-    document.getElementById('characterSheetWizard').style.display = 'block';
     
     addNotification('Nova ficha', 'Começando a criar um novo personagem', 'info', true);
 }
@@ -725,7 +868,7 @@ function finishCharacterSheet() {
     const characterSheet = {
         id: currentSheetBeingEdited || generateId(),
         name: sheetNameInput.value.trim(),
-        race: sheetRaceInput.value.trim(),
+        race: sheetRaceInput.value,
         class: sheetClassInput.value,
         subclass: sheetSubclassInput.value,
         level: parseInt(sheetLevelInput.value) || 1,
@@ -733,7 +876,8 @@ function finishCharacterSheet() {
         maxHP: parseInt(sheetHpInput.value) || 10,
         ac: parseInt(sheetAcInput.value) || 10,
         speed: sheetSpeedInput.value || '9m',
-        background: sheetBackgroundInput.value.trim(),
+        background: sheetBackgroundInput.value,
+        description: sheetDescriptionInput.value.trim(),
         color: selectedSheetColor,
         // Atributos
         str: parseInt(strScore.value) || 10,
@@ -743,7 +887,7 @@ function finishCharacterSheet() {
         wis: parseInt(wisScore.value) || 10,
         cha: parseInt(chaScore.value) || 10,
         // Data
-        created: new Date().toISOString(),
+        created: currentSheetBeingEdited ? undefined : new Date().toISOString(),
         updated: new Date().toISOString()
     };
     
@@ -764,6 +908,8 @@ function finishCharacterSheet() {
         // Atualizar ficha existente
         const index = characterSheets.findIndex(s => s.id === currentSheetBeingEdited);
         if (index !== -1) {
+            // Manter data de criação
+            characterSheet.created = characterSheets[index].created;
             characterSheets[index] = characterSheet;
             addNotification('Ficha atualizada', `${characterSheet.name} foi atualizado`, 'success');
         }
@@ -777,8 +923,8 @@ function finishCharacterSheet() {
     saveCharacterSheets();
     updateSheetsDisplay();
     
-    // Fechar wizard
-    document.getElementById('characterSheetWizard').style.display = 'none';
+    // Trocar para aba de listagem
+    switchToTab('sheets-list');
     
     // Resetar
     currentSheetBeingEdited = null;
@@ -787,26 +933,76 @@ function finishCharacterSheet() {
 // Cancelar criação
 function cancelCharacterSheet() {
     if (confirm('Tem certeza que deseja cancelar a criação da ficha? Os dados não salvos serão perdidos.')) {
-        document.getElementById('characterSheetWizard').style.display = 'none';
+        // Trocar para aba de listagem
+        switchToTab('sheets-list');
         currentSheetBeingEdited = null;
     }
 }
 
+// Trocar entre abas
+function switchToTab(tabId) {
+    // Remover classe active de todas as abas
+    sheetTabs.forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.sheet-tab-content').forEach(content => content.classList.remove('active'));
+    
+    // Adicionar classe active na aba selecionada
+    document.querySelector(`.sheet-tab[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    
+    // Se for a aba de listagem, atualizar a exibição
+    if (tabId === 'sheets-list') {
+        updateSheetsDisplay();
+    }
+}
+
+// Aplicar template
+function applyTemplate(templateName) {
+    const template = characterTemplates[templateName];
+    if (!template) return;
+    
+    createNewCharacter();
+    
+    // Preencher com dados do template
+    sheetNameInput.value = template.name;
+    sheetRaceInput.value = template.race;
+    sheetClassInput.value = template.class;
+    sheetLevelInput.value = template.level;
+    sheetHpInput.value = template.hp;
+    sheetAcInput.value = template.ac;
+    sheetSpeedInput.value = template.speed;
+    sheetBackgroundInput.value = template.background;
+    
+    // Atributos
+    strScore.value = template.str;
+    dexScore.value = template.dex;
+    conScore.value = template.con;
+    intScore.value = template.int;
+    wisScore.value = template.wis;
+    chaScore.value = template.cha;
+    
+    // Cor
+    selectedSheetColor = template.color;
+    sheetColorPicker.forEach(opt => {
+        if (opt.getAttribute('data-color') === selectedSheetColor) {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
+    
+    // Atualizar subclasses
+    updateSheetSubclasses();
+    setTimeout(() => {
+        sheetSubclassInput.value = template.subclass;
+        updateAttributeModifiers();
+        updateAttributePoints();
+        updateCharacterPreview();
+    }, 100);
+    
+    addNotification('Template aplicado', `Template "${template.name}" carregado`, 'success', true);
+}
+
 // =================== SISTEMA DE MENSAGENS ===================
-
-// Funções auxiliares
-function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('pt-BR');
-}
-
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-function rollDice(sides) {
-    return Math.floor(Math.random() * sides) + 1;
-}
 
 // Atualizar o histórico de dados
 function updateDiceHistory() {
@@ -814,7 +1010,7 @@ function updateDiceHistory() {
     
     diceHistory.innerHTML = '';
     
-    const recentResults = diceResults.slice(-15);
+    const recentResults = diceResults.slice(-10);
     
     recentResults.forEach(result => {
         const historyItem = document.createElement('div');
@@ -832,8 +1028,6 @@ function updateDiceHistory() {
         
         diceHistory.appendChild(historyItem);
     });
-    
-    diceHistory.scrollLeft = diceHistory.scrollWidth;
 }
 
 // Atualizar a exibição da lista
@@ -986,9 +1180,6 @@ function updateListDisplay() {
         
         textList.appendChild(listItem);
     });
-    
-    const listContainer = document.querySelector('.list-container');
-    if (listContainer) listContainer.scrollTop = 0;
 }
 
 // Carregar mensagens do servidor
@@ -1070,7 +1261,8 @@ async function saveMessages() {
                     currentTurn,
                     initiativeOrder,
                     combatParticipants
-                }
+                },
+                characterSheets: characterSheets
             })
         });
         
@@ -1307,7 +1499,8 @@ async function deleteAllMessages() {
 // Rolar D20 rápido
 async function rollQuickD20() {
     diceTypes.forEach(d => d.classList.remove('active'));
-    document.querySelector('.dice-type[data-dice="20"]').classList.add('active');
+    const d20Element = document.querySelector('.dice-type[data-dice="20"]');
+    if (d20Element) d20Element.classList.add('active');
     selectedDice = 20;
     
     diceQuantity.value = '1';
@@ -1315,6 +1508,25 @@ async function rollQuickD20() {
     rollType.value = 'normal';
     
     await rollDiceWithOptions();
+}
+
+// Atualizar subclasses (sistema principal)
+function updateSubclasses() {
+    const selectedClass = characterClassInput.value;
+    const subclassSelect = characterSubclassInput;
+    
+    if (!subclassSelect) return;
+    
+    subclassSelect.innerHTML = '<option value="">Selecione uma subclasse...</option>';
+    
+    if (selectedClass && subclasses[selectedClass]) {
+        subclasses[selectedClass].forEach(subclass => {
+            const option = document.createElement('option');
+            option.value = subclass;
+            option.textContent = subclass;
+            subclassSelect.appendChild(option);
+        });
+    }
 }
 
 // =================== SISTEMA DE NOTIFICAÇÕES ===================
@@ -1339,15 +1551,6 @@ function addNotification(title, message, type = 'info', autoClear = false, timeo
         setTimeout(() => {
             removeNotification(notification.id);
         }, timeout);
-    }
-    
-    // Efeito visual
-    const notificationElement = document.querySelector(`[data-notification-id="${notification.id}"]`);
-    if (notificationElement) {
-        notificationElement.classList.add('new-notification');
-        setTimeout(() => {
-            notificationElement.classList.remove('new-notification');
-        }, 1500);
     }
     
     return notification;
@@ -1406,9 +1609,6 @@ function updateNotificationDisplay() {
         if (notification.type === 'combat') icon = 'swords';
         if (notification.type === 'dice') icon = 'dice-d20';
         
-        // Tempo relativo
-        const timeAgo = getTimeAgo(notification.time);
-        
         notificationItem.innerHTML = `
             <div class="notification-icon">
                 <i class="fas fa-${icon}"></i>
@@ -1416,7 +1616,7 @@ function updateNotificationDisplay() {
             <div class="notification-content">
                 <div class="notification-title">${notification.title}</div>
                 <div class="notification-message">${notification.message}</div>
-                <div class="notification-time">${timeAgo}</div>
+                <div class="notification-time">${getTimeAgo(notification.time)}</div>
             </div>
             <button class="delete-notification-btn" onclick="removeNotification('${notification.id}')">
                 <i class="fas fa-times"></i>
@@ -1434,24 +1634,6 @@ function updateNotificationBadge() {
     const unreadCount = notifications.filter(n => !n.read).length;
     notificationCount.textContent = unreadCount;
     notificationCount.style.display = unreadCount > 0 ? 'inline-block' : 'none';
-}
-
-// Função para calcular tempo relativo
-function getTimeAgo(dateString) {
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'Agora mesmo';
-    if (diffMins < 60) return `${diffMins} min atrás`;
-    if (diffHours < 24) return `${diffHours} h atrás`;
-    if (diffDays === 1) return 'Ontem';
-    if (diffDays < 7) return `${diffDays} dias atrás`;
-    
-    return date.toLocaleDateString('pt-BR');
 }
 
 // =================== SISTEMA DE INICIATIVA ===================
@@ -1603,7 +1785,6 @@ function updateInitiativeDisplay() {
         const nameSpan = document.createElement('div');
         nameSpan.className = 'initiative-name';
         nameSpan.textContent = participant.name;
-        nameSpan.title = `${participant.class}${participant.subclass ? ` - ${participant.subclass}` : ''}`;
         
         // Iniciativa
         const initiativeSpan = document.createElement('div');
@@ -1710,7 +1891,7 @@ function nextTurn() {
     // Se voltou ao primeiro, incrementa rodada
     if (currentTurn === 0) {
         currentRound++;
-        roundNumber.textContent = currentRound;
+        if (roundNumber) roundNumber.textContent = currentRound;
         addCombatLog(`Rodada ${currentRound} iniciada!`, 'system');
     }
     
@@ -1870,7 +2051,8 @@ async function saveCombatState() {
             },
             body: JSON.stringify({ 
                 messages: messages,
-                combatState: combatState
+                combatState: combatState,
+                characterSheets: characterSheets
             })
         });
         
@@ -2110,35 +2292,64 @@ function loadDashboardData() {
             updateNotificationDisplay();
             updateNotificationBadge();
             updateDashboardStats();
-            
-            addNotification('Dashboard restaurado', 'Estatísticas carregadas da sessão anterior.', 'info', true);
         }
     } catch (error) {
         console.error('Erro ao carregar dados do dashboard:', error);
     }
 }
 
-// =================== FUNÇÕES DE ATUALIZAÇÃO ===================
+// =================== INICIALIZAÇÃO DA APLICAÇÃO ===================
 
-// Função para atualizar subclasses (sistema principal)
-function updateSubclasses() {
-    const selectedClass = characterClassInput.value;
-    const subclassSelect = characterSubclassInput;
+async function initializeApp() {
+    console.log('Inicializando aplicação RPG...');
     
-    if (!subclassSelect) return;
+    // Carregar dados
+    await loadMessages();
+    loadCombatState();
+    loadCharacterSheets();
+    loadDashboardData();
     
-    subclassSelect.innerHTML = '<option value="">Selecione uma subclasse...</option>';
+    // Inicializar displays
+    updateSheetsDisplay();
+    updateDashboardStats();
     
-    if (selectedClass && subclasses[selectedClass]) {
-        subclasses[selectedClass].forEach(subclass => {
-            const option = document.createElement('option');
-            option.value = subclass;
-            option.textContent = subclass;
-            subclassSelect.appendChild(option);
-        });
-    } else {
-        subclassSelect.innerHTML = '<option value="">Selecione uma classe primeiro</option>';
+    // Configurações iniciais
+    updateAttributeModifiers();
+    updateAttributePoints();
+    updateSubclasses();
+    updateSheetSubclasses();
+    
+    // Mensagem de boas-vindas se não houver mensagens
+    if (messages.length === 0) {
+        const welcomeMessage = {
+            id: 'welcome',
+            content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
+            user_name: 'Mestre do Jogo',
+            character_class: 'Mestre',
+            character_subclass: 'Mestre das Aventuras',
+            user_color: '#ffd93d',
+            action_type: 'narrative',
+            created_at: new Date().toISOString(),
+            is_dice_roll: false
+        };
+        messages.push(welcomeMessage);
+        await saveMessages();
+        updateListDisplay();
     }
+    
+    // Notificação de boas-vindas
+    addNotification(
+        'Sistema RPG Iniciado',
+        'Sistema de fichas, combate e estatísticas ativado!',
+        'success'
+    );
+    
+    // Configurar atualizações periódicas
+    setInterval(loadMessages, 10000);
+    setInterval(updateDashboardStats, 30000);
+    setInterval(saveDashboardData, 60000);
+    
+    console.log('Aplicação RPG inicializada com sucesso!');
 }
 
 // =================== EVENT LISTENERS ===================
@@ -2146,11 +2357,23 @@ function updateSubclasses() {
 // Configurar eventos quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Sistema de fichas
+    // Sistema de fichas - Abas
+    sheetTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            switchToTab(tabId);
+        });
+    });
+    
+    // Botão para criar nova ficha na aba de listagem
     if (createNewSheetButton) {
-        createNewSheetButton.addEventListener('click', createNewCharacter);
+        createNewSheetButton.addEventListener('click', () => {
+            createNewCharacter();
+            switchToTab('new-character');
+        });
     }
     
+    // Botão para atualizar lista de fichas
     if (refreshSheetsButton) {
         refreshSheetsButton.addEventListener('click', () => {
             refreshSheetsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -2162,6 +2385,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Filtros de fichas
     if (sheetClassFilter) {
         sheetClassFilter.addEventListener('change', updateSheetsDisplay);
     }
@@ -2170,6 +2394,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sheetLevelFilter.addEventListener('change', updateSheetsDisplay);
     }
     
+    // Wizard de criação de ficha
     if (prevStepButton) {
         prevStepButton.addEventListener('click', () => goToStep(currentStep - 1));
     }
@@ -2186,10 +2411,6 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelSheetButton.addEventListener('click', cancelCharacterSheet);
     }
     
-    if (closeSheetModal) {
-        closeSheetModal.addEventListener('click', closeModal);
-    }
-    
     // Botões de atributos
     document.querySelectorAll('.attr-decrease').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -2204,6 +2425,21 @@ document.addEventListener('DOMContentLoaded', function() {
             increaseAttribute(attribute);
         });
     });
+    
+    // Botão para resetar atributos
+    if (document.getElementById('resetAttributesButton')) {
+        document.getElementById('resetAttributesButton').addEventListener('click', () => {
+            strScore.value = '10';
+            dexScore.value = '10';
+            conScore.value = '10';
+            intScore.value = '10';
+            wisScore.value = '10';
+            chaScore.value = '10';
+            updateAttributeModifiers();
+            updateAttributePoints();
+            if (currentStep === 4) updateCharacterPreview();
+        });
+    }
     
     // Wizard steps
     wizardSteps.forEach(step => {
@@ -2238,6 +2474,40 @@ document.addEventListener('DOMContentLoaded', function() {
             input.addEventListener('input', () => {
                 if (currentStep === 4) updateCharacterPreview();
             });
+        }
+    });
+    
+    // Selecionar cor da ficha
+    sheetColorPicker.forEach(option => {
+        option.addEventListener('click', () => {
+            sheetColorPicker.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            selectedSheetColor = option.getAttribute('data-color');
+            if (currentStep === 4) updateCharacterPreview();
+        });
+    });
+    
+    // Templates rápidos
+    useTemplateButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const templateName = this.getAttribute('data-template');
+            applyTemplate(templateName);
+        });
+    });
+    
+    // Modal da ficha
+    if (closeSheetModal) {
+        closeSheetModal.addEventListener('click', closeModal);
+    }
+    
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', closeModal);
+    }
+    
+    // Fechar modal ao clicar fora
+    window.addEventListener('click', (event) => {
+        if (sheetModal && event.target === sheetModal) {
+            closeModal();
         }
     });
     
@@ -2318,7 +2588,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addRoundButton) {
         addRoundButton.addEventListener('click', () => {
             currentRound++;
-            roundNumber.textContent = currentRound;
+            if (roundNumber) roundNumber.textContent = currentRound;
             addCombatLog(`Rodada ${currentRound} iniciada manualmente`, 'system');
             saveCombatState();
         });
@@ -2361,67 +2631,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Fechar modal ao clicar fora
-    window.addEventListener('click', (event) => {
-        if (sheetModal && event.target === sheetModal) {
-            closeModal();
-        }
-    });
-    
     // Inicializar a aplicação
     initializeApp();
 });
-
-// =================== INICIALIZAÇÃO DA APLICAÇÃO ===================
-
-async function initializeApp() {
-    console.log('Inicializando aplicação RPG...');
-    
-    // Carregar dados
-    await loadMessages();
-    loadCombatState();
-    loadCharacterSheets();
-    loadDashboardData();
-    
-    // Inicializar displays
-    updateSheetsDisplay();
-    updateDashboardStats();
-    
-    // Configurações iniciais
-    updateAttributeModifiers();
-    updateAttributePoints();
-    updateSubclasses();
-    updateSheetSubclasses();
-    
-    // Mensagem de boas-vindas se não houver mensagens
-    if (messages.length === 0) {
-        const welcomeMessage = {
-            id: 'welcome',
-            content: 'Bem-vindos à mesa de RPG! Use os dados abaixo para suas ações e veja os resultados em tempo real.',
-            user_name: 'Mestre do Jogo',
-            character_class: 'Mestre',
-            character_subclass: 'Mestre das Aventuras',
-            user_color: '#ffd93d',
-            action_type: 'narrative',
-            created_at: new Date().toISOString(),
-            is_dice_roll: false
-        };
-        messages.push(welcomeMessage);
-        await saveMessages();
-        updateListDisplay();
-    }
-    
-    // Notificação de boas-vindas
-    addNotification(
-        'Sistema RPG Iniciado',
-        'Sistema de fichas, combate e estatísticas ativado!',
-        'success'
-    );
-    
-    // Configurar atualizações periódicas
-    setInterval(loadMessages, 10000);
-    setInterval(updateDashboardStats, 30000);
-    setInterval(saveDashboardData, 60000);
-    
-    console.log('Aplicação RPG inicializada com sucesso!');
-}
