@@ -891,17 +891,32 @@ function closeModal() {
     }
 }
 
-// Usar ficha na mesa
+// Função: Usar ficha na mesa (ATUALIZADA)
 function useSheetInGame(sheetId) {
     const sheet = characterSheets.find(s => s.id === sheetId);
     if (!sheet) return;
     
-    // Preencher os campos do formulário principal
+    // Preencher TODOS os campos do formulário principal
     if (userNameInput) userNameInput.value = sheet.name || '';
-    if (characterClassInput) characterClassInput.value = sheet.class || '';
-    if (characterSubclassInput) {
-        characterSubclassInput.value = sheet.subclass || '';
+    
+    // Classe e Subclasse
+    if (characterClassInput) {
+        characterClassInput.value = sheet.class || '';
+        // Atualizar subclasses disponíveis
         updateSubclasses();
+        
+        // Definir subclasse após um pequeno delay para garantir que as opções foram carregadas
+        setTimeout(() => {
+            if (characterSubclassInput && sheet.subclass) {
+                characterSubclassInput.value = sheet.subclass || '';
+            }
+        }, 100);
+    }
+    
+    // Modificador de iniciativa baseado na Destreza
+    if (initiativeModInput) {
+        const dexMod = calculateAttributeModifier(sheet.dex || 10);
+        initiativeModInput.value = dexMod;
     }
     
     // Definir a cor do usuário
@@ -914,8 +929,39 @@ function useSheetInGame(sheetId) {
         }
     });
     
+    // Fechar modal
     closeModal();
-    addNotification('Ficha carregada', `${sheet.name} está pronto para ação!`, 'success', true);
+    
+    // Adicionar ação ao histórico automaticamente?
+    const actionText = `Personagem "${sheet.name}" entrou na mesa!`;
+    if (textInput && !textInput.value.trim()) {
+        textInput.value = actionText;
+    }
+    
+    // Adicionar notificação
+    addNotification(
+        'Ficha carregada na mesa', 
+        `${sheet.name} (${sheet.class} Nv.${sheet.level}) está pronto para ação!`, 
+        'success', 
+        true
+    );
+    
+    // Opcional: Adicionar registro automático ao diário
+    const autoMessage = {
+        id: generateId(),
+        content: `${sheet.name} (${sheet.class} Nv.${sheet.level}) entrou na aventura!`,
+        user_name: sheet.name,
+        character_class: sheet.class,
+        character_subclass: sheet.subclass,
+        user_color: userColor,
+        action_type: 'narrative',
+        created_at: new Date().toISOString(),
+        is_dice_roll: false
+    };
+    
+    messages.push(autoMessage);
+    updateListDisplay();
+    saveAllDataDebounced();
 }
 
 // Editar ficha
