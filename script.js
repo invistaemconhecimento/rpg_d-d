@@ -180,7 +180,7 @@ const sheetAcInput = document.getElementById('sheetAc');
 const sheetSpeedInput = document.getElementById('sheetSpeed');
 const sheetBackgroundInput = document.getElementById('sheetBackground');
 const sheetDescriptionInput = document.getElementById('sheetDescription');
-const sheetColorPicker = document.querySelectorAll('#new-character .color-picker .color-option');
+const sheetColorPicker = document.querySelectorAll('#new-character .sheet-color-picker .color-option');
 
 // Elementos do preview
 const previewName = document.getElementById('previewName');
@@ -220,7 +220,7 @@ const diceHistory = document.getElementById('diceHistory');
 const diceQuantity = document.getElementById('diceQuantity');
 const modifier = document.getElementById('modifier');
 const rollType = document.getElementById('rollType');
-const colorOptions = document.querySelectorAll('.color-option');
+const userColorOptions = document.querySelectorAll('.user-color-picker .color-option');
 const diceTypes = document.querySelectorAll('.dice-type');
 
 // Elementos do sistema de iniciativa
@@ -303,12 +303,23 @@ function formatModifier(mod) {
 function getAttributeCost(score) {
     const costTable = {
         8: 0, 9: 1, 10: 2, 11: 3, 12: 4,
-        13: 5, 14: 7, 15: 9
+        13: 5, 14: 7, 15: 9, 16: 11, 17: 13, 18: 15
     };
-    return costTable[score] || 0;
+    return costTable[score] !== undefined ? costTable[score] : 0;
 }
 
 // =================== SISTEMA DE SALVAMENTO E COMPARTILHAMENTO ===================
+
+// Timer para debouncing
+let saveTimeout;
+
+// Função com debouncing para salvar dados
+async function saveAllDataDebounced() {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+        await saveAllData();
+    }, 2000); // Salva após 2 segundos de inatividade
+}
 
 // Carregar TODOS os dados do servidor
 async function loadAllData() {
@@ -492,14 +503,10 @@ async function saveCharacterSheets() {
         updateSheetsDisplay();
         
         // Depois tenta salvar no servidor para compartilhar
-        const saved = await saveAllData();
+        await saveAllDataDebounced();
         
-        if (saved) {
-            console.log(`Fichas salvas e compartilhadas: ${characterSheets.length} fichas`);
-            return true;
-        }
-        
-        return false;
+        console.log(`Fichas salvas e compartilhadas: ${characterSheets.length} fichas`);
+        return true;
         
     } catch (error) {
         console.error('Erro ao salvar fichas:', error);
@@ -560,7 +567,7 @@ function updateAttributePoints() {
     document.querySelectorAll('.attr-increase').forEach(btn => {
         const attribute = btn.closest('.attribute-card').dataset.attribute;
         const currentValue = parseInt(document.getElementById(`${attribute}Score`).value) || 10;
-        btn.disabled = attributePoints <= 0 || currentValue >= 15;
+        btn.disabled = attributePoints <= 0 || currentValue >= 18;
     });
     
     document.querySelectorAll('.attr-decrease').forEach(btn => {
@@ -577,7 +584,7 @@ function increaseAttribute(attribute) {
     const input = document.getElementById(`${attribute}Score`);
     let value = parseInt(input.value) || 10;
     
-    if (value < 15) {
+    if (value < 18) {
         value++;
         input.value = value;
         updateAttributeModifiers();
@@ -648,8 +655,8 @@ function validateCurrentStep() {
             break;
             
         case 2: // Atributos
-            if (attributePoints < 0) {
-                alert('Você gastou mais pontos do que o permitido! Ajuste os atributos.');
+            if (attributePoints < 0 || attributePoints > 27) {
+                alert('Você deve usar exatamente 27 pontos de atributo! Ajuste os valores.');
                 return false;
             }
             break;
@@ -899,7 +906,7 @@ function useSheetInGame(sheetId) {
     
     // Definir a cor do usuário
     userColor = sheet.color || selectedSheetColor;
-    colorOptions.forEach(opt => {
+    userColorOptions.forEach(opt => {
         if (opt.getAttribute('data-color') === userColor) {
             opt.classList.add('selected');
         } else {
@@ -1384,18 +1391,16 @@ async function addMessage() {
     messages.push(newMessage);
     updateListDisplay();
     
-    const success = await saveAllData(); // Salva tudo, incluindo fichas
+    await saveAllDataDebounced(); // Salva tudo, incluindo fichas
     
     addButton.disabled = false;
     addButton.innerHTML = '<i class="fas fa-feather-alt"></i> Registrar Ação';
     
-    if (success) {
-        textInput.value = '';
-        textInput.focus();
-        addNotification('Ação registrada', `${userName} registrou uma nova ação`, 'info', true);
-    }
+    textInput.value = '';
+    textInput.focus();
+    addNotification('Ação registrada', `${userName} registrou uma nova ação`, 'info', true);
     
-    return success;
+    return true;
 }
 
 // Função para rolar dados com todas as opções
@@ -1514,7 +1519,7 @@ async function rollDiceWithOptions() {
     
     messages.push(diceMessage);
     updateListDisplay();
-    await saveAllData(); // Salva tudo, incluindo fichas
+    await saveAllDataDebounced(); // Salva tudo, incluindo fichas
     
     diceDisplay.style.transform = 'scale(1.2)';
     diceDisplay.style.boxShadow = '0 0 30px rgba(157, 78, 221, 0.8)';
@@ -1545,7 +1550,7 @@ async function deleteMessage(messageId) {
     
     messages = messages.filter(msg => msg.id !== messageId);
     updateListDisplay();
-    await saveAllData();
+    await saveAllDataDebounced();
     addNotification('Registro excluído', 'Ação foi removida do histórico', 'warning', true);
 }
 
@@ -1563,7 +1568,7 @@ async function deleteAllMessages() {
     
     updateListDisplay();
     updateDiceHistory();
-    await saveAllData();
+    await saveAllDataDebounced();
     
     alert('Campanha reiniciada!');
     addNotification('Campanha reiniciada', 'Todos os registros foram excluídos', 'warning');
@@ -1769,7 +1774,7 @@ async function rollInitiative() {
     });
     
     // Adicionar inimigos já criados
-    const enemies = getCurrentEnemies();
+    const enemies = combatParticipants.filter(p => p.type === 'enemy');
     enemies.forEach(enemy => {
         const initiativeRoll = rollDice(20) + parseInt(enemy.initiativeMod || 0);
         initiativeOrder.push({
@@ -1802,27 +1807,7 @@ async function rollInitiative() {
     addCombatLog('Iniciativa rolada! Ordem definida.', 'system');
     addNotification('Iniciativa rolada', 'Ordem de combate definida', 'combat');
     
-    await saveAllData();
-}
-
-// Função para obter inimigos atuais
-function getCurrentEnemies() {
-    const enemies = [];
-    const enemyElements = document.querySelectorAll('.initiative-item.enemy');
-    
-    enemyElements.forEach(element => {
-        const name = element.querySelector('.initiative-name').textContent;
-        const hpInput = element.querySelector('.hp-input');
-        const hp = hpInput ? parseInt(hpInput.value) : 10;
-        
-        enemies.push({
-            name: name,
-            hp: hp,
-            initiativeMod: 0
-        });
-    });
-    
-    return enemies;
+    await saveAllDataDebounced();
 }
 
 // Função para atualizar a exibição da iniciativa
@@ -1878,7 +1863,7 @@ function updateInitiativeDisplay() {
         hpInput.addEventListener('change', (e) => {
             participant.currentHP = parseInt(e.target.value);
             updateHPColor(hpInput, participant.currentHP, participant.maxHP);
-            saveAllData();
+            saveAllDataDebounced();
         });
         
         const hpSpan = document.createElement('span');
@@ -1911,7 +1896,7 @@ function updateInitiativeDisplay() {
                     participant.conditions.push(condition);
                     conditionTag.style.opacity = '1';
                 }
-                saveAllData();
+                saveAllDataDebounced();
             });
             
             if (participant.conditions.includes(condition)) {
@@ -1974,7 +1959,7 @@ function nextTurn() {
     const currentParticipant = initiativeOrder[currentTurn];
     addCombatLog(`Turno de ${currentParticipant.name} (Iniciativa: ${currentParticipant.initiative})`, 'turn');
     
-    saveAllData();
+    saveAllDataDebounced();
 }
 
 // Função para atualizar display do turno
@@ -2046,7 +2031,7 @@ async function endCombat() {
         addCombatLog('Combate encerrado!', 'system');
         addNotification('Combate encerrado', 'O combate foi finalizado', 'combat');
         
-        await saveAllData();
+        await saveAllDataDebounced();
     }
 }
 
@@ -2070,7 +2055,8 @@ async function addEnemy() {
         currentHP: hp,
         maxHP: hp,
         conditions: [],
-        initiativeMod: initiativeMod
+        initiativeMod: initiativeMod,
+        hp: hp
     };
     
     // Adicionar à lista de participantes
@@ -2098,7 +2084,7 @@ async function addEnemy() {
     }
     
     addNotification('Inimigo adicionado', `${name} foi adicionado ao combate`, 'combat', true);
-    await saveAllData();
+    await saveAllDataDebounced();
 }
 
 // =================== DASHBOARD DE ESTATÍSTICAS ===================
@@ -2123,7 +2109,7 @@ function updateDashboardStats() {
     
     // Estatísticas de combate
     const combatCount = isCombatActive ? 1 : 0;
-    const enemyCount = initiativeOrder.filter(p => p.type === 'enemy').length;
+    const enemyCount = combatParticipants.filter(p => p.type === 'enemy').length;
     
     // Atualizar elementos HTML
     if (activePlayers) activePlayers.textContent = activityData.playerStats.active;
@@ -2196,7 +2182,10 @@ function updateClassDistribution() {
 
 // Atualizar gráfico de atividade
 function updateActivityChart() {
-    if (!activityChartCanvas) return;
+    if (!activityChartCanvas || !activityChartCanvas.getContext) {
+        console.warn('Canvas não suportado ou não encontrado');
+        return;
+    }
     
     // Coletar dados por hora
     const hourlyData = new Array(24).fill(0);
@@ -2341,7 +2330,7 @@ async function initializeApp() {
             is_dice_roll: false
         };
         messages.push(welcomeMessage);
-        await saveAllData();
+        await saveAllDataDebounced();
         updateListDisplay();
     }
     
@@ -2603,7 +2592,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentRound++;
             if (roundNumber) roundNumber.textContent = currentRound;
             addCombatLog(`Rodada ${currentRound} iniciada manualmente`, 'system');
-            saveAllData();
+            saveAllDataDebounced();
         });
     }
     
@@ -2627,9 +2616,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Selecionar cor do usuário
-    colorOptions.forEach(option => {
+    userColorOptions.forEach(option => {
         option.addEventListener('click', () => {
-            colorOptions.forEach(opt => opt.classList.remove('selected'));
+            userColorOptions.forEach(opt => opt.classList.remove('selected'));
             option.classList.add('selected');
             userColor = option.getAttribute('data-color');
         });
