@@ -791,6 +791,45 @@ function updateSheetsDisplay() {
     });
 }
 
+// Função: Criar ação rápida baseada na ficha
+function createActionFromSheet(sheetId, actionType = 'narrative', customText = '') {
+    const sheet = characterSheets.find(s => s.id === sheetId);
+    if (!sheet) return;
+    
+    const userName = userNameInput.value.trim() || sheet.name || 'Aventureiro';
+    const charClass = characterClassInput.value || sheet.class || '';
+    const charSubclass = characterSubclassInput.value || sheet.subclass || '';
+    
+    // Se não houver texto personalizado, criar um padrão
+    let actionText = customText;
+    if (!actionText) {
+        const actionTypes = {
+            'attack': `prepara-se para o combate`,
+            'magic': `prepara seus feitiços`,
+            'skill': `se prepara para usar suas habilidades`,
+            'dialog': `se apresenta ao grupo`,
+            'narrative': `entra em cena`,
+            'other': `se junta à aventura`
+        };
+        
+        actionText = `${sheet.name} ${actionTypes[actionType] || 'entra na aventura'}`;
+    }
+    
+    // Preencher campos
+    if (textInput) textInput.value = actionText;
+    if (actionTypeInput) actionTypeInput.value = actionType;
+    
+    // Focar no campo de descrição
+    if (textInput) textInput.focus();
+    
+    addNotification(
+        'Ação preparada',
+        `Pronto para registrar ação de ${sheet.name}`,
+        'success',
+        true
+    );
+}
+
 // Mostrar detalhes da ficha no modal
 function showSheetDetails(sheetId) {
     const sheet = characterSheets.find(s => s.id === sheetId);
