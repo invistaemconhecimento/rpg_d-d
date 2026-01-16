@@ -266,6 +266,21 @@ function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
+// Função: Criar ação rápida
+function createQuickAction(sheetId, actionType) {
+    const sheet = characterSheets.find(s => s.id === sheetId);
+    if (!sheet) return;
+    
+    // Primeiro carrega a ficha na mesa
+    useSheetInGame(sheetId);
+    
+    // Depois preenche ação baseada no tipo
+    setTimeout(() => {
+        createActionFromSheet(sheetId, actionType);
+        closeModal();
+    }, 300);
+}
+
 function formatDateTime(dateString) {
     const date = new Date(dateString);
     return date.toLocaleString('pt-BR');
