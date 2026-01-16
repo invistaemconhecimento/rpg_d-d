@@ -905,6 +905,27 @@ function showSheetDetails(sheetId) {
             <h3><i class="fas fa-swords"></i> Iniciativa</h3>
             <p>${formatModifier(calculateAttributeModifier(sheet.dex || 10))}</p>
         </div>
+
+        // Na função showSheetDetails(), dentro do sheetModalBody.innerHTML:
+// Adicione após a seção de atributos:
+
+<div class="modal-section">
+    <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
+    <div class="quick-actions">
+        <button class="btn-action-quick" data-action="dialog" onclick="createQuickAction('${sheet.id}', 'dialog')">
+            <i class="fas fa-comments"></i> Diálogo
+        </button>
+        <button class="btn-action-quick" data-action="attack" onclick="createQuickAction('${sheet.id}', 'attack')">
+            <i class="fas fa-fist-raised"></i> Ataque
+        </button>
+        <button class="btn-action-quick" data-action="magic" onclick="createQuickAction('${sheet.id}', 'magic')">
+            <i class="fas fa-hat-wizard"></i> Magia
+        </button>
+        <button class="btn-action-quick" data-action="skill" onclick="createQuickAction('${sheet.id}', 'skill')">
+            <i class="fas fa-running"></i> Habilidade
+        </button>
+    </div>
+</div>
     `;
     
     // Configurar botões do modal
