@@ -403,6 +403,10 @@ async function forceSync() {
         updateSyncStatus('connected');
         
         addNotification('Sincronizado', 'Dados sincronizados com sucesso!', 'success', true);
+
+        addNotification('Fichas sincronizadas', 
+               `Carregadas ${characterSheets.length} fichas de todos os jogadores`, 
+               'success', true);
         
     } catch (error) {
         console.error('Erro na sincronização:', error);
