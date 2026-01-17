@@ -1,4 +1,6 @@
 // =================== VARIÁVEIS GLOBAIS ===================
+let currentSelectedSheetId = null;
+
 // Sistema de fichas
 let characterSheets = [];
 let currentStep = 1;
@@ -275,6 +277,99 @@ const sheetTabs = document.querySelectorAll('.sheet-tab');
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
+
+function validateSheetSelection() {
+    if (!currentSelectedSheetId && characterSheets.length > 0) {
+        // Auto-selecionar primeira ficha se existir
+        const firstSheet = characterSheets[0];
+        currentSelectedSheetId = firstSheet.id;
+        loadSheetIntoForm(firstSheet.id);
+    }
+    
+    const hasSheet = currentSelectedSheetId !== null && characterSheets.some(s => s.id === currentSelectedSheetId);
+    
+    // Mostrar/ocultar aviso
+    const warningElement = document.getElementById('noSheetWarning');
+    const characterSelectionElement = document.getElementById('characterSelection');
+    
+    if (warningElement && characterSelectionElement) {
+        if (!hasSheet && characterSheets.length === 0) {
+            warningElement.style.display = 'block';
+            characterSelectionElement.style.display = 'none';
+            
+            // Desabilitar botões de ação
+            if (addButton) addButton.disabled = true;
+            if (rollDiceButton) rollDiceButton.disabled = true;
+            if (quickD20Button) quickD20Button.disabled = true;
+        } else {
+            warningElement.style.display = 'none';
+            characterSelectionElement.style.display = 'block';
+            
+            // Habilitar botões de ação
+            if (addButton) addButton.disabled = false;
+            if (rollDiceButton) rollDiceButton.disabled = false;
+            if (quickD20Button) quickD20Button.disabled = false;
+        }
+    }
+    
+    return hasSheet;
+}
+
+function updateSheetSelectionDropdown() {
+    const selectSheetElement = document.getElementById('selectSheet');
+    if (!selectSheetElement) return;
+    
+    selectSheetElement.innerHTML = '<option value="">Selecione uma ficha...</option>';
+    
+    characterSheets.forEach(sheet => {
+        const option = document.createElement('option');
+        option.value = sheet.id;
+        option.textContent = `${sheet.name} (${sheet.class} Nv.${sheet.level})`;
+        if (sheet.id === currentSelectedSheetId) {
+            option.selected = true;
+        }
+        selectSheetElement.appendChild(option);
+    });
+}
+
+function loadSheetIntoForm(sheetId) {
+    const sheet = characterSheets.find(s => s.id === sheetId);
+    if (!sheet) return;
+    
+    currentSelectedSheetId = sheetId;
+    
+    // Preencher formulário principal com dados da ficha
+    if (userNameInput) userNameInput.value = sheet.name || '';
+    if (characterClassInput) characterClassInput.value = sheet.class || '';
+    
+    // Atualizar subclasse
+    updateSubclasses();
+    setTimeout(() => {
+        if (characterSubclassInput && sheet.subclass) {
+            characterSubclassInput.value = sheet.subclass || '';
+        }
+    }, 100);
+    
+    // Modificador de iniciativa baseado na Destreza
+    if (initiativeModInput) {
+        const dexMod = calculateAttributeModifier(sheet.dex || 10);
+        initiativeModInput.value = dexMod;
+    }
+    
+    // Cor do usuário
+    userColor = sheet.color || '#9d4edd';
+    userColorOptions.forEach(opt => {
+        if (opt.getAttribute('data-color') === userColor) {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
+    
+    updateSheetSelectionDropdown();
+    validateSheetSelection();
+}
+
 
 // Função: Criar ação rápida
 function createQuickAction(sheetId, actionType) {
@@ -1595,17 +1690,33 @@ function updateListDisplay() {
 
 // Adicionar uma nova mensagem
 async function addMessage() {
-    const text = textInput.value.trim();
-    const userName = userNameInput.value.trim() || 'Aventureiro';
-    const charClass = characterClassInput.value;
-    const charSubclass = characterSubclassInput.value;
-    const actionType = actionTypeInput.value;
+    // Validar se há ficha selecionada
+    if (!validateSheetSelection()) {
+        alert('Você precisa selecionar uma ficha de personagem primeiro!');
+        document.getElementById('goToSheetsButton')?.click();
+        return;
+    }
     
+    const text = textInput.value.trim();
     if (text === '') {
         alert('Por favor, descreva sua ação antes de enviar.');
         textInput.focus();
         return;
     }
+     // Buscar dados da ficha selecionada
+    const sheet = characterSheets.find(s => s.id === currentSelectedSheetId);
+    if (!sheet) {
+        alert('Ficha não encontrada! Selecione outra ficha.');
+        return;
+    }
+
+    const userName = sheet.name || 'Aventureiro';
+    const charClass = sheet.class || '';
+    const charSubclass = sheet.subclass || '';
+    const actionType = actionTypeInput.value;
+    
+    addButton.disabled = true;
+    addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
     
     addButton.disabled = true;
     addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
@@ -1616,16 +1727,16 @@ async function addMessage() {
         user_name: userName,
         character_class: charClass,
         character_subclass: charSubclass,
-        user_color: userColor,
+        user_color: sheet.color || userColor,
         action_type: actionType,
         created_at: new Date().toISOString(),
-        is_dice_roll: false
+        is_dice_roll: false,
+        sheet_id: currentSelectedSheetId // Referência à ficha
     };
     
-    messages.push(newMessage);
     
-    // ATUALIZAÇÃO IMPORTANTE: Salva IMEDIATAMENTE no servidor
-    await saveAllData(); // Usar saveAllData() em vez de saveAllDataDebounced()
+        messages.push(newMessage);
+    await saveAllData();
     
     updateListDisplay();
     
@@ -1641,9 +1752,23 @@ async function addMessage() {
 
 // Função para rolar dados com todas as opções
 async function rollDiceWithOptions() {
-    const userName = userNameInput.value.trim() || 'Aventureiro';
-    const charClass = characterClassInput.value;
-    const charSubclass = characterSubclassInput.value;
+    // Validar se há ficha selecionada
+    if (!validateSheetSelection()) {
+        alert('Você precisa selecionar uma ficha de personagem primeiro!');
+        document.getElementById('goToSheetsButton')?.click();
+        return;
+    }
+    
+    // Buscar dados da ficha selecionada
+    const sheet = characterSheets.find(s => s.id === currentSelectedSheetId);
+    if (!sheet) {
+        alert('Ficha não encontrada! Selecione outra ficha.');
+        return;
+    }
+    
+    const userName = sheet.name || 'Aventureiro';
+    const charClass = sheet.class || '';
+    const charSubclass = sheet.subclass || '';
     const actionType = actionTypeInput.value;
     const diceCount = parseInt(diceQuantity.value) || 1;
     const mod = parseInt(modifier.value) || 0;
@@ -1655,7 +1780,7 @@ async function rollDiceWithOptions() {
     diceResultText.textContent = 'Rolando dados...';
     
     await new Promise(resolve => setTimeout(resolve, 800));
-    
+ 
     let results = [];
     let total = 0;
     let isCritical = false;
@@ -1737,7 +1862,7 @@ async function rollDiceWithOptions() {
         user_name: userName,
         character_class: charClass,
         character_subclass: charSubclass,
-        user_color: userColor,
+        user_color: sheet.color || userColor,
         action_type: actionType,
         created_at: new Date().toISOString(),
         is_dice_roll: true,
@@ -1748,7 +1873,8 @@ async function rollDiceWithOptions() {
         dice_modifier: mod,
         roll_type: rType,
         is_critical: isCritical,
-        is_critical_fail: isCriticalFail
+        is_critical_fail: isCriticalFail,
+        sheet_id: currentSelectedSheetId // Referência à ficha
     };
     
     if (!textInput.value.trim()) diceMessage.content = resultText;
