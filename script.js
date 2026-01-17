@@ -823,7 +823,7 @@ function updateSheetsDisplay() {
         return;
     }
     
-    // Aplicar filtros
+    // Aplicar filtros - REMOVA O FILTRO POR CRIADOR
     const classFilter = sheetClassFilter ? sheetClassFilter.value : 'all';
     const levelFilter = sheetLevelFilter ? sheetLevelFilter.value : 'all';
     
@@ -838,7 +838,14 @@ function updateSheetsDisplay() {
                 return false;
             }
         }
-        return true;
+        return true; // REMOVA QUALQUER FILTRO POR createdBy
+    });
+    
+    // Ordenar por data de criação (mais recentes primeiro)
+    filteredSheets.sort((a, b) => {
+        const dateA = new Date(a.created || a.updated);
+        const dateB = new Date(b.created || b.updated);
+        return dateB - dateA;
     });
     
     filteredSheets.forEach((sheet) => {
@@ -849,8 +856,15 @@ function updateSheetsDisplay() {
         const initiative = calculateAttributeModifier(sheet.dex || 10);
         const color = sheet.color || selectedSheetColor;
         
+        // Adicionar badge indicando quem criou a ficha
+        const creatorBadge = sheet.createdBy ? 
+            `<div class="creator-badge" title="Criado por: ${sheet.createdBy}">
+                <i class="fas fa-user"></i> ${sheet.createdBy}
+            </div>` : '';
+        
         sheetCard.innerHTML = `
             <div class="sheet-color-bar" style="background-color: ${color}"></div>
+            ${creatorBadge}
             <div class="sheet-header">
                 <div class="sheet-avatar" style="background-color: ${color}">
                     ${sheet.name ? sheet.name.charAt(0).toUpperCase() : '?'}
@@ -883,10 +897,10 @@ function updateSheetsDisplay() {
                 <button class="btn-view" onclick="showSheetDetails('${sheet.id}')">
                     <i class="fas fa-eye"></i> Ver
                 </button>
-                <button class="btn-edit" onclick="editSheet('${sheet.id}')">
+                <button class="btn-edit" onclick="editSheet('${sheet.id}')" ${!canEditSheet(sheet) ? 'disabled title="Você só pode editar fichas que criou"' : ''}>
                     <i class="fas fa-edit"></i> Editar
                 </button>
-                <button class="btn-delete" onclick="deleteSheet('${sheet.id}')">
+                <button class="btn-delete" onclick="deleteSheet('${sheet.id}')" ${!canEditSheet(sheet) ? 'disabled title="Você só pode excluir fichas que criou"' : ''}>
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -894,6 +908,12 @@ function updateSheetsDisplay() {
         
         sheetsGrid.appendChild(sheetCard);
     });
+}
+
+// Função para verificar se o usuário pode editar/excluir a ficha
+function canEditSheet(sheet) {
+    const currentUser = userNameInput.value.trim() || 'Desconhecido';
+    return !sheet.createdBy || sheet.createdBy === currentUser || sheet.createdBy === 'Desconhecido';
 }
 
 // Função: Criar ação rápida baseada na ficha
