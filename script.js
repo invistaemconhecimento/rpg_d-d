@@ -2090,23 +2090,24 @@ function startCombat() {
     currentTurn = 0;
     combatParticipants = [];
     
-    // Coletar jogadores das mensagens
-    const uniquePlayers = {};
-    messages.forEach(msg => {
-        if (msg.user_name && !uniquePlayers[msg.user_name]) {
-            uniquePlayers[msg.user_name] = {
-                name: msg.user_name,
-                color: msg.user_color || '#9d4edd',
-                class: msg.character_class || 'Aventureiro',
-                subclass: msg.character_subclass || '',
-                initiativeMod: parseInt(initiativeModInput.value) || 0,
-                hp: 100,
-                conditions: []
-            };
-        }
+    // Coletar jogadores das FICHAS (não das mensagens)
+    characterSheets.forEach(sheet => {
+        combatParticipants.push({
+            id: sheet.id,
+            name: sheet.name,
+            color: sheet.color || '#9d4edd',
+            class: sheet.class || 'Aventureiro',
+            subclass: sheet.subclass || '',
+            initiativeMod: calculateAttributeModifier(sheet.dex || 10),
+            hp: sheet.hp || 10,
+            maxHP: sheet.hp || 10,
+            currentHP: sheet.hp || 10,
+            conditions: [],
+            type: 'player',
+            sheetData: sheet // Referência completa à ficha
+        });
     });
     
-    combatParticipants = Object.values(uniquePlayers);
     updateCombatStatus();
     addCombatLog('Combate iniciado!', 'system');
     
@@ -2114,8 +2115,8 @@ function startCombat() {
     alert('Combate iniciado! Agora adicione inimigos e role iniciativa.');
 }
 
-// Função para rolar iniciativa
-async function rollInitiative() {
+
+function rollInitiative() {
     if (!isCombatActive) {
         alert('Inicie o combate primeiro!');
         return;
@@ -2123,16 +2124,17 @@ async function rollInitiative() {
     
     initiativeOrder = [];
     
-    // Adicionar jogadores
+    // Adicionar jogadores (com dados das fichas)
     combatParticipants.forEach(participant => {
-        const initiativeRoll = rollDice(20) + (participant.initiativeMod || 0);
-        initiativeOrder.push({
-            ...participant,
-            initiative: initiativeRoll,
-            type: 'player',
-            currentHP: participant.hp || 100,
-            maxHP: participant.hp || 100
-        });
+        if (participant.type === 'player') {
+            const initiativeRoll = rollDice(20) + (participant.initiativeMod || 0);
+            initiativeOrder.push({
+                ...participant,
+                initiative: initiativeRoll,
+                currentHP: participant.hp, // Usar HP da ficha
+                maxHP: participant.hp // Usar HP da ficha
+            });
+        }
     });
     
     // Adicionar inimigos já criados
@@ -2151,7 +2153,7 @@ async function rollInitiative() {
         });
     });
     
-    // Ordenar por iniciativa (maior para menor)
+    // Ordenar por iniciativa
     initiativeOrder.sort((a, b) => b.initiative - a.initiative);
     
     // Adicionar desempate por modificador
@@ -2169,7 +2171,7 @@ async function rollInitiative() {
     addCombatLog('Iniciativa rolada! Ordem definida.', 'system');
     addNotification('Iniciativa rolada', 'Ordem de combate definida', 'combat');
     
-    await saveAllData();
+    saveAllData();
 }
 
 // Função para atualizar a exibição da iniciativa
@@ -2667,10 +2669,10 @@ async function initializeApp() {
     // Carregar dados DO SERVIDOR (incluindo fichas de outros jogadores)
     await loadAllData();
     loadDashboardData();
-
-    addNotification('Fichas sincronizadas', 
-               `Carregadas ${characterSheets.length} fichas de todos os jogadores`, 
-               'success', true);
+    
+    // Atualizar seleção de fichas
+    updateSheetSelectionDropdown();
+    validateSheetSelection();
     
     // Inicializar displays
     updateSheetsDisplay();
@@ -2693,7 +2695,8 @@ async function initializeApp() {
             user_color: '#ffd93d',
             action_type: 'narrative',
             created_at: new Date().toISOString(),
-            is_dice_roll: false
+            is_dice_roll: false,
+            sheet_id: null
         };
         messages.push(welcomeMessage);
         await saveAllData();
@@ -2702,16 +2705,18 @@ async function initializeApp() {
     
     // Notificação de boas-vindas
     addNotification(
-        'Sistema RPG Iniciado',
+        'Sistema RPG Inicializado',
         'Sistema de fichas COMPARTILHADO, combate e estatísticas ativado!',
         'success'
     );
     
-    // Configurar atualizações periódicas - Sincroniza a cada 5 segundos (REDUZIDO)
+    // Configurar atualizações periódicas - Sincroniza a cada 5 segundos
     setInterval(async () => {
         await loadAllData(); // Atualiza dados do servidor
         updateDashboardStats();
-    }, 5000); // 5 segundos - sincronização mais rápida
+        updateSheetSelectionDropdown();
+        validateSheetSelection();
+    }, 5000);
     
     // Salvar dashboard periodicamente
     setInterval(saveDashboardData, 60000);
