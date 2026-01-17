@@ -440,10 +440,10 @@ async function loadAllData() {
             messages = [];
         }
         
-        // CARREGAR FICHAS DO SERVIDOR - CRÍTICO PARA COMPARTILHAMENTO
+        // CARREGAR FICHAS DO SERVIDOR - AGORA CARREGA TODAS
         if (record.characterSheets && Array.isArray(record.characterSheets)) {
             characterSheets = record.characterSheets;
-            console.log(`Carregadas ${characterSheets.length} fichas do servidor`);
+            console.log(`Carregadas ${characterSheets.length} fichas do servidor (TODAS as fichas)`);
         } else {
             characterSheets = [];
         }
