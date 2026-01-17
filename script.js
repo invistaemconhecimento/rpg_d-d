@@ -37,6 +37,11 @@ let activityData = {
     }
 };
 
+// Status de sincronização
+let syncStatus = 'connected'; // 'connected', 'syncing', 'error'
+let lastSyncTime = new Date();
+let isSyncing = false;
+
 // Configurações do JSONBin
 const JSONBIN_BIN_ID = '69620ca9ae596e708fd204c5';
 const JSONBIN_API_KEY = '$2a$10$gHdA8KAK/9HnnagDiMTlHeBUzNo9cWC0lR8EL0IaUpJg5ChpGiz/i';
@@ -257,6 +262,11 @@ const totalEnemies = document.getElementById('totalEnemies');
 const classDistribution = document.getElementById('classDistribution');
 const activityChartCanvas = document.getElementById('activityChartCanvas');
 
+// Elementos de sincronização
+const syncStatusElement = document.getElementById('syncStatus');
+const forceSyncButton = document.getElementById('forceSyncButton');
+const lastSyncTimeElement = document.getElementById('lastSyncTime');
+
 // Templates
 const useTemplateButtons = document.querySelectorAll('.use-template-btn');
 const sheetTabs = document.querySelectorAll('.sheet-tab');
@@ -336,9 +346,79 @@ async function saveAllDataDebounced() {
     }, 2000); // Salva após 2 segundos de inatividade
 }
 
+// Atualizar status de sincronização
+function updateSyncStatus(status, message = '') {
+    if (!syncStatusElement) return;
+    
+    syncStatus = status;
+    
+    syncStatusElement.className = 'sync-status-indicator';
+    
+    switch(status) {
+        case 'connected':
+            syncStatusElement.innerHTML = '<i class="fas fa-wifi"></i> Conectado';
+            syncStatusElement.classList.add('connected');
+            break;
+        case 'syncing':
+            syncStatusElement.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Sincronizando...';
+            syncStatusElement.classList.add('syncing');
+            break;
+        case 'error':
+            syncStatusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro de conexão';
+            syncStatusElement.classList.add('error');
+            break;
+    }
+    
+    if (lastSyncTimeElement) {
+        const now = new Date();
+        const diff = Math.floor((now - lastSyncTime) / 1000);
+        
+        if (diff < 10) {
+            lastSyncTimeElement.textContent = 'Última sincronização: agora';
+        } else if (diff < 60) {
+            lastSyncTimeElement.textContent = `Última sincronização: ${diff} segundos atrás`;
+        } else {
+            const mins = Math.floor(diff / 60);
+            lastSyncTimeElement.textContent = `Última sincronização: ${mins} minuto${mins > 1 ? 's' : ''} atrás`;
+        }
+    }
+}
+
+// Função para forçar sincronização manual
+async function forceSync() {
+    if (isSyncing) return;
+    
+    isSyncing = true;
+    updateSyncStatus('syncing');
+    
+    try {
+        console.log('Forçando sincronização...');
+        // Primeiro carrega dados do servidor
+        await loadAllData();
+        
+        // Depois salva os dados locais no servidor
+        await saveAllData();
+        
+        lastSyncTime = new Date();
+        updateSyncStatus('connected');
+        
+        addNotification('Sincronizado', 'Dados sincronizados com sucesso!', 'success', true);
+        
+    } catch (error) {
+        console.error('Erro na sincronização:', error);
+        updateSyncStatus('error');
+        addNotification('Erro de sincronização', 'Não foi possível sincronizar os dados', 'danger', true);
+    } finally {
+        isSyncing = false;
+    }
+}
+
 // Carregar TODOS os dados do servidor
 async function loadAllData() {
+    updateSyncStatus('syncing');
+    
     try {
+        console.log('Carregando dados do servidor...');
         const response = await fetch(JSONBIN_URL + '/latest', {
             headers: {
                 'X-Master-Key': JSONBIN_API_KEY,
@@ -408,10 +488,14 @@ async function loadAllData() {
         localStorage.setItem('rpg_messages', JSON.stringify(messages));
         localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
         
+        lastSyncTime = new Date();
+        updateSyncStatus('connected');
+        
         return true;
         
     } catch (error) {
         console.error('Erro ao carregar dados do servidor:', error);
+        updateSyncStatus('error');
         
         // Fallback para localStorage
         const savedMessages = localStorage.getItem('rpg_messages');
@@ -443,6 +527,8 @@ async function loadAllData() {
 
 // Salvar TODOS os dados no servidor (para compartilhamento)
 async function saveAllData() {
+    updateSyncStatus('syncing');
+    
     try {
         const dataToSave = {
             messages: messages,
@@ -476,10 +562,14 @@ async function saveAllData() {
         localStorage.setItem('rpg_character_sheets', JSON.stringify(characterSheets));
         
         console.log('Dados salvos com sucesso no servidor!');
+        
+        lastSyncTime = new Date();
+        updateSyncStatus('connected');
         return true;
         
     } catch (error) {
         console.error('Erro ao salvar dados no servidor:', error);
+        updateSyncStatus('error');
         
         // Fallback para localStorage
         localStorage.setItem('rpg_messages', JSON.stringify(messages));
@@ -518,7 +608,7 @@ async function saveCharacterSheets() {
         updateSheetsDisplay();
         
         // Depois tenta salvar no servidor para compartilhar
-        await saveAllDataDebounced();
+        await saveAllData();
         
         console.log(`Fichas salvas e compartilhadas: ${characterSheets.length} fichas`);
         return true;
@@ -921,26 +1011,23 @@ function showSheetDetails(sheetId) {
             <p>${formatModifier(calculateAttributeModifier(sheet.dex || 10))}</p>
         </div>
 
-        // Na função showSheetDetails(), dentro do sheetModalBody.innerHTML:
-// Adicione após a seção de atributos:
-
-<div class="modal-section">
-    <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
-    <div class="quick-actions">
-        <button class="btn-action-quick" data-action="dialog" onclick="createQuickAction('${sheet.id}', 'dialog')">
-            <i class="fas fa-comments"></i> Diálogo
-        </button>
-        <button class="btn-action-quick" data-action="attack" onclick="createQuickAction('${sheet.id}', 'attack')">
-            <i class="fas fa-fist-raised"></i> Ataque
-        </button>
-        <button class="btn-action-quick" data-action="magic" onclick="createQuickAction('${sheet.id}', 'magic')">
-            <i class="fas fa-hat-wizard"></i> Magia
-        </button>
-        <button class="btn-action-quick" data-action="skill" onclick="createQuickAction('${sheet.id}', 'skill')">
-            <i class="fas fa-running"></i> Habilidade
-        </button>
-    </div>
-</div>
+        <div class="modal-section">
+            <h3><i class="fas fa-bolt"></i> Ações Rápidas</h3>
+            <div class="quick-actions">
+                <button class="btn-action-quick" data-action="dialog" onclick="createQuickAction('${sheet.id}', 'dialog')">
+                    <i class="fas fa-comments"></i> Diálogo
+                </button>
+                <button class="btn-action-quick" data-action="attack" onclick="createQuickAction('${sheet.id}', 'attack')">
+                    <i class="fas fa-fist-raised"></i> Ataque
+                </button>
+                <button class="btn-action-quick" data-action="magic" onclick="createQuickAction('${sheet.id}', 'magic')">
+                    <i class="fas fa-hat-wizard"></i> Magia
+                </button>
+                <button class="btn-action-quick" data-action="skill" onclick="createQuickAction('${sheet.id}', 'skill')">
+                    <i class="fas fa-running"></i> Habilidade
+                </button>
+            </div>
+        </div>
     `;
     
     // Configurar botões do modal
@@ -1036,7 +1123,7 @@ function useSheetInGame(sheetId) {
     
     messages.push(autoMessage);
     updateListDisplay();
-    saveAllDataDebounced();
+    saveAllData();
 }
 
 // Editar ficha
@@ -1510,9 +1597,11 @@ async function addMessage() {
     };
     
     messages.push(newMessage);
-    updateListDisplay();
     
-    await saveAllDataDebounced(); // Salva tudo, incluindo fichas
+    // ATUALIZAÇÃO IMPORTANTE: Salva IMEDIATAMENTE no servidor
+    await saveAllData(); // Usar saveAllData() em vez de saveAllDataDebounced()
+    
+    updateListDisplay();
     
     addButton.disabled = false;
     addButton.innerHTML = '<i class="fas fa-feather-alt"></i> Registrar Ação';
@@ -1640,7 +1729,7 @@ async function rollDiceWithOptions() {
     
     messages.push(diceMessage);
     updateListDisplay();
-    await saveAllDataDebounced(); // Salva tudo, incluindo fichas
+    await saveAllData(); // Salva IMEDIATAMENTE no servidor para compartilhar
     
     diceDisplay.style.transform = 'scale(1.2)';
     diceDisplay.style.boxShadow = '0 0 30px rgba(157, 78, 221, 0.8)';
@@ -1671,7 +1760,7 @@ async function deleteMessage(messageId) {
     
     messages = messages.filter(msg => msg.id !== messageId);
     updateListDisplay();
-    await saveAllDataDebounced();
+    await saveAllData();
     addNotification('Registro excluído', 'Ação foi removida do histórico', 'warning', true);
 }
 
@@ -1689,7 +1778,7 @@ async function deleteAllMessages() {
     
     updateListDisplay();
     updateDiceHistory();
-    await saveAllDataDebounced();
+    await saveAllData();
     
     alert('Campanha reiniciada!');
     addNotification('Campanha reiniciada', 'Todos os registros foram excluídos', 'warning');
@@ -1928,7 +2017,7 @@ async function rollInitiative() {
     addCombatLog('Iniciativa rolada! Ordem definida.', 'system');
     addNotification('Iniciativa rolada', 'Ordem de combate definida', 'combat');
     
-    await saveAllDataDebounced();
+    await saveAllData();
 }
 
 // Função para atualizar a exibição da iniciativa
@@ -1984,7 +2073,7 @@ function updateInitiativeDisplay() {
         hpInput.addEventListener('change', (e) => {
             participant.currentHP = parseInt(e.target.value);
             updateHPColor(hpInput, participant.currentHP, participant.maxHP);
-            saveAllDataDebounced();
+            saveAllData();
         });
         
         const hpSpan = document.createElement('span');
@@ -2017,7 +2106,7 @@ function updateInitiativeDisplay() {
                     participant.conditions.push(condition);
                     conditionTag.style.opacity = '1';
                 }
-                saveAllDataDebounced();
+                saveAllData();
             });
             
             if (participant.conditions.includes(condition)) {
@@ -2080,7 +2169,7 @@ function nextTurn() {
     const currentParticipant = initiativeOrder[currentTurn];
     addCombatLog(`Turno de ${currentParticipant.name} (Iniciativa: ${currentParticipant.initiative})`, 'turn');
     
-    saveAllDataDebounced();
+    saveAllData();
 }
 
 // Função para atualizar display do turno
@@ -2152,7 +2241,7 @@ async function endCombat() {
         addCombatLog('Combate encerrado!', 'system');
         addNotification('Combate encerrado', 'O combate foi finalizado', 'combat');
         
-        await saveAllDataDebounced();
+        await saveAllData();
     }
 }
 
@@ -2205,7 +2294,7 @@ async function addEnemy() {
     }
     
     addNotification('Inimigo adicionado', `${name} foi adicionado ao combate`, 'combat', true);
-    await saveAllDataDebounced();
+    await saveAllData();
 }
 
 // =================== DASHBOARD DE ESTATÍSTICAS ===================
@@ -2451,7 +2540,7 @@ async function initializeApp() {
             is_dice_roll: false
         };
         messages.push(welcomeMessage);
-        await saveAllDataDebounced();
+        await saveAllData();
         updateListDisplay();
     }
     
@@ -2462,11 +2551,11 @@ async function initializeApp() {
         'success'
     );
     
-    // Configurar atualizações periódicas - Sincroniza a cada 15 segundos
+    // Configurar atualizações periódicas - Sincroniza a cada 5 segundos (REDUZIDO)
     setInterval(async () => {
         await loadAllData(); // Atualiza dados do servidor
         updateDashboardStats();
-    }, 15000); // 15 segundos
+    }, 5000); // 5 segundos - sincronização mais rápida
     
     // Salvar dashboard periodicamente
     setInterval(saveDashboardData, 60000);
@@ -2713,7 +2802,7 @@ document.addEventListener('DOMContentLoaded', function() {
             currentRound++;
             if (roundNumber) roundNumber.textContent = currentRound;
             addCombatLog(`Rodada ${currentRound} iniciada manualmente`, 'system');
-            saveAllDataDebounced();
+            saveAllData();
         });
     }
     
@@ -2734,6 +2823,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (clearNotificationsButton) {
         clearNotificationsButton.addEventListener('click', clearAllNotifications);
+    }
+    
+    // Botão de sincronização manual
+    if (forceSyncButton) {
+        forceSyncButton.addEventListener('click', forceSync);
     }
     
     // Selecionar cor do usuário
