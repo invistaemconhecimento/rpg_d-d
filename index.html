@@ -56,30 +56,53 @@
             <p class="description">Plataforma completa para jogos de RPG online com fichas de personagem, sistema de iniciativa e combate</p>
             
             <!-- ADIÇÃO: Status de Sincronização -->
-            <div class="sync-status">
-                <span id="syncStatus" class="sync-status-indicator">
-                    <i class="fas fa-wifi"></i> Conectado
-                </span>
-                <button id="forceSyncButton" class="btn-small btn-secondary">
-                    <i class="fas fa-sync-alt"></i> Sincronizar Agora
-                </button>
-                <small class="last-sync" id="lastSyncTime">Última sincronização: agora</small>
-            </div>
+            <!-- ADIÇÃO: Botão para carregar todas as fichas do servidor -->
+<div class="sync-status">
+    <span id="syncStatus" class="sync-status-indicator">
+        <i class="fas fa-wifi"></i> Conectado
+    </span>
+    <button id="forceSyncButton" class="btn-small btn-secondary">
+        <i class="fas fa-sync-alt"></i> Sincronizar Agora
+    </button>
+    <button id="loadAllSheetsButton" class="btn-small btn-primary">
+        <i class="fas fa-users"></i> Carregar Todas as Fichas
+    </button>
+    <small class="last-sync" id="lastSyncTime">Última sincronização: agora</small>
+</div>
         </header>
         
         <div class="app-container">
             <!-- PAINEL ESQUERDO -->
             <div class="left-panel">
-                <!-- DIÁRIO DO AVENTUREIRO -->
-                <section class="input-section">
-                    <h2><i class="fas fa-scroll"></i> Diário do Aventureiro</h2>
-                    
-                    <div class="user-config">
-                        <h3><i class="fas fa-helmet-battle"></i> Seu Personagem</h3>
-                        <div class="input-group">
-                            <label for="userName">Nome do Personagem:</label>
-                            <input type="text" id="userName" placeholder="Ex: Aragorn, Gandalf, Legolas..." maxlength="100">
-                        </div>
+               <!-- DIÁRIO DO AVENTUREIRO - Adicionar validação de ficha -->
+<section class="input-section">
+    <h2><i class="fas fa-scroll"></i> Diário do Aventureiro</h2>
+    
+    <div class="user-config">
+        <h3><i class="fas fa-helmet-battle"></i> Seu Personagem</h3>
+        <div id="noSheetWarning" class="warning-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i> Você precisa criar ou carregar uma ficha primeiro!
+            <button id="goToSheetsButton" class="btn-small btn-primary">
+                <i class="fas fa-user-plus"></i> Criar Ficha
+            </button>
+        </div>
+        
+        <div id="characterSelection">
+            <div class="input-group">
+                <label for="selectSheet">Usar Ficha Existente:</label>
+                <select id="selectSheet">
+                    <option value="">Selecione uma ficha...</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Ou crie uma nova:</label>
+                <button id="createNewFromDiary" class="btn-secondary">
+                    <i class="fas fa-plus"></i> Nova Ficha
+                </button>
+            </div>
+        </div>
+    </div>
                         
                         <div class="class-row">
                             <div class="class-group">
