@@ -2877,6 +2877,15 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedDice = parseInt(dice.getAttribute('data-dice'));
         });
     });
+
+    // Botão para carregar todas as fichas
+if (document.getElementById('loadAllSheetsButton')) {
+    document.getElementById('loadAllSheetsButton').addEventListener('click', async () => {
+        await loadAllData();
+        addNotification('Fichas carregadas', 
+                       `Todas as ${characterSheets.length} fichas foram carregadas`, 
+                       'success', true);
+    });
     
     // Inicializar a aplicação
     initializeApp();
