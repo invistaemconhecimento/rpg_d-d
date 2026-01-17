@@ -8,12 +8,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .sync-status-indicator {
+            background: rgba(107, 207, 127, 0.2);
+            color: #6bcf7f;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(107, 207, 127, 0.5);
+        }
+        
+        .sync-status-indicator.syncing {
+            background: rgba(255, 217, 61, 0.2);
+            color: #ffd93d;
+            border-color: rgba(255, 217, 61, 0.5);
+        }
+        
+        .sync-status-indicator.error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.5);
+        }
+        
+        .last-sync {
+            color: #8a8ac4;
+            font-size: 0.8rem;
+        }
+    </style>
 </head>
+    
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-dragon"></i> Mesa de RPG - Sistema Completo</h1>
             <p class="description">Plataforma completa para jogos de RPG online com fichas de personagem, sistema de iniciativa e combate</p>
+            
+            <!-- ADIÇÃO: Status de Sincronização -->
+            <div class="sync-status">
+                <span id="syncStatus" class="sync-status-indicator">
+                    <i class="fas fa-wifi"></i> Conectado
+                </span>
+                <button id="forceSyncButton" class="btn-small btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Sincronizar Agora
+                </button>
+                <small class="last-sync" id="lastSyncTime">Última sincronização: agora</small>
+            </div>
         </header>
         
         <div class="app-container">
