@@ -1272,6 +1272,8 @@ async function finishCharacterSheet() {
     if (!validateCurrentStep()) return;
     
     // Coletar dados
+    const currentUser = userNameInput.value.trim() || 'Desconhecido';
+    
     const characterSheet = {
         id: currentSheetBeingEdited || generateId(),
         name: sheetNameInput.value.trim(),
@@ -1296,8 +1298,8 @@ async function finishCharacterSheet() {
         // Data
         created: currentSheetBeingEdited ? undefined : new Date().toISOString(),
         updated: new Date().toISOString(),
-        // Identificação do criador (opcional, para controle)
-        createdBy: userNameInput.value.trim() || 'Desconhecido'
+        // Identificação do criador (sempre salva)
+        createdBy: currentUser
     };
     
     if (!characterSheet.name) {
