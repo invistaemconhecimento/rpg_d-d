@@ -2728,32 +2728,45 @@ async function initializeApp() {
 
 // Configurar eventos quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Sistema de fichas - Abas
-    sheetTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabId = tab.getAttribute('data-tab');
-            switchToTab(tabId);
+    // Novo: Selecionar ficha no dropdown
+    const selectSheetElement = document.getElementById('selectSheet');
+    if (selectSheetElement) {
+        selectSheetElement.addEventListener('change', function() {
+            if (this.value) {
+                loadSheetIntoForm(this.value);
+            }
         });
-    });
+    }
     
-    // Botão para criar nova ficha na aba de listagem
-    if (createNewSheetButton) {
-        createNewSheetButton.addEventListener('click', () => {
+    // Novo: Botão para ir às fichas
+    const goToSheetsButton = document.getElementById('goToSheetsButton');
+    if (goToSheetsButton) {
+        goToSheetsButton.addEventListener('click', () => {
+            switchToTab('sheets-list');
+        });
+    }
+    
+    // Novo: Botão para criar ficha a partir do diário
+    const createNewFromDiary = document.getElementById('createNewFromDiary');
+    if (createNewFromDiary) {
+        createNewFromDiary.addEventListener('click', () => {
             createNewCharacter();
             switchToTab('new-character');
         });
     }
     
-    // Botão para atualizar lista de fichas (sincroniza com servidor)
-    if (refreshSheetsButton) {
-        refreshSheetsButton.addEventListener('click', async () => {
-            refreshSheetsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            await loadAllData(); // Carrega dados do servidor
+    // Novo: Botão para carregar todas as fichas
+    const loadAllSheetsButton = document.getElementById('loadAllSheetsButton');
+    if (loadAllSheetsButton) {
+        loadAllSheetsButton.addEventListener('click', async () => {
+            loadAllSheetsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            await loadAllData();
+            updateSheetSelectionDropdown();
+            validateSheetSelection();
             setTimeout(() => {
-                refreshSheetsButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
-                addNotification('Fichas sincronizadas', 
-                              'Dados atualizados do servidor', 
+                loadAllSheetsButton.innerHTML = '<i class="fas fa-users"></i> Carregar Todas';
+                addNotification('Fichas carregadas', 
+                              `Todas as ${characterSheets.length} fichas foram carregadas`, 
                               'success', true);
             }, 500);
         });
