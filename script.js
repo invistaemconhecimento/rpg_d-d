@@ -2539,6 +2539,10 @@ async function initializeApp() {
     // Carregar dados DO SERVIDOR (incluindo fichas de outros jogadores)
     await loadAllData();
     loadDashboardData();
+
+    addNotification('Fichas sincronizadas', 
+               `Carregadas ${characterSheets.length} fichas de todos os jogadores`, 
+               'success', true);
     
     // Inicializar displays
     updateSheetsDisplay();
